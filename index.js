@@ -1,6 +1,6 @@
-const { ApolloServer, gql } = require("apollo-server");
-const { GraphQLScalarType } = require("graphql");
-const { Kind } = require("graphql/language");
+const {ApolloServer, gql} = require("apollo-server");
+const {GraphQLScalarType} = require("graphql");
+const {Kind} = require("graphql/language");
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -18,10 +18,47 @@ mongoose.connect(process.env.DB_CONN,
 
 const db = mongoose.connection;
 
+const walletSchema = new mongoose.Schema({
+    dfi: Number,
+    btcdfi: Number,
+    ethdfi: Number,
+    ltcdfi: Number,
+    dogedfi: Number,
+    usdtdfi: Number,
+
+    // BTC Pool
+    btcInBtcPool: Number,
+    btc: Number,
+    dfiInBtcPool: Number,
+
+    // ETH Pool
+    ethInEthPool: Number,
+    eth: Number,
+    dfiInEthPool: Number,
+
+    // USDT Pool
+    usdtInUsdtPool: Number,
+    usdt: Number,
+    dfiInUsdtPool: Number,
+
+    // LTC Pool
+    ltcInLtcPool: Number,
+    ltc: Number,
+    dfiInLtcPool: Number,
+
+    // DOGE Pool
+    dogeInDogePool: Number,
+    doge: Number,
+    dfiInDogePool: Number
+});
+
+
 const userSchema = new mongoose.Schema({
     key: String,
     createdDate: Date,
-    addresses: [String]
+    addresses: [String],
+    walletAuto: walletSchema,
+    walletManuel: walletSchema
 });
 
 const User = mongoose.model("User", userSchema);
@@ -37,7 +74,7 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
-        
+
         # BTC Pool
         btcInBtcPool: Float
         btc: Float
@@ -80,7 +117,38 @@ const typeDefs = gql`
     }
 
     input WalletInput {
+        key: String!
         dfi: Float
+        btcdfi : Float
+        ethdfi: Float
+        ltcdfi: Float
+        dogedfi: Float
+        usdtdfi: Float
+
+        # BTC Pool
+        btcInBtcPool: Float
+        btc: Float
+        dfiInBtcPool: Float
+
+        # ETH Pool
+        ethInEthPool: Float
+        eth: Float
+        dfiInEthPool: Float
+
+        # USDT Pool
+        usdtInUsdtPool: Float
+        usdt: Float
+        dfiInUsdtPool: Float
+
+        # LTC Pool
+        ltcInLtcPool: Float
+        ltc: Float
+        dfiInLtcPool: Float
+
+        # DOGE Pool
+        dogeInDogePool: Float
+        doge: Float
+        dfiInDogePool: Float
     }
 
     input UserInput {
@@ -98,6 +166,7 @@ const typeDefs = gql`
     type Mutation {
         addUser(user: UserInput): User
         addUserAddress(user: UserAddressInput): User
+        updateWalletAuto(wallet: WalletInput): User
     }
 `;
 
@@ -112,15 +181,15 @@ const resolvers = {
             }
         },
 
-        user: async (obj, { id }) => {
+        user: async (obj, {id}) => {
             try {
-                return  await User.findById(id);
+                return await User.findById(id);
             } catch (e) {
                 console.log("e", e);
                 return {};
             }
         },
-        userByKey: async (obj, { key }) => {
+        userByKey: async (obj, {key}) => {
             try {
                 return await User.findOne({key: key});
             } catch (e) {
@@ -131,49 +200,74 @@ const resolvers = {
     },
 
     Mutation: {
-        addUser: async (obj, { user }, { userId }) => {
+        addUser: async (obj, {user}, {userId}) => {
             try {
-                if (userId) {
-                    const foundUser = await User.findOne({key: user.key});
-                    // only when not in database
-                    if (!foundUser) {
-                        console.log(user)
-
-                        // Do mutation and of database stuff
-                        const createdUser = await User.create({
-                          createdDate: new Date(),
-                          addresses: user.addresses,
-                          key: user.key
-                        });
-                        return createdUser;
-
-                    }
+                if (!userId) {
                     return null;
                 }
-                return [];
+
+                const foundUser = await User.findOne({key: user.key});
+
+                if (foundUser) {
+                    return null;
+                }
+                // only when not in database
+                const createdUser = await User.create({
+                    createdDate: new Date(),
+                    addresses: user.addresses,
+                    key: user.key
+                });
+                return createdUser;
+
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        addUserAddress: async (obj, { user }, { userId }) => {
+        addUserAddress: async (obj, {user}, {userId}) => {
             try {
-                if (userId) {
-                    const foundUser = await User.findOne({key: user.key});
-                    // only when  in database
-                    if (foundUser) {
-                        foundUser.addresses.push(user.address);
-                        return  await foundUser.save();
-
-                    }
+                if (!userId) {
                     return null;
                 }
-                return [];
+
+                const foundUser = await User.findOne({key: user.key});
+
+                if (!foundUser) {
+                    return null;
+                }
+                // only when  in database
+                if (foundUser.addresses && foundUser.addresses.indexOf(user.address) === -1) {
+                    foundUser.addresses.push(user.address);
+                    return await foundUser.save();
+                }
+
+                return foundUser;
+
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
+        updateWalletAuto: async (obj, {wallet}, {userId}) => {
+            try {
+                if (!userId) {
+                    return null;
+                }
+                const foundUser = await User.findOne({key: wallet.key});
+
+                // only when  in database
+                if (!foundUser) {
+                    return null;
+                }
+
+                foundUser.walletAuto = Object.assign({}, wallet);
+                return await foundUser.save();
+
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        }
     },
 
     Date: new GraphQLScalarType({
@@ -201,21 +295,21 @@ const server = new ApolloServer({
     resolvers,
     introspection: true,
     playground: true,
-    context: ({ req }) => {
-    const fakeUser = {
-        userId: "helloImauser"
-    };
-    return {
-        ...fakeUser
-    };
-}
+    context: ({req}) => {
+        const fakeUser = {
+            userId: "helloImauser"
+        };
+        return {
+            ...fakeUser
+        };
+    }
 });
 
 server
     .listen({
         port: process.env.PORT || 4000
     })
-    .then(({ url }) => {
+    .then(({url}) => {
         console.log(`Server started at ${url}`);
     });
 
