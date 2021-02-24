@@ -252,7 +252,8 @@ const resolvers = {
                 }
                 // only when  in database
                 if (foundUser.addresses && foundUser.addresses.indexOf(user.address) === -1) {
-                    foundUser.addresses.push(user.address);
+                    const newAddresses = foundUser.addresses.concat(user.address);
+                    foundUser.addresses = newAddresses;
                     return await foundUser.save();
                 }
 
