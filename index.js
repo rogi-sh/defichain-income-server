@@ -1,7 +1,9 @@
-const {ApolloServer, gql} = require("apollo-server");
+const {ApolloServer, gql} = require("apollo-server-express");
+const express = require('express');
 const {GraphQLScalarType} = require("graphql");
 const {Kind} = require("graphql/language");
 const mongoose = require('mongoose');
+const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
 
 mongoose.connect(process.env.DB_CONN,
@@ -114,6 +116,7 @@ const typeDefs = gql`
         users: [User]
         user(id: String): User
         userByKey(key: String): User
+        getAuthKey: String
     }
 
     input WalletInputAuto {
@@ -183,6 +186,10 @@ const typeDefs = gql`
     }
 `;
 
+async function findUserByKey(key) {
+    return User.findOne({key: key});
+}
+
 const resolvers = {
     Query: {
         users: async () => {
@@ -204,7 +211,15 @@ const resolvers = {
         },
         userByKey: async (obj, {key}) => {
             try {
-                return await User.findOne({key: key});
+                return await findUserByKey(key);
+            } catch (e) {
+                console.log("e", e);
+                return {};
+            }
+        },
+        getAuthKey: async () => {
+            try {
+                return  StrUtil.random(8)
             } catch (e) {
                 console.log("e", e);
                 return {};
@@ -328,6 +343,13 @@ const resolvers = {
     })
 };
 
+const app = express();
+
+const corsOptions = {
+    origin: '*',
+    credentials: true // <-- REQUIRED backend setting
+};
+
 const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -343,11 +365,10 @@ const server = new ApolloServer({
     }
 });
 
-server
-    .listen({
-        port: process.env.PORT || 4000
-    })
-    .then(({url}) => {
-        console.log(`Server started at ${url}`);
-    });
+server.applyMiddleware({ app, cors: corsOptions });
+
+app.listen({ port: 4000 }, () =>
+    console.log(`🚀 Server ready at http://localhost:4000/graphql`)
+);
+
 
