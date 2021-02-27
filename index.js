@@ -10,7 +10,7 @@ mongoose.connect(process.env.DB_CONN,
     {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true}).then(
     () => {
         /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
-        console.log("Connected")
+        console.log("Connected to Database")
     },
     err => {
         /** handle initial connection error */
@@ -59,8 +59,7 @@ const userSchema = new mongoose.Schema({
     key: String,
     createdDate: Date,
     addresses: [String],
-    walletAuto: walletSchema,
-    walletMan: walletSchema
+    wallet: walletSchema,
 });
 
 const User = mongoose.model("User", userSchema);
@@ -71,6 +70,7 @@ const typeDefs = gql`
 
     type Wallet {
         dfi: Float
+       
         btcdfi : Float
         ethdfi: Float
         ltcdfi: Float
@@ -107,8 +107,7 @@ const typeDefs = gql`
         id: ID!
         key: String!
         createdDate: Date
-        walletAuto: Wallet
-        walletMan: Wallet
+        wallet: Wallet
         addresses: [String]
     }
 
@@ -119,26 +118,14 @@ const typeDefs = gql`
         getAuthKey: String
     }
 
-    input WalletInputAuto {
-        key: String!
-        
+    input WalletInput {
         dfi: Float
+
         btcdfi : Float
         ethdfi: Float
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
-
-        btc: Float
-        eth: Float
-        usdt: Float
-        ltc: Float
-        doge: Float
-    }
-
-    input WalletInputMan {
-        key: String!
-        dfi: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -167,9 +154,13 @@ const typeDefs = gql`
     }
     
     input UserInput {
+        wallet: WalletInput
+        addresses: [String]
+    }
+
+    input UserUpdateInput {
         key: String!
-        walletMan: WalletInputMan
-        walletAuto: WalletInputAuto
+        wallet: WalletInput
         addresses: [String]
     }
 
@@ -180,9 +171,9 @@ const typeDefs = gql`
 
     type Mutation {
         addUser(user: UserInput): User
+        updateUser(user: UserUpdateInput): User
         addUserAddress(user: UserAddressInput): User
-        updateWalletAuto(wallet: WalletInputAuto): User
-        updateWalletMan(wallet: WalletInputMan): User
+        updateWallet(wallet: WalletInput): User
     }
 `;
 
@@ -234,20 +225,40 @@ const resolvers = {
                     return null;
                 }
 
-                const foundUser = await User.findOne({key: user.key});
+                const millisecondsBefore = new Date().getTime();
 
-                if (foundUser) {
-                    return null;
-                }
-                // only when not in database
                 const createdUser = await User.create({
                     createdDate: new Date(),
                     addresses: user.addresses,
-                    key: user.key,
-                    walletAuto : Object.assign({}, user.walletAuto),
-                    walletMan: Object.assign({}, user.walletMan)
+                    key: StrUtil.random(8),
+                    wallet : Object.assign({}, user.wallet)
                 });
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                console.log("Add User called took " + msTime + " ms.");
                 return createdUser;
+
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        updateUser: async (obj, {user}, {userId}) => {
+            try {
+                if (!userId) {
+                    return null;
+                }
+
+                const userLoaded =  await findUserByKey(user.key);
+                if (!userLoaded) {
+                    return null;
+                }
+
+                userLoaded.addresses = user.addresses;
+                userLoaded.wallet = Object.assign({}, user.wallet);
+                return await userLoaded.save();
 
             } catch (e) {
                 console.log("e", e);
@@ -260,7 +271,7 @@ const resolvers = {
                     return null;
                 }
 
-                const foundUser = await User.findOne({key: user.key});
+                const foundUser = await findUserByKey(user.key);
 
                 if (!foundUser) {
                     return null;
@@ -279,7 +290,7 @@ const resolvers = {
                 return [];
             }
         },
-        updateWalletAuto: async (obj, {wallet}, {userId}) => {
+        updateWallet: async (obj, {wallet}, {userId}) => {
             try {
                 if (!userId) {
                     return null;
@@ -291,29 +302,7 @@ const resolvers = {
                     return null;
                 }
 
-                foundUser.walletAuto = Object.assign({}, wallet);
-                return await foundUser.save();
-
-            } catch (e) {
-                console.log("e", e);
-                return [];
-            }
-        },
-        updateWalletMan: async (obj, {wallet}, {userId}) => {
-            try {
-                if (!userId) {
-                    return null;
-                }
-                const foundUser = await User.findOne({key: wallet.key});
-
-                // only when  in database
-                if (!foundUser) {
-                    return null;
-                }
-
-
-                foundUser.walletMan = Object.assign({}, wallet);
-                console.log(foundUser)
+                foundUser.wallet = Object.assign({}, wallet);
                 return await foundUser.save();
 
             } catch (e) {
