@@ -28,6 +28,8 @@ const walletSchema = new mongoose.Schema({
     dogedfi: Number,
     usdtdfi: Number,
 
+    dfiInStaking: Number,
+
     // BTC Pool
     btcInBtcPool: Number,
     btc: Number,
@@ -70,6 +72,8 @@ const typeDefs = gql`
 
     type Wallet {
         dfi: Float
+
+        dfiInStaking: Float
        
         btcdfi : Float
         ethdfi: Float
@@ -126,6 +130,8 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
+        
+        dfiInStaking: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -251,6 +257,8 @@ const resolvers = {
                     return null;
                 }
 
+                const millisecondsBefore = new Date().getTime();
+
                 const userLoaded =  await findUserByKey(user.key);
                 if (!userLoaded) {
                     return null;
@@ -258,7 +266,14 @@ const resolvers = {
 
                 userLoaded.addresses = user.addresses;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                return await userLoaded.save();
+
+                const saved =  await userLoaded.save();
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                console.log("Update User called took " + msTime + " ms.");
+                return saved;
 
             } catch (e) {
                 console.log("e", e);
