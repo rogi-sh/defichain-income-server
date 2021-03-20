@@ -20,6 +20,9 @@ mongoose.connect(process.env.DB_CONN,
 
 const db = mongoose.connection;
 
+const axios = require('axios').default;
+const schedule = require('node-schedule');
+
 const walletSchema = new mongoose.Schema({
     dfi: Number,
     btcdfi: Number,
@@ -64,7 +67,50 @@ const userSchema = new mongoose.Schema({
     wallet: walletSchema,
 });
 
+const poolDefinition = {
+    apr: Number,
+    symbol: String,
+    poolId: String,
+    name: String,
+    pair: String,
+    logo: String,
+    customRewards: [String],
+    pairLink: String,
+    apy: Number,
+    idTokenA: String,
+    idTokenB: String,
+    totalStaked: Number,
+    poolPairId: String,
+    reserveA: String,
+    reserveB: String,
+    volumeA: Number,
+    volumeB: Number,
+    tokenASymbol: String,
+    tokenBSymbol: String,
+    priceA: Number,
+    priceB: Number,
+    totalLiquidityLpToken: Number,
+    date: Date,
+    totalLiquidity: Number,
+    rewardPct: Number,
+    commission: Number
+}
+
+const poolBTCSchema = new mongoose.Schema(poolDefinition);
+const poolETHSchema = new mongoose.Schema(poolDefinition);
+const poolUSDTSchema = new mongoose.Schema(poolDefinition);
+const poolLTCSchema = new mongoose.Schema(poolDefinition);
+const poolBCHSchema = new mongoose.Schema(poolDefinition);
+const poolDOGESchema = new mongoose.Schema(poolDefinition);
+
 const User = mongoose.model("User", userSchema);
+
+const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
+const PoolETH = mongoose.model("PoolETH", poolETHSchema);
+const PoolUSDT = mongoose.model("PoolUSDT", poolUSDTSchema);
+const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
+const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
+const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
 
 // gql`` parses your string into an AST
 const typeDefs = gql`
@@ -347,7 +393,147 @@ const resolvers = {
     })
 };
 
+function getPool(id) {
+    // Make a request for a user with a given ID
+    return axios.get(process.env.POOL_API + id);
+}
+
+async function saveBTCPool(data) {
+
+    const createdBTCPOOL = await PoolBTC.create(assignDataValue(data, new PoolBTC(), "5"));
+    return createdBTCPOOL;
+}
+
+async function saveETHPool(data) {
+
+    const createdETHPOOL = await PoolETH.create(assignDataValue(data, new PoolETH(), "4"));
+    return createdETHPOOL;
+}
+
+async function saveLTCPool(data) {
+
+    const createdLTCPOOL = await PoolLTC.create(assignDataValue(data, new PoolLTC(), "10"));
+    return createdLTCPOOL;
+}
+
+async function saveUSDTPool(data) {
+
+    const createdUSDTPool = await PoolUSDT.create(assignDataValue(data, new PoolUSDT(), "6"));
+    return createdUSDTPool;
+}
+
+async function saveBCHPool(data) {
+
+    const createdBCHPool = await PoolBCH.create(assignDataValue(data, new PoolBCH(), "12"));
+    return createdBCHPool;
+}
+
+async function saveDOGEPool(data) {
+
+    const createdDOGEPool = await PoolDOGE.create(assignDataValue(data, new PoolDOGE(), "8"));
+    return createdDOGEPool;
+}
+
+function assignDataValue(data, object, id) {
+
+    object.date = new Date();
+    object.poolId = id;
+    object.apr = data.apr;
+    object.name = data.name;
+    object.pair = data.pair;
+    object.logo = data.logo;
+    object.customRewards = data.customRewards;
+    object.pairLink = data.pairLink;
+    object.apy = data.apy;
+    object.idTokenA = data.idTokenA;
+    object.idTokenB = data.idTokenB;
+    object.totalStaked = data.totalStaked;
+    object.poolPairId = data.poolPairId;
+    object.reserveA = data.reserveA;
+    object.reserveB = data.reserveB;
+    object.volumeA = data.volumeA;
+    object.volumeB = data.volumeB;
+    object.tokenASymbol = data.tokenASymbol;
+    object.tokenBSymbol = data.tokenBSymbol;
+    object.priceA = data.priceA;
+    object.priceB = data.priceB;
+    object.totalLiquidityLpToken = data.totalLiquidityLpToken;
+    object.totalLiquidity = data.totalLiquidity;
+    object.rewardPct= data.rewardPct;
+    object.commission = data.commission;
+    object.symbol = data.symbol;
+    return object;
+
+}
+
 const app = express();
+
+if (process.env.JOB_SCHEDULER_ON) {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
+        const millisecondsBefore = new Date().getTime();
+        console.log('POOL Job started ... ' + new Date());
+
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12")])
+            .then(function (results) {
+                const btc = results[0];
+                saveBTCPool(btc.data)
+                    .then(r => console.log("BTC POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+
+                const eth = results[1];
+                saveETHPool(eth.data)
+                    .then(r => console.log("ETH POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const usdt = results[2];
+                saveUSDTPool(usdt.data)
+                    .then(r => console.log("USDT POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const ltc = results[3];
+                saveLTCPool(ltc.data)
+                    .then(r => console.log("LTC POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const doge = results[4];
+                saveDOGEPool(doge.data)
+                    .then(r => console.log("DOGE POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const bch = results[5];
+                saveBCHPool(bch.data)
+                    .then(r => console.log("BCH POOL saved"))
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                console.log("Job finished " + msTime + " ms.");
+
+            }).catch(function (error) {
+            // handle error
+            console.log(error);
+        })
+            .then(function () {
+                // always executed
+            });
+
+
+    });
+}
 
 const corsOptions = {
     origin: '*',
@@ -371,8 +557,12 @@ const server = new ApolloServer({
 
 server.applyMiddleware({ app, cors: corsOptions });
 
-app.listen({ port: 4000 }, () =>
+
+
+app.listen({ port: 4000 }, () => {
     console.log(`🚀 Server ready at http://localhost:4000/graphql`)
+
+}
 );
 
 
