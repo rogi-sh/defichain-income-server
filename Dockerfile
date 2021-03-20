@@ -1,23 +1,17 @@
-FROM mhart/alpine-node AS builder
-WORKDIR /app
-COPY package.json .
-COPY package-lock.json .
+FROM node:12-alpine
+
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+
+WORKDIR /home/node/app
+
+COPY package*.json ./
+
+USER node
+
 RUN npm install
-COPY . .
-RUN npm run build
 
-FROM mhart/alpine-node AS production
-WORKDIR /app
-COPY package.json .
-COPY package-lock.json .
-COPY --from=builder /app/dist ./dist
-RUN npm install --production
+COPY --chown=node:node . .
 
-FROM mhart/alpine-node
-WORKDIR /app
-COPY package.json .
-COPY --from=production /app/node_modules ./node_modules
-COPY --from=production /app/dist ./dist
+EXPOSE 8080
 
-ENV NODE_ENV=production
-CMD ["node", "./dist/index.js"]
+CMD [ "node", "app.js" ]
