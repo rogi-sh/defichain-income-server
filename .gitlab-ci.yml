@@ -31,12 +31,13 @@ production_build:
     policy: pull
   only:
     - tags
+    - master
 
 # deploy to server
 deploy:
   stage: deploy
   dependencies:
-    - dockerize
+    - production_build
   image: ictu/sshpass:latest
   services:
     - docker:dind
@@ -51,3 +52,4 @@ deploy:
     - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER "cd docker && cd Privat && cd defichain-income-server && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.topiet.de && ./deploy.sh && exit"
   only:
     - tags
+    - master
