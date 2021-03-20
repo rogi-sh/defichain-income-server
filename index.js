@@ -68,7 +68,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const poolDefinition = {
-    apr: Number,
     symbol: String,
     poolId: String,
     name: String,
@@ -152,6 +151,35 @@ const typeDefs = gql`
         doge: Float
         dfiInDogePool: Float
     }
+    
+    type Pool {
+        id: ID!
+        symbol: String
+        poolId: String
+        name: String
+        pair: String
+        logo: String
+        customRewards: [String]
+        pairLink: String
+        apy: Float
+        idTokenA: String
+        idTokenB: String
+        totalStaked: Float
+        poolPairId: String
+        reserveA: String
+        reserveB: String
+        volumeA: Float
+        volumeB: Float
+        tokenASymbol: String
+        tokenBSymbol: String
+        priceA: Float
+        priceB: Float
+        totalLiquidityLpToken: Float
+        date: Date,
+        totalLiquidity: Float
+        rewardPct: Float
+        commission: Float
+    }
 
     type User {
         id: ID!
@@ -166,6 +194,12 @@ const typeDefs = gql`
         user(id: String): User
         userByKey(key: String): User
         getAuthKey: String
+        poolbtc: [Pool]
+        pooleth: [Pool]
+        poolltc: [Pool]
+        poolusdt: [Pool]
+        pooldoge: [Pool]
+        poolbch: [Pool]
     }
 
     input WalletInput {
@@ -266,6 +300,54 @@ const resolvers = {
             } catch (e) {
                 console.log("e", e);
                 return {};
+            }
+        },
+        poolbtc: async () => {
+            try {
+                return await PoolBTC.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        pooleth: async () => {
+            try {
+                return await PoolETH.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        poolltc: async () => {
+            try {
+                return await PoolLTC.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        poolusdt: async () => {
+            try {
+                return await PoolUSDT.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        poolbch: async () => {
+            try {
+                return await PoolUSDT.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        pooldoge: async () => {
+            try {
+                return await PoolDOGE.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
             }
         }
     },
