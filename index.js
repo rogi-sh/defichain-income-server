@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
 
+const messageAuth = "This ist not public Query. You need to provide an auth Key";
+
 mongoose.connect(process.env.DB_CONN,
     {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true}).then(
     () => {
@@ -22,6 +24,7 @@ const db = mongoose.connection;
 
 const axios = require('axios').default;
 const schedule = require('node-schedule');
+const {GraphQLError} = require("graphql");
 
 const walletSchema = new mongoose.Schema({
     dfi: Number,
@@ -210,13 +213,13 @@ const typeDefs = gql`
         user(id: String): User
         userByKey(key: String): User
         getAuthKey: String
-        poolbtc: [Pool]
-        pooleth: [Pool]
-        poolltc: [Pool]
-        poolusdt: [Pool]
-        pooldoge: [Pool]
-        poolbch: [Pool]
-        poolfarming: [PoolList]
+        getPoolbtcHistory: [Pool]
+        getPoolethHistory: [Pool]
+        getPoolltcHistory: [Pool]
+        getPoolusdtHistory: [Pool]
+        getPooldogeHistory: [Pool]
+        getPoolbchHistory: [Pool]
+        getFarmingHistory: [PoolList]
     }
 
     input WalletInput {
@@ -284,10 +287,20 @@ async function findUserByKey(key) {
     return User.findOne({key: key});
 }
 
+function checkAuth(auth) {
+    return !auth || process.env.PATH !== auth;
+}
+
+
 const resolvers = {
     Query: {
-        users: async () => {
+        users: async (obj, {user}, {auth}) => {
             try {
+
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth);
+                }
+
                 return await User.find();
             } catch (e) {
                 console.log("e", e);
@@ -295,31 +308,47 @@ const resolvers = {
             }
         },
 
-        user: async (obj, {id}) => {
+        user: async (obj, {id}, {auth}) => {
             try {
+
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth);
+                }
+
                 return await User.findById(id);
             } catch (e) {
                 console.log("e", e);
                 return {};
             }
         },
-        userByKey: async (obj, {key}) => {
+        userByKey: async (obj, {key}, {auth}) => {
             try {
+
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth );
+                }
+
                 return await findUserByKey(key);
             } catch (e) {
                 console.log("e", e);
                 return {};
             }
         },
-        getAuthKey: async () => {
+        getAuthKey: async (obj, {key}, {auth}) => {
             try {
+
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth);
+                }
+
+
                 return  StrUtil.random(8)
             } catch (e) {
                 console.log("e", e);
                 return {};
             }
         },
-        poolbtc: async () => {
+        getPoolbtcHistory: async () => {
             try {
                 return await PoolBTC.find();
             } catch (e) {
@@ -327,7 +356,7 @@ const resolvers = {
                 return [];
             }
         },
-        pooleth: async () => {
+        getPoolethHistory: async () => {
             try {
                 return await PoolETH.find();
             } catch (e) {
@@ -335,7 +364,7 @@ const resolvers = {
                 return [];
             }
         },
-        poolltc: async () => {
+        getPoolltcHistory: async () => {
             try {
                 return await PoolLTC.find();
             } catch (e) {
@@ -343,7 +372,7 @@ const resolvers = {
                 return [];
             }
         },
-        poolusdt: async () => {
+        getPoolusdtHistory: async () => {
             try {
                 return await PoolUSDT.find();
             } catch (e) {
@@ -351,7 +380,7 @@ const resolvers = {
                 return [];
             }
         },
-        poolbch: async () => {
+        getPoolbchHistory: async () => {
             try {
                 return await PoolUSDT.find();
             } catch (e) {
@@ -359,7 +388,7 @@ const resolvers = {
                 return [];
             }
         },
-        pooldoge: async () => {
+        getPooldogeHistory: async () => {
             try {
                 return await PoolDOGE.find();
             } catch (e) {
@@ -367,7 +396,7 @@ const resolvers = {
                 return [];
             }
         },
-        poolfarming: async () => {
+        getFarmingHistory: async () => {
             try {
                 return await PoolFarming.find();
             } catch (e) {
@@ -378,10 +407,10 @@ const resolvers = {
     },
 
     Mutation: {
-        addUser: async (obj, {user}, {userId}) => {
+        addUser: async (obj, {user}, {auth}) => {
             try {
-                if (!userId) {
-                    return null;
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth, );
                 }
 
                 const millisecondsBefore = new Date().getTime();
@@ -404,10 +433,10 @@ const resolvers = {
                 return [];
             }
         },
-        updateUser: async (obj, {user}, {userId}) => {
+        updateUser: async (obj, {user}, {auth}) => {
             try {
-                if (!userId) {
-                    return null;
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth, );
                 }
 
                 const millisecondsBefore = new Date().getTime();
@@ -433,10 +462,10 @@ const resolvers = {
                 return [];
             }
         },
-        addUserAddress: async (obj, {user}, {userId}) => {
+        addUserAddress: async (obj, {user}, {auth}) => {
             try {
-                if (!userId) {
-                    return null;
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth, );
                 }
 
                 const foundUser = await findUserByKey(user.key);
@@ -458,10 +487,10 @@ const resolvers = {
                 return [];
             }
         },
-        updateWallet: async (obj, {wallet}, {userId}) => {
+        updateWallet: async (obj, {wallet}, {auth}) => {
             try {
-                if (!userId) {
-                    return null;
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth, );
                 }
                 const foundUser = await User.findOne({key: wallet.key});
 
@@ -588,7 +617,7 @@ function assignDataValue(data, object, id) {
 
 const app = express();
 
-console.log("JOB " + process.env.JOB_SCHEDULER_ON)
+
 if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
@@ -663,14 +692,21 @@ const corsOptions = {
 const server = new ApolloServer({
     typeDefs,
     resolvers,
+    formatError: (err) => {
+        // When debug return only message
+        if (process.env.DEBUG === "off")
+           return {message : err.message};
+
+        return err;
+    },
     introspection: true,
     playground: true,
     context: ({req}) => {
-        const fakeUser = {
-            userId: "helloImauser"
+        const auth = {
+            auth: req.header("secureKey")
         };
         return {
-            ...fakeUser
+            ...auth
         };
     }
 });
@@ -680,7 +716,9 @@ server.applyMiddleware({ app, cors: corsOptions });
 
 
 app.listen({ port: 4000 }, () => {
-    console.log(`🚀 Server ready at http://localhost:4000/graphql`)
+        console.log(`🚀 Server ready at http://localhost:4000/graphql`)
+        console.log("JOB " + process.env.JOB_SCHEDULER_ON)
+        console.log("DEBUG " + process.env.DEBUG)
 
 }
 );
