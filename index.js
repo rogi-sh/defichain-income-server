@@ -550,7 +550,8 @@ function assignDataValue(data, object, id) {
 
 const app = express();
 
-if (process.env.JOB_SCHEDULER_ON) {
+console.log("JOB " + process.env.JOB_SCHEDULER_ON)
+if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
         console.log('POOL Job started ... ' + new Date());
@@ -642,7 +643,7 @@ server.applyMiddleware({ app, cors: corsOptions });
 
 
 app.listen({ port: 4000 }, () => {
-    console.log(`🚀 Server ready at http://localhost:4000/graphql`)
+    console.log(`🚀 Server ready at http://localhost:4000`)
 
 }
 );
