@@ -76,6 +76,7 @@ const poolDefinition = {
     customRewards: [String],
     pairLink: String,
     apy: Number,
+    apr: Number,
     idTokenA: String,
     idTokenB: String,
     totalStaked: Number,
@@ -95,12 +96,18 @@ const poolDefinition = {
     commission: Number
 }
 
+const poolFarming = new mongoose.Schema({
+    pools: [poolDefinition],
+    tvl: Number
+});
+
 const poolBTCSchema = new mongoose.Schema(poolDefinition);
 const poolETHSchema = new mongoose.Schema(poolDefinition);
 const poolUSDTSchema = new mongoose.Schema(poolDefinition);
 const poolLTCSchema = new mongoose.Schema(poolDefinition);
 const poolBCHSchema = new mongoose.Schema(poolDefinition);
 const poolDOGESchema = new mongoose.Schema(poolDefinition);
+const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
 
@@ -110,6 +117,7 @@ const PoolUSDT = mongoose.model("PoolUSDT", poolUSDTSchema);
 const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
 const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
 const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
+const PoolFarming = mongoose.model("PoolFarming", poolFarmingSchema);
 
 // gql`` parses your string into an AST
 const typeDefs = gql`
@@ -162,6 +170,7 @@ const typeDefs = gql`
         customRewards: [String]
         pairLink: String
         apy: Float
+        apr: Float
         idTokenA: String
         idTokenB: String
         totalStaked: Float
@@ -180,7 +189,12 @@ const typeDefs = gql`
         rewardPct: Float
         commission: Float
     }
-
+    
+    type PoolList {
+        pools: [Pool]
+        tvl: Float
+    }
+    
     type User {
         id: ID!
         key: String!
@@ -200,6 +214,7 @@ const typeDefs = gql`
         poolusdt: [Pool]
         pooldoge: [Pool]
         poolbch: [Pool]
+        poolfarming: [PoolList]
     }
 
     input WalletInput {
@@ -349,6 +364,14 @@ const resolvers = {
                 console.log("e", e);
                 return [];
             }
+        },
+        poolfarming: async () => {
+            try {
+                return await PoolFarming.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
         }
     },
 
@@ -476,8 +499,11 @@ const resolvers = {
 };
 
 function getPool(id) {
-    // Make a request for a user with a given ID
     return axios.get(process.env.POOL_API + id);
+}
+
+function getPoolFarming() {
+    return axios.get(process.env.POOL_FARMING_API);
 }
 
 async function saveBTCPool(data) {
@@ -516,10 +542,20 @@ async function saveDOGEPool(data) {
     return createdDOGEPool;
 }
 
+async function saveFarmingPool(data) {
+    const pools = [];
+    data.pools.forEach(p => {
+        pools.push(assignDataValue(p, {}, p.poolPairId))
+    })
+    const createdFarmingPool = await PoolFarming.create({pools, tvl: data.tvl});
+    return createdFarmingPool;
+}
+
 function assignDataValue(data, object, id) {
 
     object.date = new Date();
     object.poolId = id;
+    object.poolPairId= data.poolPairId;
     object.apr = data.apr;
     object.name = data.name;
     object.pair = data.pair;
@@ -555,9 +591,9 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12")])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPoolFarming()])
             .then(function (results) {
-                const btc = results[0];
+               const btc = results[0];
                 saveBTCPool(btc.data)
                     .catch(function (error) {
                         // handle error
@@ -594,6 +630,12 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         // handle error
                         console.log(error);
                     });
+                const farming = results[6];
+                saveFarmingPool(farming.data).catch(function (error) {
+                    // handle error
+                    console.log(error);
+                });
+
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
