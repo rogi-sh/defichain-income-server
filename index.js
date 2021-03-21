@@ -554,13 +554,11 @@ console.log("JOB " + process.env.JOB_SCHEDULER_ON)
 if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
-        console.log('POOL Job started ... ' + new Date());
 
         Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12")])
             .then(function (results) {
                 const btc = results[0];
                 saveBTCPool(btc.data)
-                    .then(r => console.log("BTC POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
@@ -568,35 +566,30 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
 
                 const eth = results[1];
                 saveETHPool(eth.data)
-                    .then(r => console.log("ETH POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
                     });
                 const usdt = results[2];
                 saveUSDTPool(usdt.data)
-                    .then(r => console.log("USDT POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
                     });
                 const ltc = results[3];
                 saveLTCPool(ltc.data)
-                    .then(r => console.log("LTC POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
                     });
                 const doge = results[4];
                 saveDOGEPool(doge.data)
-                    .then(r => console.log("DOGE POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
                     });
                 const bch = results[5];
                 saveBCHPool(bch.data)
-                    .then(r => console.log("BCH POOL saved"))
                     .catch(function (error) {
                         // handle error
                         console.log(error);
@@ -604,7 +597,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Job finished " + msTime + " ms.");
+                console.log("Job executed time: " + new Date() + " in " + msTime + " ms.");
 
             }).catch(function (error) {
             // handle error
@@ -643,7 +636,7 @@ server.applyMiddleware({ app, cors: corsOptions });
 
 
 app.listen({ port: 4000 }, () => {
-    console.log(`🚀 Server ready at http://localhost:4000`)
+    console.log(`🚀 Server ready at http://localhost:4000/graphql`)
 
 }
 );
