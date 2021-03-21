@@ -288,7 +288,7 @@ async function findUserByKey(key) {
 }
 
 function checkAuth(auth) {
-    return !auth || process.env.PATH !== auth;
+    return !auth || process.env.AUTH !== auth;
 }
 
 
