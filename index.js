@@ -98,7 +98,8 @@ const poolDefinition = {
 
 const poolFarming = new mongoose.Schema({
     pools: [poolDefinition],
-    tvl: Number
+    tvl: Number,
+    date: Date
 });
 
 const poolBTCSchema = new mongoose.Schema(poolDefinition);
@@ -193,6 +194,7 @@ const typeDefs = gql`
     type PoolList {
         pools: [Pool]
         tvl: Float
+        date: Date
     }
     
     type User {
@@ -547,7 +549,7 @@ async function saveFarmingPool(data) {
     data.pools.forEach(p => {
         pools.push(assignDataValue(p, {}, p.poolPairId))
     })
-    const createdFarmingPool = await PoolFarming.create({pools, tvl: data.tvl});
+    const createdFarmingPool = await PoolFarming.create({pools, tvl: data.tvl, date: new Date()});
     return createdFarmingPool;
 }
 
