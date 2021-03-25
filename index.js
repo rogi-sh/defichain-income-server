@@ -33,6 +33,7 @@ const walletSchema = new mongoose.Schema({
     ltcdfi: Number,
     dogedfi: Number,
     usdtdfi: Number,
+    bchdfi: Number,
 
     dfiInStaking: Number,
 
@@ -59,7 +60,12 @@ const walletSchema = new mongoose.Schema({
     // DOGE Pool
     dogeInDogePool: Number,
     doge: Number,
-    dfiInDogePool: Number
+    dfiInDogePool: Number,
+
+    // BCH Pool
+    bchInBchPool: Number,
+    bch: Number,
+    dfiInBchPool: Number
 });
 
 
@@ -137,6 +143,7 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
+        bchdfi: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -162,6 +169,11 @@ const typeDefs = gql`
         dogeInDogePool: Float
         doge: Float
         dfiInDogePool: Float
+
+        # BCH Pool
+        bchInBchPool: Float
+        bch: Float
+        dfiInBchPool: Float
     }
     
     type Pool {
@@ -230,6 +242,7 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
+        bchdfi: Float
         
         dfiInStaking: Float
 
@@ -257,6 +270,11 @@ const typeDefs = gql`
         dogeInDogePool: Float
         doge: Float
         dfiInDogePool: Float
+
+        # BCH Pool
+        bchInBchPool: Float
+        bch: Float
+        dfiInBchPool: Float
     }
     
     input UserInput {
@@ -324,10 +342,6 @@ const resolvers = {
         userByKey: async (obj, {key}, {auth}) => {
             try {
 
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth );
-                }
-
                 return await findUserByKey(key);
             } catch (e) {
                 console.log("e", e);
@@ -336,11 +350,6 @@ const resolvers = {
         },
         getAuthKey: async (obj, {key}, {auth}) => {
             try {
-
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth);
-                }
-
 
                 return  StrUtil.random(8)
             } catch (e) {
@@ -409,9 +418,6 @@ const resolvers = {
     Mutation: {
         addUser: async (obj, {user}, {auth}) => {
             try {
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth, );
-                }
 
                 const millisecondsBefore = new Date().getTime();
 
@@ -435,9 +441,6 @@ const resolvers = {
         },
         updateUser: async (obj, {user}, {auth}) => {
             try {
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth, );
-                }
 
                 const millisecondsBefore = new Date().getTime();
 
@@ -464,9 +467,6 @@ const resolvers = {
         },
         addUserAddress: async (obj, {user}, {auth}) => {
             try {
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth, );
-                }
 
                 const foundUser = await findUserByKey(user.key);
 
@@ -489,9 +489,7 @@ const resolvers = {
         },
         updateWallet: async (obj, {wallet}, {auth}) => {
             try {
-                if (checkAuth(auth)) {
-                    return new GraphQLError(messageAuth, );
-                }
+
                 const foundUser = await User.findOne({key: wallet.key});
 
                 // only when  in database
