@@ -672,7 +672,20 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
 
             }).catch(function (error) {
             // handle error
-            console.log(error);
+            if (error.response) {
+                // Request made and server responded
+                console.log("==================== ERROR in Call to API BEGIN ====================");
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.statusText);
+                console.log("==================== ERROR in Call to API END ====================");
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.log('Error', error.message);
+            }
         })
             .then(function () {
                 // always executed
