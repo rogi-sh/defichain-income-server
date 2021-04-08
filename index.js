@@ -111,6 +111,38 @@ const poolFarming = new mongoose.Schema({
     date: Date
 });
 
+const Rewards = {
+    anchorPercent: Number,
+    liquidityPoolPercent: Number,
+    communityPercent: Number,
+    total: Number,
+    community: Number,
+    minter: Number,
+    anchorReward: Number,
+    liquidityPool: Number
+
+}
+
+const Tokens = {
+    max: Number,
+    supply: {
+        total: Number,
+        circulation: Number,
+        foundation: Number,
+        community: Number
+    }
+
+}
+
+const StatsSchema = new mongoose.Schema({
+    blockHeight: Number,
+    difficulty: Number,
+    rewards: Rewards,
+    tokens: Tokens
+});
+
+
+
 const poolBTCSchema = new mongoose.Schema(poolDefinition);
 const poolETHSchema = new mongoose.Schema(poolDefinition);
 const poolUSDTSchema = new mongoose.Schema(poolDefinition);
@@ -128,6 +160,7 @@ const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
 const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
 const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
 const PoolFarming = mongoose.model("PoolFarming", poolFarmingSchema);
+const Stats = mongoose.model("Stats", StatsSchema);
 
 // gql`` parses your string into an AST
 const typeDefs = gql`
@@ -220,6 +253,38 @@ const typeDefs = gql`
         addresses: [String]
     }
 
+    type Rewards {
+        anchorPercent: Float
+        liquidityPoolPercent: Float
+        communityPercent: Float
+        total: Float
+        community: Float
+        minter: Float
+        anchorReward: Float
+        liquidityPool: Float
+    }
+
+    type Tokens  {
+        max: Float
+        supply: Supply
+    }
+
+    type Supply {
+        total: Float
+        circulation: Float
+        foundation: Float
+        community: Float
+
+    }
+
+    type Stats {
+        id: ID!
+        blockHeight: Float
+        difficulty: Float
+        rewards: Rewards
+        tokens: Tokens
+    }
+
     type Query {
         users: [User]
         user(id: String): User
@@ -232,6 +297,7 @@ const typeDefs = gql`
         getPooldogeHistory: [Pool]
         getPoolbchHistory: [Pool]
         getFarmingHistory: [PoolList]
+        getStats: [Stats]
     }
 
     input WalletInput {
@@ -412,6 +478,14 @@ const resolvers = {
                 console.log("e", e);
                 return [];
             }
+        },
+        getStats: async () => {
+            try {
+                return await Stats.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
         }
     },
 
@@ -425,7 +499,7 @@ const resolvers = {
                     createdDate: new Date(),
                     addresses: user.addresses,
                     key: StrUtil.random(8),
-                    wallet : Object.assign({}, user.wallet)
+                    wallet: Object.assign({}, user.wallet)
                 });
 
                 const millisecondsAfter = new Date().getTime();
@@ -531,6 +605,10 @@ function getPool(id) {
     return axios.get(process.env.POOL_API + id);
 }
 
+function getStats() {
+    return axios.get(process.env.STATS_API);
+}
+
 function getPoolFarming() {
     return axios.get(process.env.POOL_FARMING_API);
 }
@@ -580,6 +658,12 @@ async function saveFarmingPool(data) {
     return createdFarmingPool;
 }
 
+async function saveStats(data) {
+
+    const createdStats = await Stats.create(assignDataValueStats(data, new Stats()));
+    return createdStats;
+}
+
 function assignDataValue(data, object, id) {
 
     object.date = new Date();
@@ -609,6 +693,17 @@ function assignDataValue(data, object, id) {
     object.rewardPct= data.rewardPct;
     object.commission = data.commission;
     object.symbol = data.symbol;
+    return object;
+
+}
+
+function assignDataValueStats(data, object) {
+
+    object.blockHeight = data.blockHeight;
+    object.difficulty= data.difficulty;
+    object.rewards = Object.assign({}, data.rewards);
+    object.tokens = Object.assign({}, data.tokens);
+
     return object;
 
 }
@@ -668,7 +763,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Job executed time: " + new Date() + " in " + msTime + " ms.");
+                console.log("Pools Job executed time: " + new Date() + " in " + msTime + " ms.");
 
             }).catch(function (error) {
             // handle error
@@ -692,6 +787,48 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
             });
 
 
+    });
+}
+
+if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_STATS, function () {
+        const millisecondsBefore = new Date().getTime();
+
+        getStats()
+            .then((response) => {
+                saveStats(response.data)
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                console.log("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
+            })
+            .catch(function (error) {
+                // handle error
+                if (error.response) {
+                    // Request made and server responded
+                    console.log("==================== ERROR in Call to API BEGIN ====================");
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.statusText);
+                    console.log("==================== ERROR in Call to API END ====================");
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.log(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                }
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                console.log("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
+            });
     });
 }
 
@@ -728,7 +865,8 @@ server.applyMiddleware({ app, cors: corsOptions });
 
 app.listen({ port: 4000 }, () => {
         console.log(`🚀 Server ready at http://localhost:4000/graphql`)
-        console.log("JOB " + process.env.JOB_SCHEDULER_ON)
+        console.log("JOB Pools " + process.env.JOB_SCHEDULER_ON)
+        console.log("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
         console.log("DEBUG " + process.env.DEBUG)
 
 }
