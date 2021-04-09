@@ -76,6 +76,14 @@ const userSchema = new mongoose.Schema({
     wallet: walletSchema,
 });
 
+const userTransactionsSchema = new mongoose.Schema({
+    key: String,
+    type: String,
+    date: Date,
+    addresses: [String],
+    wallet: walletSchema,
+});
+
 const poolDefinition = {
     symbol: String,
     poolId: String,
@@ -152,6 +160,7 @@ const poolDOGESchema = new mongoose.Schema(poolDefinition);
 const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
+const UserTransaction = mongoose.model("UserTransaction", userTransactionsSchema);
 
 const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
 const PoolETH = mongoose.model("PoolETH", poolETHSchema);
@@ -253,6 +262,15 @@ const typeDefs = gql`
         addresses: [String]
     }
 
+    type UserTransaction {
+        id: ID!
+        key: String!
+        date: Date
+        type: String!
+        wallet: Wallet
+        addresses: [String]
+    }
+
     type Rewards {
         anchorPercent: Float
         liquidityPoolPercent: Float
@@ -289,6 +307,7 @@ const typeDefs = gql`
         users: [User]
         user(id: String): User
         userByKey(key: String): User
+        userTransactionsByKey(key: String): [UserTransaction]
         getAuthKey: String
         getPoolbtcHistory: [Pool]
         getPoolethHistory: [Pool]
@@ -371,6 +390,10 @@ async function findUserByKey(key) {
     return User.findOne({key: key});
 }
 
+async function findUserTransactionsByKey(key) {
+    return UserTransaction.find({key: key});
+}
+
 function checkAuth(auth) {
     return !auth || process.env.AUTH !== auth;
 }
@@ -409,6 +432,15 @@ const resolvers = {
             try {
 
                 return await findUserByKey(key);
+            } catch (e) {
+                console.log("e", e);
+                return {};
+            }
+        },
+        userTransactionsByKey: async (obj, {key}, {auth}) => {
+            try {
+
+                return await findUserTransactionsByKey(key);
             } catch (e) {
                 console.log("e", e);
                 return {};
@@ -527,6 +559,15 @@ const resolvers = {
                 userLoaded.wallet = Object.assign({}, user.wallet);
 
                 const saved =  await userLoaded.save();
+
+                // save transaction
+                await UserTransaction.create({
+                    date: new Date(),
+                    type: "UPDATE",
+                    addresses: user.addresses,
+                    key: user.key,
+                    wallet: Object.assign({}, user.wallet)
+                });
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
