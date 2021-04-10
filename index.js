@@ -308,6 +308,7 @@ const typeDefs = gql`
         user(id: String): User
         userByKey(key: String): User
         userTransactionsByKey(key: String): [UserTransaction]
+        userTransactions: [UserTransaction]
         getAuthKey: String
         getPoolbtcHistory: [Pool]
         getPoolethHistory: [Pool]
@@ -414,7 +415,19 @@ const resolvers = {
                 return [];
             }
         },
+        userTransactions: async (obj, {user}, {auth}) => {
+            try {
 
+                if (checkAuth(auth)) {
+                    return new GraphQLError(messageAuth);
+                }
+
+                return await UserTransaction.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
         user: async (obj, {id}, {auth}) => {
             try {
 
