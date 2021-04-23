@@ -316,7 +316,7 @@ const typeDefs = gql`
         getPoolusdtHistory: [Pool]
         getPooldogeHistory: [Pool]
         getPoolbchHistory: [Pool]
-        getFarmingHistory: [PoolList]
+        getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
     }
 
@@ -372,6 +372,15 @@ const typeDefs = gql`
         key: String!
         wallet: WalletInput
         addresses: [String]
+    }
+
+    input DateInput {
+        year: Int!
+        month: Int!
+        day: Int!
+        hour: Int!
+        min: Int!
+        s: Int!
     }
 
     input UserAddressInput {
@@ -516,9 +525,14 @@ const resolvers = {
                 return [];
             }
         },
-        getFarmingHistory: async () => {
+        getFarmingHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolFarming.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolFarming.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -644,7 +658,7 @@ const resolvers = {
         },
         serialize(value) {
             // value sent to the client
-            return value.getTime();
+            return value;
         },
         parseLiteral(ast) {
             if (ast.kind === Kind.INT) {
