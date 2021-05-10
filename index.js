@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema({
     key: String,
     createdDate: Date,
     addresses: [String],
+    addressesMasternodes: [String],
     wallet: walletSchema,
 });
 
@@ -81,6 +82,7 @@ const userTransactionsSchema = new mongoose.Schema({
     type: String,
     date: Date,
     addresses: [String],
+    addressesMasternodes: [String],
     wallet: walletSchema,
 });
 
@@ -260,6 +262,7 @@ const typeDefs = gql`
         createdDate: Date
         wallet: Wallet
         addresses: [String]
+        addressesMasternodes: [String]
     }
 
     type UserTransaction {
@@ -269,6 +272,7 @@ const typeDefs = gql`
         type: String!
         wallet: Wallet
         addresses: [String]
+        addressesMasternodes: [String]
     }
 
     type Rewards {
@@ -366,12 +370,14 @@ const typeDefs = gql`
     input UserInput {
         wallet: WalletInput
         addresses: [String]
+        addressesMasternodes: [String]
     }
 
     input UserUpdateInput {
         key: String!
         wallet: WalletInput
         addresses: [String]
+        addressesMasternodes: [String]
     }
 
     input DateInput {
@@ -557,6 +563,7 @@ const resolvers = {
                 const createdUser = await User.create({
                     createdDate: new Date(),
                     addresses: user.addresses,
+                    addressesMasternodes: user.addressesMasternodes,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet)
                 });
@@ -583,6 +590,7 @@ const resolvers = {
                 }
 
                 userLoaded.addresses = user.addresses;
+                userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.wallet = Object.assign({}, user.wallet);
 
                 const saved =  await userLoaded.save();
