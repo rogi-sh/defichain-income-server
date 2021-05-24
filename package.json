@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "graphql": "^15.5.0",
     "mongoose": "^5.12.1",
+    "node-correlation": "^1.0.2",
     "node-schedule": "^2.0.0"
   },
   "devDependencies": {
