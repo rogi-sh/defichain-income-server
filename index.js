@@ -314,6 +314,14 @@ const typeDefs = gql`
         dogePool: Float
         bchPool: Float
         usdtPool: Float
+
+        btcPricesDex: [Float]
+        ethPricesDex: [Float]
+        ltcPricesDex: [Float]
+        dogePricesDex: [Float]
+        bchPricesDex: [Float]
+        usdtPricesDex: [Float]
+        dfiPricesDex: [Float]
     }
 
     type Query {
@@ -823,6 +831,15 @@ async function computeCorrelation() {
         bchPool:  (Math.round(CorrelationComputing.calc(bch, dfiBch) * 100) / 100).toFixed(2),
         dogePool: (Math.round(CorrelationComputing.calc(doge, dfiDoge) * 100) / 100).toFixed(2),
         usdtPool: (Math.round(CorrelationComputing.calc(usdt, dfiBtc) * 100) / 100).toFixed(2),
+
+        btcPricesDex: btc,
+        ethPricesDex: eth,
+        ltcPricesDex: ltc,
+        dogePricesDex: doge,
+        bchPricesDex: bch,
+        usdtPricesDex: usdt,
+        dfiPricesDex: dfiBtc
+
     };
 
     const millisecondsAfter = new Date().getTime();
