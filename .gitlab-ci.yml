@@ -1,4 +1,3 @@
-
 image: docker:latest
 
 stages:
@@ -10,8 +9,6 @@ variables:
   CONTAINER_IMAGE_STAGING: ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging
   CONTAINER_IMAGE_LATEST: ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
   CONTAINER_IMAGE_STAGING_LATEST: ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging__${CI_BUILD_REF}
-  NAMESPACE_STAGING: topiclab-staging
-  NAMESPACE_PRODUCTION: topiclab-production
   DEPLOYMENT: backend
 
 production_build:
@@ -49,7 +46,7 @@ deploy:
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -H $PROD_SERVER >> ~/.ssh/known_hosts
   script:
-    - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER "cd docker && cd Privat && cd defichain-income-server && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.topiet.de && ./deploy.sh && exit"
+    - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER "cd docker && cd Privat && cd defichain-income-server && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.gitlab.com && ./deploy.sh && exit"
   only:
     - tags
     - master
