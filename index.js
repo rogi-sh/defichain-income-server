@@ -5,7 +5,7 @@ const {Kind} = require("graphql/language");
 const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
-const CorrelationComputing = require('node-correlation');
+const CorrelationComputing = require("calculate-correlation");;
 
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
@@ -771,7 +771,7 @@ async function computeCorrelation() {
     const millisecondsBefore = new Date().getTime();
 
     const tillDate = new Date();
-    const fromDate = new Date(tillDate - (24*60*60*1000) * 60);
+    const fromDate = new Date(tillDate - (24*60*60*1000) * 3500);
 
     const poollist = await PoolFarming.find({
         date: {'$gte': fromDate, '$lte': tillDate},
@@ -825,12 +825,12 @@ async function computeCorrelation() {
     });
 
     const correlation = {
-        btcPool: (Math.round(CorrelationComputing.calc(btc, dfiBtc) * 100) / 100).toFixed(2),
-        ethPool: (Math.round(CorrelationComputing.calc(eth, dfiEth) * 100) / 100).toFixed(2),
-        ltcPool: (Math.round(CorrelationComputing.calc(ltc, dfiLtc) * 100) / 100).toFixed(2),
-        bchPool:  (Math.round(CorrelationComputing.calc(bch, dfiBch) * 100) / 100).toFixed(2),
-        dogePool: (Math.round(CorrelationComputing.calc(doge, dfiDoge) * 100) / 100).toFixed(2),
-        usdtPool: (Math.round(CorrelationComputing.calc(usdt, dfiBtc) * 100) / 100).toFixed(2),
+        btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 100) / 100).toFixed(2),
+        ethPool: (Math.round(CorrelationComputing(eth, dfiEth) * 100) / 100).toFixed(2),
+        ltcPool: (Math.round(CorrelationComputing(ltc, dfiLtc) * 100) / 100).toFixed(2),
+        bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 100) / 100).toFixed(2),
+        dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 100) / 100).toFixed(2),
+        usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
