@@ -75,6 +75,8 @@ const userSchema = new mongoose.Schema({
     createdDate: Date,
     addresses: [String],
     addressesMasternodes: [String],
+    adressesMasternodesFreezer5: [String],
+    adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
 });
 
@@ -84,6 +86,8 @@ const userTransactionsSchema = new mongoose.Schema({
     date: Date,
     addresses: [String],
     addressesMasternodes: [String],
+    adressesMasternodesFreezer5: [String],
+    adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
 });
 
@@ -263,6 +267,8 @@ const typeDefs = gql`
         wallet: Wallet
         addresses: [String]
         addressesMasternodes: [String]
+        adressesMasternodesFreezer5: [String]
+        adressesMasternodesFreezer10: [String]
     }
 
     type UserTransaction {
@@ -273,6 +279,8 @@ const typeDefs = gql`
         wallet: Wallet
         addresses: [String]
         addressesMasternodes: [String]
+        adressesMasternodesFreezer5: [String]
+        adressesMasternodesFreezer10: [String]
     }
 
     type Rewards {
@@ -389,6 +397,8 @@ const typeDefs = gql`
         wallet: WalletInput
         addresses: [String]
         addressesMasternodes: [String]
+        adressesMasternodesFreezer5: [String]
+        adressesMasternodesFreezer10: [String]
     }
 
     input UserUpdateInput {
@@ -396,6 +406,8 @@ const typeDefs = gql`
         wallet: WalletInput
         addresses: [String]
         addressesMasternodes: [String]
+        adressesMasternodesFreezer5: [String]
+        adressesMasternodesFreezer10: [String]
     }
 
     input DateInput {
@@ -590,6 +602,8 @@ const resolvers = {
                     createdDate: new Date(),
                     addresses: user.addresses,
                     addressesMasternodes: user.addressesMasternodes,
+                    adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
+                    adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet)
                 });
@@ -617,6 +631,8 @@ const resolvers = {
 
                 userLoaded.addresses = user.addresses;
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
+                userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
+                userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
                 userLoaded.wallet = Object.assign({}, user.wallet);
 
                 const saved =  await userLoaded.save();
