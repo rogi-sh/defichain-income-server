@@ -34,6 +34,7 @@ const walletSchema = new mongoose.Schema({
     ltcdfi: Number,
     dogedfi: Number,
     usdtdfi: Number,
+    usdcdfi: Number,
     bchdfi: Number,
 
     dfiInStaking: Number,
@@ -52,6 +53,11 @@ const walletSchema = new mongoose.Schema({
     usdtInUsdtPool: Number,
     usdt: Number,
     dfiInUsdtPool: Number,
+
+    // USDC Pool
+    usdcInUsdcPool: Number,
+    usdc: Number,
+    dfiInUsdcPool: Number,
 
     // LTC Pool
     ltcInLtcPool: Number,
@@ -160,6 +166,7 @@ const StatsSchema = new mongoose.Schema({
 const poolBTCSchema = new mongoose.Schema(poolDefinition);
 const poolETHSchema = new mongoose.Schema(poolDefinition);
 const poolUSDTSchema = new mongoose.Schema(poolDefinition);
+const poolUSDCSchema = new mongoose.Schema(poolDefinition);
 const poolLTCSchema = new mongoose.Schema(poolDefinition);
 const poolBCHSchema = new mongoose.Schema(poolDefinition);
 const poolDOGESchema = new mongoose.Schema(poolDefinition);
@@ -171,6 +178,7 @@ const UserTransaction = mongoose.model("UserTransaction", userTransactionsSchema
 const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
 const PoolETH = mongoose.model("PoolETH", poolETHSchema);
 const PoolUSDT = mongoose.model("PoolUSDT", poolUSDTSchema);
+const PoolUSDC = mongoose.model("PoolUSDC", poolUSDCSchema);
 const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
 const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
 const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
@@ -191,6 +199,7 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
+        usdcdfi: Float
         bchdfi: Float
 
         # BTC Pool
@@ -207,6 +216,11 @@ const typeDefs = gql`
         usdtInUsdtPool: Float
         usdt: Float
         dfiInUsdtPool: Float
+
+        # USDC Pool
+        usdcInUsdcPool: Float
+        usdc: Float
+        dfiInUsdcPool: Float
 
         # LTC Pool
         ltcInLtcPool: Float
@@ -322,6 +336,7 @@ const typeDefs = gql`
         dogePool: Float
         bchPool: Float
         usdtPool: Float
+        usdcPool: Float
 
         btcPricesDex: [Float]
         ethPricesDex: [Float]
@@ -329,6 +344,7 @@ const typeDefs = gql`
         dogePricesDex: [Float]
         bchPricesDex: [Float]
         usdtPricesDex: [Float]
+        usdcPricesDex: [Float]
         dfiPricesDex: [Float]
     }
 
@@ -343,6 +359,7 @@ const typeDefs = gql`
         getPoolethHistory: [Pool]
         getPoolltcHistory: [Pool]
         getPoolusdtHistory: [Pool]
+        getPoolusdcHistory: [Pool]
         getPooldogeHistory: [Pool]
         getPoolbchHistory: [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
@@ -358,6 +375,7 @@ const typeDefs = gql`
         ltcdfi: Float
         dogedfi: Float
         usdtdfi: Float
+        usdcdfi: Float
         bchdfi: Float
         
         dfiInStaking: Float
@@ -376,6 +394,11 @@ const typeDefs = gql`
         usdtInUsdtPool: Float
         usdt: Float
         dfiInUsdtPool: Float
+
+        # USDC Pool
+        usdcInUsdcPool: Float
+        usdc: Float
+        dfiInUsdcPool: Float
 
         # LTC Pool
         ltcInLtcPool: Float
@@ -540,6 +563,14 @@ const resolvers = {
         getPoolusdtHistory: async () => {
             try {
                 return await PoolUSDT.find();
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        getPoolusdcHistory: async () => {
+            try {
+                return await PoolUSDC.find();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -755,6 +786,12 @@ async function saveUSDTPool(data) {
     return createdUSDTPool;
 }
 
+async function saveUSDCPool(data) {
+
+    const createdUSDCPool = await PoolUSDC.create(assignDataValue(data, new PoolUSDC(), "14"));
+    return createdUSDCPool;
+}
+
 async function saveBCHPool(data) {
 
     const createdBCHPool = await PoolBCH.create(assignDataValue(data, new PoolBCH(), "12"));
@@ -806,6 +843,7 @@ async function computeCorrelation() {
     const doge = []
     const bch = []
     const usdt = []
+    const usdc = []
 
     const dfiBtc = []
     const dfiEth = []
@@ -836,6 +874,8 @@ async function computeCorrelation() {
                dfiDoge.push(pool.priceB);
            } else if (pool.pair === "USDT-DFI") {
                usdt.push(pool.priceA);
+           } else if (pool.pair === "USDC-DFI") {
+               usdc.push(pool.priceA);
            }
        });
     });
@@ -847,6 +887,7 @@ async function computeCorrelation() {
         bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 100) / 100).toFixed(2),
         dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 100) / 100).toFixed(2),
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
+        usdcPool: (Math.round(CorrelationComputing(usdc, dfiBtc) * 100) / 100).toFixed(2),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
@@ -854,6 +895,7 @@ async function computeCorrelation() {
         dogePricesDex: doge,
         bchPricesDex: bch,
         usdtPricesDex: usdt,
+        usdcPricesDex: usdc,
         dfiPricesDex: dfiBtc
 
     };
@@ -917,7 +959,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPoolFarming()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPoolFarming()])
             .then(function (results) {
                const btc = results[0];
                 saveBTCPool(btc.data)
@@ -956,7 +998,13 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         // handle error
                         console.log(error);
                     });
-                const farming = results[6];
+                const usdc = results[6];
+                saveUSDCPool(usdc.data)
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const farming = results[7];
                 saveFarmingPool(farming.data).catch(function (error) {
                     // handle error
                     console.log(error);
