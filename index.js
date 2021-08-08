@@ -788,6 +788,7 @@ async function saveUSDTPool(data) {
 
 async function saveUSDCPool(data) {
 
+
     const createdUSDCPool = await PoolUSDC.create(assignDataValue(data, new PoolUSDC(), "14"));
     return createdUSDCPool;
 }
@@ -853,10 +854,9 @@ async function computeCorrelation() {
 
    poollist.forEach (p => {
        p.pools.forEach(pool => {
-           if (!pool.priceA || !pool.priceB) {
+           if (!pool.priceB) {
                return;
            }
-
            if (pool.pair === "BTC-DFI") {
                btc.push(pool.priceA);
                dfiBtc.push(pool.priceB);
@@ -875,7 +875,7 @@ async function computeCorrelation() {
            } else if (pool.pair === "USDT-DFI") {
                usdt.push(pool.priceA);
            } else if (pool.pair === "USDC-DFI") {
-               usdc.push(pool.priceA);
+               usdc.push(1);
            }
        });
     });
@@ -887,7 +887,7 @@ async function computeCorrelation() {
         bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 100) / 100).toFixed(2),
         dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 100) / 100).toFixed(2),
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
-        usdcPool: (Math.round(CorrelationComputing(usdc, dfiBtc) * 100) / 100).toFixed(2),
+        usdcPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
