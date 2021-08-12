@@ -875,7 +875,7 @@ async function computeCorrelation() {
            } else if (pool.pair === "USDT-DFI") {
                usdt.push(pool.priceA);
            } else if (pool.pair === "USDC-DFI") {
-               usdc.push(1);
+               usdc.push(pool.priceA);
            }
        });
     });
