@@ -355,13 +355,13 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
-        getPoolbtcHistory: [Pool]
-        getPoolethHistory: [Pool]
-        getPoolltcHistory: [Pool]
-        getPoolusdtHistory: [Pool]
-        getPoolusdcHistory: [Pool]
-        getPooldogeHistory: [Pool]
-        getPoolbchHistory: [Pool]
+        getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolusdtHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolusdcHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPooldogeHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolbchHistory(from: DateInput!, till: DateInput!): [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
         getCorrelation: Correlation
@@ -536,57 +536,93 @@ const resolvers = {
                 return {};
             }
         },
-        getPoolbtcHistory: async () => {
+        getPoolbtcHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolBTC.find();
+
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolBTC.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPoolethHistory: async () => {
+        getPoolethHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolETH.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolETH.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPoolltcHistory: async () => {
+        getPoolltcHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolLTC.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolLTC.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPoolusdtHistory: async () => {
+        getPoolusdtHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolUSDT.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolUSDT.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPoolusdcHistory: async () => {
+        getPoolusdcHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolUSDC.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolUSDC.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPoolbchHistory: async () => {
+        getPoolbchHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolUSDT.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolBCH.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
             }
         },
-        getPooldogeHistory: async () => {
+        getPooldogeHistory: async (obj, {from, till}, {auth}) => {
             try {
-                return await PoolDOGE.find();
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolDOGE.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
             } catch (e) {
                 console.log("e", e);
                 return [];
