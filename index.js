@@ -364,7 +364,7 @@ const typeDefs = gql`
         getPoolbchHistory(from: DateInput!, till: DateInput!): [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
-        getCorrelation: Correlation
+        getCorrelation(days: Int): Correlation
     }
 
     input WalletInput {
@@ -649,9 +649,9 @@ const resolvers = {
                 return [];
             }
         },
-        getCorrelation: async () => {
+        getCorrelation: async (obj, {days}, {auth}) => {
             try {
-                return computeCorrelation();
+                return computeCorrelation(days);
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -856,12 +856,12 @@ async function saveStats(data) {
     return createdStats;
 }
 
-async function computeCorrelation() {
+async function computeCorrelation(data) {
 
     const millisecondsBefore = new Date().getTime();
 
     const tillDate = new Date();
-    const fromDate = new Date(tillDate - (24*60*60*1000) * 3500);
+    const fromDate = new Date(tillDate - (24*60*60*1000) * (data ? data: 365));
 
     const poollist = await PoolFarming.find({
         date: {'$gte': fromDate, '$lte': tillDate},
@@ -917,13 +917,13 @@ async function computeCorrelation() {
     });
 
     const correlation = {
-        btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 100) / 100).toFixed(2),
-        ethPool: (Math.round(CorrelationComputing(eth, dfiEth) * 100) / 100).toFixed(2),
-        ltcPool: (Math.round(CorrelationComputing(ltc, dfiLtc) * 100) / 100).toFixed(2),
-        bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 100) / 100).toFixed(2),
-        dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 100) / 100).toFixed(2),
-        usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
-        usdcPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 100) / 100).toFixed(2),
+        btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 1000) / 1000).toFixed(3),
+        ethPool: (Math.round(CorrelationComputing(eth, dfiEth) * 1000) / 1000).toFixed(3),
+        ltcPool: (Math.round(CorrelationComputing(ltc, dfiLtc) * 1000) / 1000).toFixed(3),
+        bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 1000) / 1000).toFixed(3),
+        dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 1000) / 1000).toFixed(3),
+        usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
+        usdcPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
