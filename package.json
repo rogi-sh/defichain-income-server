@@ -16,18 +16,18 @@
   "license": "ISC",
   "dependencies": {
     "@supercharge/strings": "^1.18.0",
-    "apollo-server": "^2.21.0",
-    "apollo-server-express": "^2.21.0",
-    "axios": "^0.21.1",
-    "calculate-correlation": "^1.2.1",
-    "dotenv": "^8.2.0",
+    "apollo-server": "^3.5.0",
+    "apollo-server-express": "^3.5.0",
+    "axios": "^0.24.0",
+    "calculate-correlation": "^1.2.2",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "graphql": "^15.5.0",
-    "mongoose": "^5.12.1",
+    "graphql": "^16.0.1",
+    "mongoose": "^6.0.13",
     "node-schedule": "^2.0.0"
   },
   "devDependencies": {
-    "apollo-server-express": "^2.21.0",
+    "apollo-server-express": "^3.5.0",
     "cors": "^2.8.5"
   }
 }

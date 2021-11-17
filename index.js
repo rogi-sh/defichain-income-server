@@ -930,6 +930,7 @@ async function computeCorrelation(data) {
     const dfiLtc = []
     const dfiDoge = []
     const dfiBch = []
+    const dfiUsdc = []
     const dfiUsd = []
 
    poollist.forEach (p => {
@@ -953,15 +954,18 @@ async function computeCorrelation(data) {
                doge.push(pool.priceA);
                dfiDoge.push(pool.priceB);
            } else if (pool.pair === "USDT-DFI") {
-               usdt.push(pool.priceA);
+               usdt.push(!pool.priceA ? 1: pool.priceA);
            } else if (pool.pair === "USDC-DFI") {
-               usdc.push(pool.priceA);
-           } else if (pool.pair === "USD-DFI") {
-               usd.push(pool.priceA);
+               usdc.push(!pool.priceA ? 1: pool.priceA);
+               dfiUsdc.push(pool.priceB);
+           } else if (pool.pair === "DUSD-DFI") {
+               usd.push(!pool.priceA ? 1: pool.priceA);
                dfiUsd.push(pool.priceB);
            }
        });
     });
+
+    const corUsd = CorrelationComputing(usd, dfiUsd);
 
     const correlation = {
         btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 1000) / 1000).toFixed(3),
@@ -970,8 +974,8 @@ async function computeCorrelation(data) {
         bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 1000) / 1000).toFixed(3),
         dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 1000) / 1000).toFixed(3),
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
-        usdcPool: (Math.round(CorrelationComputing(usdc, dfiBtc) * 1000) / 1000).toFixed(3),
-        usdPool: (Math.round(CorrelationComputing(usd, dfiUsd) * 1000) / 1000).toFixed(3),
+        usdcPool: (Math.round(CorrelationComputing(usdc, dfiUsdc) * 1000) / 1000).toFixed(3),
+        usdPool: isNaN(corUsd) ? 999 : (Math.round(corUsd  * 1000) / 1000).toFixed(3),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
@@ -1178,31 +1182,37 @@ const corsOptions = {
     credentials: true // <-- REQUIRED backend setting
 };
 
-const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    formatError: (err) => {
-        // When debug return only message
-        if (process.env.DEBUG === "off")
-           return {message : err.message};
+async function startServer() {
 
-        return err;
-    },
-    introspection: true,
-    playground: true,
-    context: ({req}) => {
-        const auth = {
-            auth: req.header("secureKey")
-        };
-        return {
-            ...auth
-        };
-    }
-});
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        formatError: (err) => {
+            // When debug return only message
+            if (process.env.DEBUG === "off")
+                return {message : err.message};
 
-server.applyMiddleware({ app, cors: corsOptions });
+            return err;
+        },
+        introspection: true,
+        playground: true,
+        context: ({req}) => {
+            const auth = {
+                auth: req.header("secureKey")
+            };
+            return {
+                ...auth
+            };
+        }
+    });
 
+    await server.start();
 
+    server.applyMiddleware({ app, cors: corsOptions });
+
+}
+
+startServer();
 
 app.listen({ port: 4000 }, () => {
         console.log(`🚀 Server ready at http://localhost:4000/graphql`)
