@@ -36,6 +36,7 @@ const walletSchema = new mongoose.Schema({
     usdtdfi: Number,
     usdcdfi: Number,
     bchdfi: Number,
+    usddfi: Number,
 
     dfiInStaking: Number,
 
@@ -72,7 +73,12 @@ const walletSchema = new mongoose.Schema({
     // BCH Pool
     bchInBchPool: Number,
     bch: Number,
-    dfiInBchPool: Number
+    dfiInBchPool: Number,
+
+    // USD Pool
+    usdInUsdPool: Number,
+    usd: Number,
+    dfiInUsdPool: Number
 });
 
 
@@ -170,6 +176,7 @@ const poolUSDCSchema = new mongoose.Schema(poolDefinition);
 const poolLTCSchema = new mongoose.Schema(poolDefinition);
 const poolBCHSchema = new mongoose.Schema(poolDefinition);
 const poolDOGESchema = new mongoose.Schema(poolDefinition);
+const poolUSDSchema = new mongoose.Schema(poolDefinition);
 const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
@@ -182,6 +189,7 @@ const PoolUSDC = mongoose.model("PoolUSDC", poolUSDCSchema);
 const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
 const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
 const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
+const PoolUSD = mongoose.model("PoolUSD", poolUSDSchema);
 const PoolFarming = mongoose.model("PoolFarming", poolFarmingSchema);
 const Stats = mongoose.model("Stats", StatsSchema);
 
@@ -201,6 +209,7 @@ const typeDefs = gql`
         usdtdfi: Float
         usdcdfi: Float
         bchdfi: Float
+        usddfi: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -236,6 +245,11 @@ const typeDefs = gql`
         bchInBchPool: Float
         bch: Float
         dfiInBchPool: Float
+
+        # USD Pool
+        usdInUsdPool: Float
+        usd: Float
+        dfiInUsdPool: Float
     }
     
     type Pool {
@@ -337,6 +351,7 @@ const typeDefs = gql`
         bchPool: Float
         usdtPool: Float
         usdcPool: Float
+        usdPool: Float
 
         btcPricesDex: [Float]
         ethPricesDex: [Float]
@@ -345,6 +360,7 @@ const typeDefs = gql`
         bchPricesDex: [Float]
         usdtPricesDex: [Float]
         usdcPricesDex: [Float]
+        usdPricesDex: [Float]
         dfiPricesDex: [Float]
     }
 
@@ -362,6 +378,7 @@ const typeDefs = gql`
         getPoolusdcHistory(from: DateInput!, till: DateInput!): [Pool]
         getPooldogeHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolbchHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPoolusdHistory(from: DateInput!, till: DateInput!): [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
         getCorrelation(days: Int): Correlation
@@ -377,6 +394,7 @@ const typeDefs = gql`
         usdtdfi: Float
         usdcdfi: Float
         bchdfi: Float
+        usddfi: Float
         
         dfiInStaking: Float
 
@@ -414,6 +432,11 @@ const typeDefs = gql`
         bchInBchPool: Float
         bch: Float
         dfiInBchPool: Float
+
+        # USD Pool
+        usdInUsdPool: Float
+        usd: Float
+        dfiInUsdPool: Float
     }
     
     input UserInput {
@@ -608,6 +631,19 @@ const resolvers = {
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
                 return await PoolBCH.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        getPoolusdHistory: async (obj, {from, till}, {auth}) => {
+            try {
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolUSD.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
                 });
             } catch (e) {
@@ -841,6 +877,12 @@ async function saveDOGEPool(data) {
     return createdDOGEPool;
 }
 
+async function saveUSDPool(data) {
+
+    const createdUSDPool = await PoolUSD.create(assignDataValue(data, new PoolUSD(), "17"));
+    return createdUSDPool;
+}
+
 async function saveFarmingPool(data) {
     const pools = [];
     data.pools.forEach(p => {
@@ -881,12 +923,14 @@ async function computeCorrelation(data) {
     const bch = []
     const usdt = []
     const usdc = []
+    const usd = []
 
     const dfiBtc = []
     const dfiEth = []
     const dfiLtc = []
     const dfiDoge = []
     const dfiBch = []
+    const dfiUsd = []
 
    poollist.forEach (p => {
        p.pools.forEach(pool => {
@@ -912,6 +956,9 @@ async function computeCorrelation(data) {
                usdt.push(pool.priceA);
            } else if (pool.pair === "USDC-DFI") {
                usdc.push(pool.priceA);
+           } else if (pool.pair === "USD-DFI") {
+               usd.push(pool.priceA);
+               dfiUsd.push(pool.priceB);
            }
        });
     });
@@ -923,7 +970,8 @@ async function computeCorrelation(data) {
         bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 1000) / 1000).toFixed(3),
         dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 1000) / 1000).toFixed(3),
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
-        usdcPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
+        usdcPool: (Math.round(CorrelationComputing(usdc, dfiBtc) * 1000) / 1000).toFixed(3),
+        usdPool: (Math.round(CorrelationComputing(usd, dfiUsd) * 1000) / 1000).toFixed(3),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
@@ -932,6 +980,7 @@ async function computeCorrelation(data) {
         bchPricesDex: bch,
         usdtPricesDex: usdt,
         usdcPricesDex: usdc,
+        usdPricesDex: usd,
         dfiPricesDex: dfiBtc
 
     };
@@ -995,7 +1044,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPoolFarming()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPoolFarming()])
             .then(function (results) {
                const btc = results[0];
                 saveBTCPool(btc.data)
@@ -1040,7 +1089,13 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         // handle error
                         console.log(error);
                     });
-                const farming = results[7];
+                const usd = results[7];
+                saveUSDPool(usd.data)
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const farming = results[8];
                 saveFarmingPool(farming.data).catch(function (error) {
                     // handle error
                     console.log(error);
