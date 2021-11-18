@@ -37,6 +37,7 @@ const walletSchema = new mongoose.Schema({
     usdcdfi: Number,
     bchdfi: Number,
     usddfi: Number,
+    tsladfi: Number,
 
     dfiInStaking: Number,
 
@@ -78,7 +79,12 @@ const walletSchema = new mongoose.Schema({
     // USD Pool
     usdInUsdPool: Number,
     usd: Number,
-    dfiInUsdPool: Number
+    dfiInUsdPool: Number,
+
+    // TSLA Pool
+    tslaInTslaPool: Number,
+    tsla: Number,
+    dfiInTslaPool: Number
 });
 
 
@@ -121,6 +127,8 @@ const poolDefinition = {
     reserveB: String,
     volumeA: Number,
     volumeB: Number,
+    volumeA30: Number,
+    volumeB30: Number,
     tokenASymbol: String,
     tokenBSymbol: String,
     priceA: Number,
@@ -177,6 +185,7 @@ const poolLTCSchema = new mongoose.Schema(poolDefinition);
 const poolBCHSchema = new mongoose.Schema(poolDefinition);
 const poolDOGESchema = new mongoose.Schema(poolDefinition);
 const poolUSDSchema = new mongoose.Schema(poolDefinition);
+const poolTSLASchema = new mongoose.Schema(poolDefinition);
 const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
@@ -190,6 +199,7 @@ const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
 const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
 const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
 const PoolUSD = mongoose.model("PoolUSD", poolUSDSchema);
+const PoolTSLA = mongoose.model("PoolTSLA", poolTSLASchema);
 const PoolFarming = mongoose.model("PoolFarming", poolFarmingSchema);
 const Stats = mongoose.model("Stats", StatsSchema);
 
@@ -210,6 +220,7 @@ const typeDefs = gql`
         usdcdfi: Float
         bchdfi: Float
         usddfi: Float
+        tsladfi: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -250,6 +261,11 @@ const typeDefs = gql`
         usdInUsdPool: Float
         usd: Float
         dfiInUsdPool: Float
+
+        # TSLA Pool
+        tslaInTslaPool: Float
+        tsla: Float
+        dfiInTslaPool: Float
     }
     
     type Pool {
@@ -271,6 +287,8 @@ const typeDefs = gql`
         reserveB: String
         volumeA: Float
         volumeB: Float
+        volumeA30: Float
+        volumeB30: Float
         tokenASymbol: String
         tokenBSymbol: String
         priceA: Float
@@ -352,6 +370,7 @@ const typeDefs = gql`
         usdtPool: Float
         usdcPool: Float
         usdPool: Float
+        tslaPool: Float
 
         btcPricesDex: [Float]
         ethPricesDex: [Float]
@@ -361,6 +380,7 @@ const typeDefs = gql`
         usdtPricesDex: [Float]
         usdcPricesDex: [Float]
         usdPricesDex: [Float]
+        tslaPricesDex: [Float]
         dfiPricesDex: [Float]
     }
 
@@ -379,6 +399,7 @@ const typeDefs = gql`
         getPooldogeHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolbchHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolusdHistory(from: DateInput!, till: DateInput!): [Pool]
+        getPooltslaHistory(from: DateInput!, till: DateInput!): [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
         getCorrelation(days: Int): Correlation
@@ -437,6 +458,11 @@ const typeDefs = gql`
         usdInUsdPool: Float
         usd: Float
         dfiInUsdPool: Float
+
+        # TSLA Pool
+        tslaInTslaPool: Float
+        tsla: Float
+        dfiInTslaPool: Float
     }
     
     input UserInput {
@@ -644,6 +670,19 @@ const resolvers = {
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
                 return await PoolUSD.find({
+                    date: {'$gte': fromDate, '$lte': tillDate}
+                });
+            } catch (e) {
+                console.log("e", e);
+                return [];
+            }
+        },
+        getPooltslaHistory: async (obj, {from, till}, {auth}) => {
+            try {
+                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
+                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
+
+                return await PoolTSLA.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
                 });
             } catch (e) {
@@ -883,6 +922,12 @@ async function saveUSDPool(data) {
     return createdUSDPool;
 }
 
+async function saveTSLAPool(data) {
+
+    const createdTSLAPool = await PoolTSLA.create(assignDataValue(data, new PoolTSLA(), "18"));
+    return createdTSLAPool;
+}
+
 async function saveFarmingPool(data) {
     const pools = [];
     data.pools.forEach(p => {
@@ -924,6 +969,7 @@ async function computeCorrelation(data) {
     const usdt = []
     const usdc = []
     const usd = []
+    const tsla = []
 
     const dfiBtc = []
     const dfiEth = []
@@ -932,10 +978,11 @@ async function computeCorrelation(data) {
     const dfiBch = []
     const dfiUsdc = []
     const dfiUsd = []
+    const dfiTsla = []
 
    poollist.forEach (p => {
        p.pools.forEach(pool => {
-           if (!pool.priceB) {
+           if (!pool.priceB || !pool.priceA) {
                return;
            }
            if (pool.pair === "BTC-DFI") {
@@ -954,18 +1001,22 @@ async function computeCorrelation(data) {
                doge.push(pool.priceA);
                dfiDoge.push(pool.priceB);
            } else if (pool.pair === "USDT-DFI") {
-               usdt.push(!pool.priceA ? 1: pool.priceA);
+               usdt.push(pool.priceA);
            } else if (pool.pair === "USDC-DFI") {
-               usdc.push(!pool.priceA ? 1: pool.priceA);
+               usdc.push(pool.priceA);
                dfiUsdc.push(pool.priceB);
            } else if (pool.pair === "DUSD-DFI") {
-               usd.push(!pool.priceA ? 1: pool.priceA);
+               usd.push(pool.priceA);
                dfiUsd.push(pool.priceB);
+           } else if (pool.pair === "TSLA-DFI") {
+               tsla.push(pool.priceA);
+               dfiTsla.push(pool.priceB);
            }
        });
     });
 
-    const corUsd = CorrelationComputing(usd, dfiUsd);
+    const corUsd = (usd.length > 0 && dfiUsd > 0) ? CorrelationComputing(usd, dfiUsd): -1;
+    const corTsla = (tsla.length > 0 && dfiTsla > 0) ? CorrelationComputing(tsla, dfiTsla) : -1;
 
     const correlation = {
         btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 1000) / 1000).toFixed(3),
@@ -976,6 +1027,7 @@ async function computeCorrelation(data) {
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
         usdcPool: (Math.round(CorrelationComputing(usdc, dfiUsdc) * 1000) / 1000).toFixed(3),
         usdPool: isNaN(corUsd) ? 999 : (Math.round(corUsd  * 1000) / 1000).toFixed(3),
+        tslaPool: isNaN(corTsla) ? 999 : (Math.round(corTsla  * 1000) / 1000).toFixed(3),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
@@ -985,6 +1037,7 @@ async function computeCorrelation(data) {
         usdtPricesDex: usdt,
         usdcPricesDex: usdc,
         usdPricesDex: usd,
+        tslaPricesDex: tsla,
         dfiPricesDex: dfiBtc
 
     };
@@ -1026,6 +1079,8 @@ function assignDataValue(data, object, id) {
     object.rewardPct= data.rewardPct;
     object.commission = data.commission;
     object.symbol = data.symbol;
+    object.volumeA30 = data.volumeA30;
+    object.volumeB30 = data.volumeB30;
     return object;
 
 }
@@ -1048,7 +1103,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPoolFarming()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolFarming()])
             .then(function (results) {
                const btc = results[0];
                 saveBTCPool(btc.data)
@@ -1099,7 +1154,13 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         // handle error
                         console.log(error);
                     });
-                const farming = results[8];
+                const tsla = results[8];
+                saveTSLAPool(tsla.data)
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+                const farming = results[9];
                 saveFarmingPool(farming.data).catch(function (error) {
                     // handle error
                     console.log(error);
