@@ -84,7 +84,7 @@ const walletSchema = new mongoose.Schema({
     // TSLA Pool
     tslaInTslaPool: Number,
     tsla: Number,
-    dfiInTslaPool: Number
+    usdInTslaPool: Number
 });
 
 
@@ -265,7 +265,7 @@ const typeDefs = gql`
         # TSLA Pool
         tslaInTslaPool: Float
         tsla: Float
-        dfiInTslaPool: Float
+        usdInTslaPool: Float
     }
     
     type Pool {
@@ -416,6 +416,7 @@ const typeDefs = gql`
         usdcdfi: Float
         bchdfi: Float
         usddfi: Float
+        tsladfi: Float
         
         dfiInStaking: Float
 
@@ -462,7 +463,7 @@ const typeDefs = gql`
         # TSLA Pool
         tslaInTslaPool: Float
         tsla: Float
-        dfiInTslaPool: Float
+        usdInTslaPool: Float
     }
     
     input UserInput {
