@@ -37,7 +37,7 @@ const walletSchema = new mongoose.Schema({
     usdcdfi: Number,
     bchdfi: Number,
     usddfi: Number,
-    tsladfi: Number,
+    tslausd: Number,
 
     dfiInStaking: Number,
 
@@ -220,7 +220,7 @@ const typeDefs = gql`
         usdcdfi: Float
         bchdfi: Float
         usddfi: Float
-        tsladfi: Float
+        tslausd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -416,7 +416,7 @@ const typeDefs = gql`
         usdcdfi: Float
         bchdfi: Float
         usddfi: Float
-        tsladfi: Float
+        tslausd: Float
         
         dfiInStaking: Float
 
