@@ -1083,8 +1083,6 @@ async function saveStats(data, dataOcean) {
     assignDataValueStats(data, stats);
     assignDataValueStatsOcean(dataOcean, stats)
 
-    console.log(JSON.stringify(stats));
-
     const createdStats = await Stats.create(stats);
     return createdStats;
 }
