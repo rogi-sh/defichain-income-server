@@ -5,7 +5,7 @@ const {Kind} = require("graphql/language");
 const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
-const CorrelationComputing = require("calculate-correlation");;
+const CorrelationComputing = require("calculate-correlation");
 
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
@@ -147,14 +147,12 @@ const poolFarming = new mongoose.Schema({
 });
 
 const Rewards = {
-    anchorPercent: Number,
-    liquidityPoolPercent: Number,
-    communityPercent: Number,
     total: Number,
     community: Number,
     minter: Number,
     anchorReward: Number,
-    liquidityPool: Number
+    liquidityPool: Number,
+    burned: Number
 
 }
 
@@ -166,14 +164,86 @@ const Tokens = {
         foundation: Number,
         community: Number
     }
+}
 
+const Tvl = {
+    dex: Number,
+    masternodes: Number,
+    loan: Number,
+    total: Number
+}
+
+const Burned = {
+    address: Number,
+    emission: Number,
+    fee: Number,
+    total: Number
+}
+
+const Count = {
+    Blocks: Number,
+    prices: Number,
+    tokens: Number,
+    masternodes: Number
+}
+
+const Price = {
+    usd: Number,
+    usdt: Number
+}
+
+const Masternodes = {
+    locked: [
+        {
+            weeks: Number,
+            count: Number,
+            tvl: Number
+        },
+        {
+            weeks: Number,
+            count: Number,
+            tvl: Number
+        },
+        {
+            weeks: Number,
+            count: Number,
+            tvl: Number
+        }
+    ]
+}
+
+const Loan = {
+    count: {
+        collateralTokens: Number,
+        loanTokens: Number,
+        openAuctions: Number,
+        openVaults: Number,
+        schemes: Number
+    },
+    value: {
+        collateral: Number,
+        loan: Number
+    }
+}
+
+const Net = {
+    version: Number,
+    subversion: String,
+    protocolversion: Number
 }
 
 const StatsSchema = new mongoose.Schema({
     blockHeight: Number,
     difficulty: Number,
     rewards: Rewards,
-    tokens: Tokens
+    tokens: Tokens,
+    tvl: Tvl,
+    burned: Burned,
+    count: Count,
+    price: Price,
+    masternodes: Masternodes,
+    loan: Loan,
+    net: Net
 });
 
 
@@ -330,14 +400,12 @@ const typeDefs = gql`
     }
 
     type Rewards {
-        anchorPercent: Float
-        liquidityPoolPercent: Float
-        communityPercent: Float
         total: Float
         community: Float
         minter: Float
         anchorReward: Float
         liquidityPool: Float
+        burned: Float
     }
 
     type Tokens  {
@@ -358,7 +426,74 @@ const typeDefs = gql`
         blockHeight: Float
         difficulty: Float
         rewards: Rewards
-        tokens: Tokens
+        tokens: Tokens,
+        tvl: Tvl,
+        burned: Burned,
+        count: Count,
+        price: Price,
+        masternodes: Masternodes,
+        loan: Loan,
+        net: Net
+    }
+
+    type Tvl {
+        dex: Float,
+        masternodes: Float,
+        loan: Float,
+        total: Float
+    }
+
+    type Burned  {
+        address: Float,
+        emission: Float,
+        fee: Float,
+        total: Float
+    }
+
+    type Count {
+        Blocks: Float,
+        prices: Float,
+        tokens: Float,
+        masternodes: Float
+    }
+
+    type Price {
+        usd: Float,
+        usdt: Float
+    }
+    
+    type LockedMasternodes {
+        weeks: Float,
+        count: Float,
+        tvl: Float
+    }
+
+    type Masternodes {
+        locked: [LockedMasternodes]
+    }
+    
+    type LoanCount {
+        collateralTokens: Float,
+        loanTokens: Float,
+        openAuctions: Float,
+        openVaults: Float,
+        schemes: Float
+    }
+    
+    type LoanValue {
+        collateral: Float,
+        loan: Float
+    }
+
+    type Loan {
+        count: LoanCount,
+        value: LoanValue
+    }
+
+    type Net {
+        version: Float,
+        subversion: String,
+        protocolversion: Float
     }
 
     type Correlation {
@@ -870,6 +1005,10 @@ function getStats() {
     return axios.get(process.env.STATS_API);
 }
 
+function getStatsOcean() {
+    return axios.get(process.env.STATS_OCEAN_API);
+}
+
 function getPoolFarming() {
     return axios.get(process.env.POOL_FARMING_API);
 }
@@ -938,9 +1077,15 @@ async function saveFarmingPool(data) {
     return createdFarmingPool;
 }
 
-async function saveStats(data) {
+async function saveStats(data, dataOcean) {
 
-    const createdStats = await Stats.create(assignDataValueStats(data, new Stats()));
+    const stats = new Stats();
+    assignDataValueStats(data, stats);
+    assignDataValueStatsOcean(dataOcean, stats)
+
+    console.log(JSON.stringify(stats));
+
+    const createdStats = await Stats.create(stats);
     return createdStats;
 }
 
@@ -1087,14 +1232,28 @@ function assignDataValue(data, object, id) {
 }
 
 function assignDataValueStats(data, object) {
-
-    object.blockHeight = data.blockHeight;
-    object.difficulty= data.difficulty;
-    object.rewards = Object.assign({}, data.rewards);
     object.tokens = Object.assign({}, data.tokens);
-
     return object;
+}
 
+function assignDataValueStatsOcean(data, object) {
+
+    object.loan = Object.assign({}, data.data.loan);
+    object.net = Object.assign({}, data.data.net);
+    object.count = Object.assign({}, data.data.count);
+    object.burned = Object.assign({}, data.data.burned);
+    object.tvl = Object.assign({}, data.data.tvl);
+    object.price = Object.assign({}, data.data.price);
+    object.masternodes = Object.assign({}, data.data.masternodes);
+    object.blockHeight = data.data.count.blocks;
+    object.difficulty = data.data.blockchain.difficulty;
+    object.rewards.total = data.data.emission.total;
+    object.rewards.community = data.data.emission.community;
+    object.rewards.anchorReward = data.data.emission.anchor;
+    object.rewards.liquidityPool = data.data.emission.dex;
+    object.rewards.minter = data.data.emission.masternode;
+    object.rewards.burned = data.data.emission.burned;
+    return object;
 }
 
 const app = express();
@@ -1200,10 +1359,12 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
 if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_STATS, function () {
         const millisecondsBefore = new Date().getTime();
-
-        getStats()
-            .then((response) => {
-                saveStats(response.data)
+        axios.all([
+            getStats(),
+            getStatsOcean()
+        ])
+        .then(axios.spread((response, response2) => {
+                saveStats(response.data, response2.data)
                     .catch(function (error) {
                         // handle error
                         console.log(error);
@@ -1213,7 +1374,7 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
                 const msTime = millisecondsAfter - millisecondsBefore;
 
                 console.log("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
-            })
+            }))
             .catch(function (error) {
                 // handle error
                 if (error.response) {
