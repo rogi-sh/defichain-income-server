@@ -1076,8 +1076,8 @@ async function saveUSDPool(data) {
     pool.totalLiquidityLpToken = poolData.totalLiquidity;
     pool.totalLiquidity = poolData.totalLiquidity;
 
-    pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
-    pool.priceB = pool?.totalLiquidityUsd / 2 / pool?.reserveB;
+    pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
+    pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
 
     const createdUSDPool = await PoolUSD.create(pool);
     return createdUSDPool;
@@ -1097,7 +1097,7 @@ async function saveTSLAPool(data) {
     pool.totalLiquidityLpToken = poolData.totalLiquidity;
     pool.totalLiquidity = poolData.totalLiquidity;
 
-    pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
+    pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
     pool.priceB = 1;
 
     const createdTSLAPool = await PoolTSLA.create(pool);
@@ -1110,7 +1110,7 @@ async function saveFarmingPool(data, dataPairs) {
 
     const poolPairs = Object.values(dataPairs);
     const usdPool = poolPairs.find(x => x.id === '17');
-    const usdPrice = usdPool?.totalLiquidityUsd / 2 / usdPool?.reserveA
+    const usdPrice = usdPool.totalLiquidityUsd / 2 / usdPool.reserveA
 
     yieldPools.forEach(p => {
         const pool = assignDataValue(p, {}, p.poolPairId);
@@ -1128,12 +1128,12 @@ async function saveFarmingPool(data, dataPairs) {
         // USD Pool price
         if (p.poolPairId === '17') {
             pool.priceA = usdPrice;
-            pool.priceB = pool?.totalLiquidityUsd / 2 / pool?.reserveB;
+            pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
         }
 
         // Other Stocks
         if (+p.poolPairId > 17) {
-            pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
+            pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
             pool.priceB = usdPrice;
         }
 
