@@ -134,6 +134,7 @@ const poolDefinition = {
     priceA: Number,
     priceB: Number,
     totalLiquidityLpToken: Number,
+    totalLiquidityUsd: Number,
     date: Date,
     totalLiquidity: Number,
     rewardPct: Number,
@@ -1013,67 +1014,132 @@ function getPoolFarming() {
     return axios.get(process.env.POOL_FARMING_API);
 }
 
+function getPoolPairs() {
+    return axios.get(process.env.POOL_PAIRS_API);
+}
+
 async function saveBTCPool(data) {
 
-    const createdBTCPOOL = await PoolBTC.create(assignDataValue(data, new PoolBTC(), "5"));
+    const createdBTCPOOL = await PoolBTC.create(assignDataValue(Object.values(data)[0], new PoolBTC(), "5"));
     return createdBTCPOOL;
 }
 
 async function saveETHPool(data) {
 
-    const createdETHPOOL = await PoolETH.create(assignDataValue(data, new PoolETH(), "4"));
+    const createdETHPOOL = await PoolETH.create(assignDataValue(Object.values(data)[0], new PoolETH(), "4"));
     return createdETHPOOL;
 }
 
 async function saveLTCPool(data) {
 
-    const createdLTCPOOL = await PoolLTC.create(assignDataValue(data, new PoolLTC(), "10"));
+    const createdLTCPOOL = await PoolLTC.create(assignDataValue(Object.values(data)[0], new PoolLTC(), "10"));
     return createdLTCPOOL;
 }
 
 async function saveUSDTPool(data) {
 
-    const createdUSDTPool = await PoolUSDT.create(assignDataValue(data, new PoolUSDT(), "6"));
+    const createdUSDTPool = await PoolUSDT.create(assignDataValue(Object.values(data)[0], new PoolUSDT(), "6"));
     return createdUSDTPool;
 }
 
 async function saveUSDCPool(data) {
 
 
-    const createdUSDCPool = await PoolUSDC.create(assignDataValue(data, new PoolUSDC(), "14"));
+    const createdUSDCPool = await PoolUSDC.create(assignDataValue(Object.values(data)[0], new PoolUSDC(), "14"));
     return createdUSDCPool;
 }
 
 async function saveBCHPool(data) {
 
-    const createdBCHPool = await PoolBCH.create(assignDataValue(data, new PoolBCH(), "12"));
+    const createdBCHPool = await PoolBCH.create(assignDataValue(Object.values(data)[0], new PoolBCH(), "12"));
     return createdBCHPool;
 }
 
 async function saveDOGEPool(data) {
 
-    const createdDOGEPool = await PoolDOGE.create(assignDataValue(data, new PoolDOGE(), "8"));
+    const createdDOGEPool = await PoolDOGE.create(assignDataValue(Object.values(data)[0], new PoolDOGE(), "8"));
     return createdDOGEPool;
 }
 
 async function saveUSDPool(data) {
 
-    const createdUSDPool = await PoolUSD.create(assignDataValue(data, new PoolUSD(), "17"));
+    const poolData = Object.values(data)[0];
+    const pool = assignDataValue(poolData, new PoolUSD(), "17")
+
+    pool.totalLiquidityUsd = poolData.totalLiquidityUsd;
+    pool.rewardPct = poolData.rewardPct;
+    pool.symbol = poolData.symbol;
+    pool.reserveA = poolData.reserveA;
+    pool.reserveB = poolData.reserveB;
+    pool.commission = poolData.commission;
+    pool.customRewards = poolData.customRewards;
+    pool.totalLiquidityLpToken = poolData.totalLiquidity;
+    pool.totalLiquidity = poolData.totalLiquidity;
+
+    pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
+    pool.priceB = pool?.totalLiquidityUsd / 2 / pool?.reserveB;
+
+    const createdUSDPool = await PoolUSD.create(pool);
     return createdUSDPool;
 }
 
 async function saveTSLAPool(data) {
+    const poolData = Object.values(data)[0];
+    const pool = assignDataValue(poolData, new PoolTSLA(), "18")
 
-    const createdTSLAPool = await PoolTSLA.create(assignDataValue(data, new PoolTSLA(), "18"));
+    pool.totalLiquidityUsd = poolData.totalLiquidityUsd;
+    pool.rewardPct = poolData.rewardPct;
+    pool.symbol = poolData.symbol;
+    pool.reserveA = poolData.reserveA;
+    pool.reserveB = poolData.reserveB;
+    pool.commission = poolData.commission;
+    pool.customRewards = poolData.customRewards;
+    pool.totalLiquidityLpToken = poolData.totalLiquidity;
+    pool.totalLiquidity = poolData.totalLiquidity;
+
+    pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
+    pool.priceB = 1;
+
+    const createdTSLAPool = await PoolTSLA.create(pool);
     return createdTSLAPool;
 }
 
-async function saveFarmingPool(data) {
+async function saveFarmingPool(data, dataPairs) {
     const pools = [];
-    data.pools.forEach(p => {
-        pools.push(assignDataValue(p, {}, p.poolPairId))
+    const yieldPools = Object.values(data);
+
+    const poolPairs = Object.values(dataPairs);
+    const usdPool = poolPairs.find(x => x.id === '17');
+    const usdPrice = usdPool?.totalLiquidityUsd / 2 / usdPool?.reserveA
+
+    yieldPools.forEach(p => {
+        const pool = assignDataValue(p, {}, p.poolPairId);
+        const poolFromPairs = poolPairs.find(x => x.id === p.poolPairId);
+        pool.totalLiquidityUsd = poolFromPairs.totalLiquidityUsd;
+        pool.rewardPct = poolFromPairs.rewardPct;
+        pool.symbol = poolFromPairs.symbol;
+        pool.reserveA = poolFromPairs.reserveA;
+        pool.reserveB = poolFromPairs.reserveB;
+        pool.commission = poolFromPairs.commission;
+        pool.customRewards = poolFromPairs.customRewards;
+        pool.totalLiquidityLpToken = poolFromPairs.totalLiquidity;
+        pool.totalLiquidity = poolFromPairs.totalLiquidity;
+
+        // USD Pool price
+        if (p.poolPairId === '17') {
+            pool.priceA = usdPrice;
+            pool.priceB = pool?.totalLiquidityUsd / 2 / pool?.reserveB;
+        }
+
+        // Other Stocks
+        if (+p.poolPairId > 17) {
+            pool.priceA = pool?.totalLiquidityUsd / 2 / pool?.reserveA;
+            pool.priceB = usdPrice;
+        }
+
+        pools.push(pool);
     })
-    const createdFarmingPool = await PoolFarming.create({pools, tvl: data.tvl, date: new Date()});
+    const createdFarmingPool = await PoolFarming.create({pools, tvl: 0, date: new Date()});
     return createdFarmingPool;
 }
 
@@ -1220,6 +1286,7 @@ function assignDataValue(data, object, id) {
     object.priceB = data.priceB;
     object.totalLiquidityLpToken = data.totalLiquidityLpToken;
     object.totalLiquidity = data.totalLiquidity;
+
     object.rewardPct= data.rewardPct;
     object.commission = data.commission;
     object.symbol = data.symbol;
@@ -1261,7 +1328,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolFarming()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolFarming(), getPoolPairs()])
             .then(function (results) {
                const btc = results[0];
                 saveBTCPool(btc.data)
@@ -1319,7 +1386,8 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         console.log(error);
                     });
                 const farming = results[9];
-                saveFarmingPool(farming.data).catch(function (error) {
+                const pairs = results[10];
+                saveFarmingPool(farming.data, pairs.data).catch(function (error) {
                     // handle error
                     console.log(error);
                 });
@@ -1333,11 +1401,11 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
             // handle error
             if (error.response) {
                 // Request made and server responded
-                console.log("==================== ERROR in Call to API BEGIN ====================");
+                console.log("==================== ERROR PoolJob in Call to API BEGIN ====================");
                 console.log(error.response.data);
                 console.log(error.response.status);
                 console.log(error.response.statusText);
-                console.log("==================== ERROR in Call to API END ====================");
+                console.log("==================== ERROR PoolJob in Call to API END ====================");
             } else if (error.request) {
                 // The request was made but no response was received
                 console.log(error.request);
@@ -1377,11 +1445,11 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
                 // handle error
                 if (error.response) {
                     // Request made and server responded
-                    console.log("==================== ERROR in Call to API BEGIN ====================");
+                    console.log("==================== ERROR stats in Call to API BEGIN ====================");
                     console.log(error.response.data);
                     console.log(error.response.status);
                     console.log(error.response.statusText);
-                    console.log("==================== ERROR in Call to API END ====================");
+                    console.log("==================== ERROR stats in Call to API END ====================");
                 } else if (error.request) {
                     // The request was made but no response was received
                     console.log(error.request);
