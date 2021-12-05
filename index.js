@@ -38,6 +38,20 @@ const walletSchema = new mongoose.Schema({
     bchdfi: Number,
     usddfi: Number,
     tslausd: Number,
+    spyusd: Number,
+    qqqusd: Number,
+    pltrdfi: Number,
+    slvdfi: Number,
+    aapldfi: Number,
+    glddfi: Number,
+    gmedfi: Number,
+    googlcdfi: Number,
+    arkkdfi: Number,
+    babadfi: Number,
+    vnqusd: Number,
+    urthusd: Number,
+    tltusd: Number,
+    pdbcusd: Number,
 
     dfiInStaking: Number,
 
@@ -84,7 +98,77 @@ const walletSchema = new mongoose.Schema({
     // TSLA Pool
     tslaInTslaPool: Number,
     tsla: Number,
-    usdInTslaPool: Number
+    usdInTslaPool: Number,
+
+    // QQQ Pool
+    qqqInQqqPool: Number,
+    qqq: Number,
+    usdInQqqPool: Number,
+
+    // SPY Pool
+    spyInSpyPool: Number,
+    spy: Number,
+    usdInSpyPool: Number,
+
+    // PLTR Pool
+    pltrInPltrPool: Number,
+    pltr: Number,
+    usdInPltrPool: Number,
+
+    // SLV Pool
+    slvInSlvPool: Number,
+    slv: Number,
+    usdInSlvPool: Number,
+
+    // AAPL Pool
+    aaplInAaplPool: Number,
+    aapl: Number,
+    usdInAaplPool: Number,
+
+    // GLD Pool
+    gldInGldPool: Number,
+    gld: Number,
+    usdInGldPool: Number,
+
+    // GME Pool
+    gmeInGmePool: Number,
+    gme: Number,
+    usdInGmePool: Number,
+
+    // GOOGL Pool
+    googlInGooglPool: Number,
+    googl: Number,
+    usdInGooglPool: Number,
+
+    // ARKK Pool
+    arkkInArkkPool: Number,
+    arkk: Number,
+    usdInArkkPool: Number,
+
+    // BABA Pool
+    babaInBabaPool: Number,
+    baba: Number,
+    usdInBabaPool: Number,
+
+    // VNQ Pool
+    vnqInVnqPool: Number,
+    vnq: Number,
+    usdInVnqPool: Number,
+
+    // URTH Pool
+    urthInUrthPool: Number,
+    urth: Number,
+    usdInUrthPool: Number,
+
+    // TLT Pool
+    tltInTltPool: Number,
+    tlt: Number,
+    usdInTltPool: Number,
+
+    // PDBC Pool
+    pdbcInPdbcPool: Number,
+    pdbc: Number,
+    usdInPdbcPool: Number
 });
 
 
@@ -292,6 +376,20 @@ const typeDefs = gql`
         bchdfi: Float
         usddfi: Float
         tslausd: Float
+        spyusd: Float
+        qqqusd: Float
+        pltrdfi: Float
+        slvdfi: Float
+        aapldfi: Float
+        glddfi: Float
+        gmedfi: Float
+        googlcdfi: Float
+        arkkdfi: Float
+        babadfi: Float
+        vnqusd: Float
+        urthusd: Float
+        tltusd: Float
+        pdbcusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -337,6 +435,76 @@ const typeDefs = gql`
         tslaInTslaPool: Float
         tsla: Float
         usdInTslaPool: Float
+
+        # QQQ Pool
+        qqqInQqqPool: Float
+        qqq: Float
+        usdInQqqPool: Float
+
+        # SPY Pool
+        spyInSpyPool: Float
+        spy: Float
+        usdInSpyPool: Float
+
+        # PLTR Pool
+        pltrInPltrPool: Float
+        pltr: Float
+        usdInPltrPool: Float
+
+        # SLV Pool
+        slvInSlvPool: Float
+        slv: Float
+        usdInSlvPool: Float
+
+        # AAPL Pool
+        aaplInAaplPool: Float
+        aapl: Float
+        usdInAaplPool: Float
+
+        # GLD Pool
+        gldInGldPool: Float
+        gld: Float
+        usdInGldPool: Float
+
+        # GME Pool
+        gmeInGmePool: Float
+        gme: Float
+        usdInGmePool: Float
+
+        # GOOGL Pool
+        googlInGooglPool: Float
+        googl: Float
+        usdInGooglPool: Float
+
+        # ARKK Pool
+        arkkInArkkPool: Float
+        arkk: Float
+        usdInArkkPool: Float
+
+        # BABA Pool
+        babaInBabaPool: Float
+        baba: Float
+        usdInBabaPool: Float
+
+        # VNQ Pool
+        vnqInVnqPool: Float
+        vnq: Float
+        usdInVnqPool: Float
+
+        # URTH Pool
+        urthInUrthPool: Float
+        urth: Float
+        usdInUrthPool: Float
+
+        # TLT Pool
+        tltInTltPool: Float
+        tlt: Float
+        usdInTltPool: Float
+
+        # PDBC Pool
+        pdbcInPdbcPool: Float
+        pdbc: Float
+        usdInPdbcPool: Float
     }
     
     type Pool {
@@ -553,6 +721,20 @@ const typeDefs = gql`
         bchdfi: Float
         usddfi: Float
         tslausd: Float
+        spyusd: Float
+        qqqusd: Float
+        pltrdfi: Float
+        slvdfi: Float
+        aapldfi: Float
+        glddfi: Float
+        gmedfi: Float
+        googlcdfi: Float
+        arkkdfi: Float
+        babadfi: Float
+        vnqusd: Float
+        urthusd: Float
+        tltusd: Float
+        pdbcusd: Float
         
         dfiInStaking: Float
 
@@ -600,6 +782,76 @@ const typeDefs = gql`
         tslaInTslaPool: Float
         tsla: Float
         usdInTslaPool: Float
+
+        # QQQ Pool
+        qqqInQqqPool: Float
+        qqq: Float
+        usdInQqqPool: Float
+
+        # SPY Pool
+        spyInSpyPool: Float
+        spy: Float
+        usdInSpyPool: Float
+
+        # PLTR Pool
+        pltrInPltrPool: Float
+        pltr: Float
+        usdInPltrPool: Float
+
+        # SLV Pool
+        slvInSlvPool: Float
+        slv: Float
+        usdInSlvPool: Float
+
+        # AAPL Pool
+        aaplInAaplPool: Float
+        aapl: Float
+        usdInAaplPool: Float
+
+        # GLD Pool
+        gldInGldPool: Float
+        gld: Float
+        usdInGldPool: Float
+
+        # GME Pool
+        gmeInGmePool: Float
+        gme: Float
+        usdInGmePool: Float
+
+        # GOOGL Pool
+        googlInGooglPool: Float
+        googl: Float
+        usdInGooglPool: Float
+
+        # ARKK Pool
+        arkkInArkkPool: Float
+        arkk: Float
+        usdInArkkPool: Float
+
+        # BABA Pool
+        babaInBabaPool: Float
+        baba: Float
+        usdInBabaPool: Float
+
+        # VNQ Pool
+        vnqInVnqPool: Float
+        vnq: Float
+        usdInVnqPool: Float
+
+        # URTH Pool
+        urthInUrthPool: Float
+        urth: Float
+        usdInUrthPool: Float
+
+        # TLT Pool
+        tltInTltPool: Float
+        tlt: Float
+        usdInTltPool: Float
+
+        # PDBC Pool
+        pdbcInPdbcPool: Float
+        pdbc: Float
+        usdInPdbcPool: Float
     }
     
     input UserInput {
