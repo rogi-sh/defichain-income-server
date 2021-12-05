@@ -378,14 +378,14 @@ const typeDefs = gql`
         tslausd: Float
         spyusd: Float
         qqqusd: Float
-        pltrdfi: Float
-        slvdfi: Float
-        aapldfi: Float
-        glddfi: Float
-        gmedfi: Float
-        googlcdfi: Float
-        arkkdfi: Float
-        babadfi: Float
+        pltrusd: Float
+        slvusd: Float
+        aaplusd: Float
+        gldusd: Float
+        gmeusd: Float
+        googlusd: Float
+        arkkusd: Float
+        babausd: Float
         vnqusd: Float
         urthusd: Float
         tltusd: Float
@@ -723,14 +723,14 @@ const typeDefs = gql`
         tslausd: Float
         spyusd: Float
         qqqusd: Float
-        pltrdfi: Float
-        slvdfi: Float
-        aapldfi: Float
-        glddfi: Float
-        gmedfi: Float
-        googlcdfi: Float
-        arkkdfi: Float
-        babadfi: Float
+        pltrusd: Float
+        slvusd: Float
+        aaplusd: Float
+        gldusd: Float
+        gmeusd: Float
+        googlusd: Float
+        arkkusd: Float
+        babausd: Float
         vnqusd: Float
         urthusd: Float
         tltusd: Float
