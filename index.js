@@ -1004,7 +1004,8 @@ const resolvers = {
                     .then(axios.spread((response) => {
 
                         const visitsValues = Object.values(response.data);
-                        visits = (visitsValues[0] + visitsValues[1] + visitsValues[2] + visitsValues[3] + visitsValues[4]) / 5 ;
+                        visits = Math.round((visitsValues[0] + visitsValues[1] + visitsValues[2]
+                            + visitsValues[3] + visitsValues[4]) / 5);
 
                    }))
                     .catch(function (error) {
