@@ -664,6 +664,13 @@ const typeDefs = gql`
         subversion: String,
         protocolversion: Float
     }
+    
+    type Statistics {
+        users: Float,
+        addresses: Float,
+        addressesMasternodes: Float,
+        visits: Float
+    }
 
     type Correlation {
         btcPool: Float
@@ -707,6 +714,7 @@ const typeDefs = gql`
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
         getCorrelation(days: Int): Correlation
+        getStatisticsIncome: Statistics
     }
 
     input WalletInput {
@@ -969,6 +977,66 @@ const resolvers = {
             try {
 
                 return  StrUtil.random(8)
+            } catch (e) {
+                console.log("e", e);
+                return {};
+            }
+        },
+        getStatisticsIncome: async () => {
+            try {
+
+                const millisecondsBefore = new Date().getTime();
+
+                const users = await User.find().lean();
+                const usersCount = users.length;
+                let addresses = 0;
+                let addressesMasternodes = 0;
+                users.forEach(u => {
+                    addresses += u.addresses ? u.addresses?.length: 0;
+                    addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
+                });
+
+                let visits = 0;
+
+                await axios.all([
+                    getVisitors(),
+                ])
+                    .then(axios.spread((response) => {
+
+                        const visitsValues = Object.values(response.data);
+                        visits = (visitsValues[0] + visitsValues[1] + visitsValues[2] + visitsValues[3] + visitsValues[4]) / 5 ;
+
+                   }))
+                    .catch(function (error) {
+                        // handle error
+                        if (error.response) {
+                            // Request made and server responded
+                            console.log("==================== ERROR VisitsSummary in Call to API BEGIN ====================");
+                            console.log(error.response.data);
+                            console.log(error.response.status);
+                            console.log(error.response.statusText);
+                            console.log("==================== ERROR VisitsSummary in Call to API END ====================");
+                        } else if (error.request) {
+                            // The request was made but no response was received
+                            console.log(error.request);
+                        } else {
+                            // Something happened in setting up the request that triggered an Error
+                            console.log('Error', error.message);
+                        }
+                    });
+
+                const incomeStatistics = {
+                    users: usersCount,
+                    addresses: addresses,
+                    addressesMasternodes: addressesMasternodes,
+                    visits: visits
+                };
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                console.log("Statistics called took " + msTime + " ms.");
+                return incomeStatistics;
+
             } catch (e) {
                 console.log("e", e);
                 return {};
@@ -1268,6 +1336,10 @@ function getPoolFarming() {
 
 function getPoolPairs() {
     return axios.get(process.env.POOL_PAIRS_API);
+}
+
+function getVisitors() {
+    return axios.get(process.env.VISITS_API);
 }
 
 async function saveBTCPool(data) {
