@@ -957,8 +957,15 @@ const resolvers = {
         },
         userByKey: async (obj, {key}, {auth}) => {
             try {
+                const millisecondsBefore = new Date().getTime();
 
-                return await findUserByKey(key);
+                const user =  await findUserByKey(key);
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                console.log("Login " + new Date() + " called took " + msTime + " ms.");
+
+                return user;
             } catch (e) {
                 console.log("e", e);
                 return {};
@@ -1035,7 +1042,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Statistics called took " + msTime + " ms.");
+                console.log("Income Statistics " + new Date() + " called took " + msTime + " ms.");
                 return incomeStatistics;
 
             } catch (e) {
@@ -1163,12 +1170,18 @@ const resolvers = {
         },
         getFarmingHistory: async (obj, {from, till}, {auth}) => {
             try {
+                const millisecondsBefore = new Date().getTime();
+
                 const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
-                return await PoolFarming.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                const farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}});
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                console.log("Farming history " + new Date() + " called took " + msTime + " ms.");
+
+                return farming;
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1176,7 +1189,15 @@ const resolvers = {
         },
         getStats: async () => {
             try {
-                return await Stats.find();
+                const millisecondsBefore = new Date().getTime();
+
+                const stats =  await Stats.find();
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                console.log("Stats defichain " + new Date() + " called took " + msTime + " ms.");
+
+                return stats;
             } catch (e) {
                 console.log("e", e);
                 return [];
