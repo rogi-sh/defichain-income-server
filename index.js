@@ -10,7 +10,7 @@ const CorrelationComputing = require("calculate-correlation");
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
 mongoose.connect(process.env.DB_CONN,
-    {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true}).then(
+    {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true, dbName: "defichain"}).then(
     () => {
         /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
         console.log("Connected to Database")
