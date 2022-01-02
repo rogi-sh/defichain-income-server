@@ -1175,7 +1175,17 @@ const resolvers = {
                 const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
-                const farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}});
+                let farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}});
+
+                const diff = Math.abs(fromDate.getTime() - tillDate.getTime());
+                const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+                if (diffDays > 3 && diffDays < 10) {
+                    farming = farming.filter(f => f.date.getMinutes() === 0);
+                } else if (diffDays >= 10) {
+                    farming = farming.filter(f => f.date.getHours() === 0 || f.date.getHours() === 3 || f.date.getHours() === 6
+                    || f.date.getHours() === 9 || f.date.getHours() === 12 || f.date.getHours() === 15 || f.date.getHours() === 18
+                    || f.date.getHours() === 21);
+                }
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
