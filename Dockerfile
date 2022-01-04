@@ -14,4 +14,4 @@ COPY --chown=node:node . .
 
 EXPOSE 8080
 
-CMD [ "node", "index.js" ]
+CMD [ "node", "--max-old-space-size=4096", "index.js" ]
