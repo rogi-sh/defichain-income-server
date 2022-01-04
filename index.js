@@ -671,6 +671,13 @@ const typeDefs = gql`
         addressesMasternodes: Float,
         visits: Float
     }
+    
+    type ExchangeStatus {
+        bittrexStatus: String,
+        bittrexNotice: String,
+        kucoinStatusDeposit: Boolean,
+        kucoinStatusWithdraw: Boolean
+    }
 
     type Correlation {
         btcPool: Float
@@ -715,6 +722,7 @@ const typeDefs = gql`
         getStats: [Stats]
         getCorrelation(days: Int): Correlation
         getStatisticsIncome: Statistics
+        getExchangeStatus: ExchangeStatus
     }
 
     input WalletInput {
@@ -1050,6 +1058,62 @@ const resolvers = {
                 return {};
             }
         },
+        getExchangeStatus: async () => {
+            try {
+
+                const millisecondsBefore = new Date().getTime();
+
+                let bittrexStatus;
+                let bittrexNotice;
+                let kucoinStatusDeposit;
+                let kucoinStatusWithdraw;
+
+                await axios.all([
+                    getStatusBittrex(), getStatusKucoin()
+                ])
+                    .then(axios.spread((response, response2) => {
+
+                    bittrexStatus = response.data.status;
+                    bittrexNotice = response.data.notice;
+                    kucoinStatusDeposit = response2.data.data.isDepositEnabled;
+                    kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+
+                    }))
+                    .catch(function (error) {
+                        // handle error
+                        if (error.response) {
+                            // Request made and server responded
+                            console.log("==================== ERROR Exchange Status in Call to API BEGIN ====================");
+                            console.log(error.response.data);
+                            console.log(error.response.status);
+                            console.log(error.response.statusText);
+                            console.log("==================== ERROR Exchange Status in Call to API END ====================");
+                        } else if (error.request) {
+                            // The request was made but no response was received
+                            console.log(error.request);
+                        } else {
+                            // Something happened in setting up the request that triggered an Error
+                            console.log('Error', error.message);
+                        }
+                    });
+
+                const exchangeStatus = {
+                    bittrexStatus: bittrexStatus,
+                    bittrexNotice: bittrexNotice,
+                    kucoinStatusDeposit: kucoinStatusDeposit,
+                    kucoinStatusWithdraw: kucoinStatusWithdraw
+                };
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                console.log("Exchange Status " + new Date() + " called took " + msTime + " ms.");
+                return exchangeStatus;
+
+            } catch (e) {
+                console.log("e", e);
+                return {};
+            }
+        },
         getPoolbtcHistory: async (obj, {from, till}, {auth}) => {
             try {
 
@@ -1372,6 +1436,14 @@ function getPoolPairs() {
 
 function getVisitors() {
     return axios.get(process.env.VISITS_API);
+}
+
+function getStatusBittrex() {
+    return axios.get(process.env.BITTREX_API);
+}
+
+function getStatusKucoin() {
+    return axios.get(process.env.KUCOIN_API);
 }
 
 async function saveBTCPool(data) {
