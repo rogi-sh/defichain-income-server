@@ -910,7 +910,7 @@ const typeDefs = gql`
 `;
 
 async function findUserByKey(key) {
-    return User.findOne({key: key}).lean();
+    return User.findOne({key: key});
 }
 
 async function findUserTransactionsByKey(key) {
