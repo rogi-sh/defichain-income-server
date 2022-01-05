@@ -910,11 +910,11 @@ const typeDefs = gql`
 `;
 
 async function findUserByKey(key) {
-    return User.findOne({key: key});
+    return User.findOne({key: key}).lean();
 }
 
 async function findUserTransactionsByKey(key) {
-    return UserTransaction.find({key: key});
+    return UserTransaction.find({key: key}).lean();
 }
 
 function checkAuth(auth) {
@@ -931,7 +931,7 @@ const resolvers = {
                     return new GraphQLError(messageAuth);
                 }
 
-                return await User.find();
+                return await User.find().lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -944,7 +944,7 @@ const resolvers = {
                     return new GraphQLError(messageAuth);
                 }
 
-                return await UserTransaction.find();
+                return await UserTransaction.find().lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -957,7 +957,7 @@ const resolvers = {
                     return new GraphQLError(messageAuth);
                 }
 
-                return await User.findById(id);
+                return await User.findById(id).lean();
             } catch (e) {
                 console.log("e", e);
                 return {};
@@ -967,7 +967,7 @@ const resolvers = {
             try {
                 const millisecondsBefore = new Date().getTime();
 
-                const user =  await findUserByKey(key);
+                const user = await findUserByKey(key);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1122,7 +1122,7 @@ const resolvers = {
 
                 return await PoolBTC.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1135,7 +1135,7 @@ const resolvers = {
 
                 return await PoolETH.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1148,7 +1148,7 @@ const resolvers = {
 
                 return await PoolLTC.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1161,7 +1161,7 @@ const resolvers = {
 
                 return await PoolUSDT.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1174,7 +1174,7 @@ const resolvers = {
 
                 return await PoolUSDC.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1187,7 +1187,7 @@ const resolvers = {
 
                 return await PoolBCH.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1200,7 +1200,7 @@ const resolvers = {
 
                 return await PoolUSD.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1213,7 +1213,7 @@ const resolvers = {
 
                 return await PoolTSLA.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1226,7 +1226,7 @@ const resolvers = {
 
                 return await PoolDOGE.find({
                     date: {'$gte': fromDate, '$lte': tillDate}
-                });
+                }).lean();
             } catch (e) {
                 console.log("e", e);
                 return [];
@@ -1239,16 +1239,17 @@ const resolvers = {
                 const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
-                let farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}});
+                let farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}}).lean();
 
                 const diff = Math.abs(fromDate.getTime() - tillDate.getTime());
                 const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
                 if (diffDays > 3 && diffDays < 10) {
                     farming = farming.filter(f => f.date.getMinutes() === 0);
-                } else if (diffDays >= 10) {
-                    farming = farming.filter(f => f.date.getHours() === 0 || f.date.getHours() === 3 || f.date.getHours() === 6
-                    || f.date.getHours() === 9 || f.date.getHours() === 12 || f.date.getHours() === 15 || f.date.getHours() === 18
-                    || f.date.getHours() === 21);
+                } else if (diffDays >= 10 && diffDays < 30) {
+                    farming = farming.filter(f => f.date.getHours() === 0 || f.date.getHours() === 6 ||
+                        f.date.getHours() === 12 || f.date.getHours() === 18);
+                } else if (diffDays >= 30) {
+                    farming = farming.filter(f => f.date.getHours() === 3 || f.date.getHours() === 9);
                 }
 
                 const millisecondsAfter = new Date().getTime();
@@ -1265,7 +1266,7 @@ const resolvers = {
             try {
                 const millisecondsBefore = new Date().getTime();
 
-                const stats =  await Stats.find();
+                const stats =  await Stats.find().lean();
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
