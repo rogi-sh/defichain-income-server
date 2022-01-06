@@ -9,15 +9,40 @@ const CorrelationComputing = require("calculate-correlation");
 
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
+const winston = require('winston');
+const { SeqTransport } = require('@datalust/winston-seq');
+
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(  /* This is required to get errors to log with stack traces. See https://github.com/winstonjs/winston/issues/1498 */
+        winston.format.errors({ stack: true }),
+        winston.format.json(),
+    ),
+    defaultMeta: { /* application: 'your-app-name' */ },
+    transports: [
+        new winston.transports.Console({
+            format: winston.format.simple(),
+        }),
+        new SeqTransport({
+            serverUrl: "https://log.defichain-income.com",
+            apiKey: "3hedtJfVKArc0DQWH9og",
+            onError: (e => { console.error(e) }),
+            handleExceptions: true,
+            handleRejections: true,
+        })
+    ]
+});
+
 mongoose.connect(process.env.DB_CONN,
     {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true, dbName: "defichain"}).then(
     () => {
         /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
-        console.log("Connected to Database")
+        logger.info("Connected to Database")
     },
     err => {
         /** handle initial connection error */
-        console.log("Error Connection DB" + err)
+        logger.error("Error Connection DB", err)
     }
 );
 
@@ -26,6 +51,8 @@ const db = mongoose.connection;
 const axios = require('axios').default;
 const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
+
+
 
 const walletSchema = new mongoose.Schema({
     dfi: Number,
@@ -933,7 +960,7 @@ const resolvers = {
 
                 return await User.find().lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("users", e);
                 return [];
             }
         },
@@ -946,7 +973,7 @@ const resolvers = {
 
                 return await UserTransaction.find().lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("userTransactions", e);
                 return [];
             }
         },
@@ -959,7 +986,7 @@ const resolvers = {
 
                 return await User.findById(id).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("user", e);
                 return {};
             }
         },
@@ -971,11 +998,11 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Login " + new Date() + " called took " + msTime + " ms.");
+                logger.log("Login " + new Date() + " called took " + msTime + " ms.");
 
                 return user;
             } catch (e) {
-                console.log("e", e);
+                logger.error("userByKey", e);
                 return {};
             }
         },
@@ -984,7 +1011,7 @@ const resolvers = {
 
                 return await findUserTransactionsByKey(key);
             } catch (e) {
-                console.log("e", e);
+                logger.error("userTransactionsByKey", e);
                 return {};
             }
         },
@@ -993,7 +1020,7 @@ const resolvers = {
 
                 return  StrUtil.random(8)
             } catch (e) {
-                console.log("e", e);
+                logger.error("getAuthKey", e);
                 return {};
             }
         },
@@ -1027,17 +1054,17 @@ const resolvers = {
                         // handle error
                         if (error.response) {
                             // Request made and server responded
-                            console.log("==================== ERROR VisitsSummary in Call to API BEGIN ====================");
-                            console.log(error.response.data);
-                            console.log(error.response.status);
-                            console.log(error.response.statusText);
-                            console.log("==================== ERROR VisitsSummary in Call to API END ====================");
+                            logger.error("==================== ERROR VisitsSummary in Call to API BEGIN ====================");
+                            logger.error("getStatisticsIncome", error.response.data);
+                            logger.error("getStatisticsIncome", error.response.status);
+                            logger.error("getStatisticsIncome", error.response.statusText);
+                            logger.error("==================== ERROR VisitsSummary in Call to API END ====================");
                         } else if (error.request) {
                             // The request was made but no response was received
-                            console.log(error.request);
+                            logger.error("getStatisticsIncome", error.request);
                         } else {
                             // Something happened in setting up the request that triggered an Error
-                            console.log('Error', error.message);
+                            logger.error('getStatisticsIncome', error.message);
                         }
                     });
 
@@ -1050,11 +1077,11 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Income Statistics " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Income Statistics " + new Date() + " called took " + msTime + " ms.");
                 return incomeStatistics;
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("getStatisticsIncome", e);
                 return {};
             }
         },
@@ -1083,17 +1110,17 @@ const resolvers = {
                         // handle error
                         if (error.response) {
                             // Request made and server responded
-                            console.log("==================== ERROR Exchange Status in Call to API BEGIN ====================");
-                            console.log(error.response.data);
-                            console.log(error.response.status);
-                            console.log(error.response.statusText);
-                            console.log("==================== ERROR Exchange Status in Call to API END ====================");
+                            logger.error("==================== ERROR Exchange Status in Call to API BEGIN ====================");
+                            logger.error("getExchangeStatus", error.response.data);
+                            logger.error("getExchangeStatus",error.response.status);
+                            logger.error("getExchangeStatus",error.response.statusText);
+                            logger.error("==================== ERROR Exchange Status in Call to API END ====================");
                         } else if (error.request) {
                             // The request was made but no response was received
-                            console.log(error.request);
+                            logger.error("getExchangeStatus", error.request);
                         } else {
                             // Something happened in setting up the request that triggered an Error
-                            console.log('Error', error.message);
+                            logger.error('getExchangeStatus', error.message);
                         }
                     });
 
@@ -1106,11 +1133,11 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Exchange Status " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Exchange Status " + new Date() + " called took " + msTime + " ms.");
                 return exchangeStatus;
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("getExchangeStatus", e);
                 return {};
             }
         },
@@ -1124,7 +1151,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolbtcHistory", e);
                 return [];
             }
         },
@@ -1137,7 +1164,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolethHistory", e);
                 return [];
             }
         },
@@ -1150,7 +1177,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolltcHistory", e);
                 return [];
             }
         },
@@ -1163,7 +1190,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolusdtHistory", e);
                 return [];
             }
         },
@@ -1176,7 +1203,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolusdcHistory", e);
                 return [];
             }
         },
@@ -1189,7 +1216,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolbchHistory", e);
                 return [];
             }
         },
@@ -1202,7 +1229,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPoolusdHistory", e);
                 return [];
             }
         },
@@ -1215,7 +1242,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPooltslaHistory", e);
                 return [];
             }
         },
@@ -1228,7 +1255,7 @@ const resolvers = {
                     date: {'$gte': fromDate, '$lte': tillDate}
                 }).lean();
             } catch (e) {
-                console.log("e", e);
+                logger.error("getPooldogeHistory", e);
                 return [];
             }
         },
@@ -1254,11 +1281,11 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Farming history " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Farming history " + new Date() + " called took " + msTime + " ms.");
 
                 return farming;
             } catch (e) {
-                console.log("e", e);
+                logger.error("getFarmingHistory", e);
                 return [];
             }
         },
@@ -1270,11 +1297,11 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                console.log("Stats defichain " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Stats defichain " + new Date() + " called took " + msTime + " ms.");
 
                 return stats;
             } catch (e) {
-                console.log("e", e);
+                logger.error("getStats", e);
                 return [];
             }
         },
@@ -1282,7 +1309,7 @@ const resolvers = {
             try {
                 return computeCorrelation(days);
             } catch (e) {
-                console.log("e", e);
+                logger.error("getCorrelation", e);
                 return [];
             }
         }
@@ -1307,11 +1334,11 @@ const resolvers = {
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Add User called took " + msTime + " ms.");
+                logger.info("Add User called took " + msTime + " ms.");
                 return createdUser;
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("addUser", e);
                 return [];
             }
         },
@@ -1345,11 +1372,11 @@ const resolvers = {
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Update User called took " + msTime + " ms.");
+                logger.info("Update User called took " + msTime + " ms.");
                 return saved;
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("updateUser", e);
                 return [];
             }
         },
@@ -1371,7 +1398,7 @@ const resolvers = {
                 return foundUser;
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("addUserAddress", e);
                 return [];
             }
         },
@@ -1389,7 +1416,7 @@ const resolvers = {
                 return await foundUser.save();
 
             } catch (e) {
-                console.log("e", e);
+                logger.error("updateWallet", e);
                 return [];
             }
         }
@@ -1683,7 +1710,7 @@ async function computeCorrelation(data) {
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
-    console.log("Get Correlation: " + new Date() + " in " + msTime + " ms.");
+    logger.info("Get Correlation: " + new Date() + " in " + msTime + " ms.");
 
     return correlation;
 
@@ -1763,84 +1790,84 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                 saveBTCPool(btc.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveBTCPool", error);
                     });
 
                 const eth = results[1];
                 saveETHPool(eth.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveETHPool", error);
                     });
                 const usdt = results[2];
                 saveUSDTPool(usdt.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveUSDTPool", error);
                     });
                 const ltc = results[3];
                 saveLTCPool(ltc.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveLTCPool", error);
                     });
                 const doge = results[4];
                 saveDOGEPool(doge.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveDOGEPool", error);
                     });
                 const bch = results[5];
                 saveBCHPool(bch.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveBCHPool", error);
                     });
                 const usdc = results[6];
                 saveUSDCPool(usdc.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveUSDCPool", error);
                     });
                 const usd = results[7];
                 saveUSDPool(usd.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveUSDPool", error);
                     });
                 const tsla = results[8];
                 saveTSLAPool(tsla.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("saveTSLAPool", error);
                     });
                 const farming = results[9];
                 const pairs = results[10];
                 saveFarmingPool(farming.data, pairs.data).catch(function (error) {
                     // handle error
-                    console.log(error);
+                    logger.error("saveFarmingPool", error);
                 });
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Pools Job executed time: " + new Date() + " in " + msTime + " ms.");
+                logger.info("Pools Job executed time: " + new Date() + " in " + msTime + " ms.");
 
             }).catch(function (error) {
             // handle error
             if (error.response) {
                 // Request made and server responded
-                console.log("==================== ERROR PoolJob in Call to API BEGIN ====================");
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.statusText);
-                console.log("==================== ERROR PoolJob in Call to API END ====================");
+                logger.error("==================== ERROR PoolJob in Call to API BEGIN ====================");
+                logger.error("PoolJob", error.response.data);
+                logger.error("PoolJob",error.response.status);
+                logger.error("PoolJob",error.response.statusText);
+                logger.error("==================== ERROR PoolJob in Call to API END ====================");
             } else if (error.request) {
                 // The request was made but no response was received
-                console.log(error.request);
+                logger.error("PoolJob", error.request);
             } else {
                 // Something happened in setting up the request that triggered an Error
-                console.log('Error', error.message);
+                logger.error('PoolJob', error.message);
             }
         })
             .then(function () {
@@ -1862,35 +1889,35 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
                 saveStats(response.data, response2.data)
                     .catch(function (error) {
                         // handle error
-                        console.log(error);
+                        logger.error("Stats Job", error);
                     });
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
+                logger.info("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
             }))
             .catch(function (error) {
                 // handle error
                 if (error.response) {
                     // Request made and server responded
-                    console.log("==================== ERROR stats in Call to API BEGIN ====================");
-                    console.log(error.response.data);
-                    console.log(error.response.status);
-                    console.log(error.response.statusText);
-                    console.log("==================== ERROR stats in Call to API END ====================");
+                    logger.error("==================== ERROR stats in Call to API BEGIN ====================");
+                    logger.error("Stats Job", error.response.data);
+                    logger.error("Stats Job", error.response.status);
+                    logger.error("Stats Job", error.response.statusText);
+                    logger.error("==================== ERROR stats in Call to API END ====================");
                 } else if (error.request) {
                     // The request was made but no response was received
-                    console.log(error.request);
+                    logger.error("Stats Job", error.request);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.log('Error', error.message);
+                    logger.error("Stats Job",  error.message);
                 }
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                console.log("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
+                logger.info("Stats Job executed time: " + new Date() + " in " + msTime + " ms.");
             });
     });
 }
@@ -1933,10 +1960,10 @@ async function startServer() {
 startServer();
 
 app.listen({ port: 4000 }, () => {
-        console.log(`🚀 Server ready at http://localhost:4000/graphql`)
-        console.log("JOB Pools " + process.env.JOB_SCHEDULER_ON)
-        console.log("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
-        console.log("DEBUG " + process.env.DEBUG)
+        logger.info(`🚀 Server ready at http://localhost:4000/graphql`)
+        logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
+        logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
+        logger.info("DEBUG " + process.env.DEBUG)
 
 }
 );
