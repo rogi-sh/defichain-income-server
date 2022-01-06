@@ -1077,7 +1077,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("Income Statistics " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Income Statistics called took " + msTime + " ms.");
                 return incomeStatistics;
 
             } catch (e) {
@@ -1133,7 +1133,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("Exchange Status " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Exchange Status called took " + msTime + " ms.");
                 return exchangeStatus;
 
             } catch (e) {
@@ -1281,7 +1281,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("Farming history " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Farming history for " + diff + " days called took " + msTime + " ms.");
 
                 return farming;
             } catch (e) {
@@ -1297,7 +1297,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("Stats defichain " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Stats defichain called took " + msTime + " ms.");
 
                 return stats;
             } catch (e) {
@@ -1710,7 +1710,7 @@ async function computeCorrelation(data) {
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
-    logger.info("Get Correlation: " + new Date() + " in " + msTime + " ms.");
+    logger.info("Get Correlation for " + data + " days in " + msTime + " ms.");
 
     return correlation;
 
