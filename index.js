@@ -998,7 +998,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.log("Login " + new Date() + " called took " + msTime + " ms.");
+                logger.info("Login " + new Date() + " called took " + msTime + " ms.");
 
                 return user;
             } catch (e) {
