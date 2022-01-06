@@ -1281,7 +1281,7 @@ const resolvers = {
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("Farming history for " + diff + " days called took " + msTime + " ms.");
+                logger.info("Farming history for " + diffDays + " days called took " + msTime + " ms.");
 
                 return farming;
             } catch (e) {
