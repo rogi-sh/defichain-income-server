@@ -221,6 +221,16 @@ const userTransactionsSchema = new mongoose.Schema({
     wallet: walletSchema,
 });
 
+const userHistoryItemSchema = new mongoose.Schema({
+    date: Date,
+    totalValue: Number
+});
+
+const userHistorySchema = new mongoose.Schema({
+    key: String,
+    values: [userHistoryItemSchema]
+});
+
 const poolDefinition = {
     symbol: String,
     poolId: String,
@@ -373,6 +383,7 @@ const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
 const UserTransaction = mongoose.model("UserTransaction", userTransactionsSchema);
+const UserHistory = mongoose.model("UserHistory", userHistorySchema);
 
 const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
 const PoolETH = mongoose.model("PoolETH", poolETHSchema);
@@ -584,6 +595,16 @@ const typeDefs = gql`
         adressesMasternodesFreezer10: [String]
         totalValue: Float
     }
+    
+    type UserHistoryItem {
+        date: Date!,
+        totalValue: Float!
+    }
+
+    type UserHistory {
+        key: String!
+        values: [UserHistoryItem]
+    }
 
     type UserTransaction {
         id: ID!
@@ -735,6 +756,7 @@ const typeDefs = gql`
         users: [User]
         user(id: String): User
         userByKey(key: String): User
+        userHistoryByKey(key: String): UserHistory
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
@@ -943,6 +965,10 @@ async function findUserByKey(key) {
     return User.findOne({key: key});
 }
 
+async function findHistoryByKey(key) {
+    return UserHistory.findOne({key: key});
+}
+
 async function findUserTransactionsByKey(key) {
     return UserTransaction.find({key: key}).lean();
 }
@@ -1006,6 +1032,22 @@ const resolvers = {
                 return user;
             } catch (e) {
                 logger.error("userByKey", e);
+                return {};
+            }
+        },
+        userHistoryByKey: async (obj, {key}, {auth}) => {
+            try {
+                const millisecondsBefore = new Date().getTime();
+
+                const userHistory = await findHistoryByKey(key);
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                logger.info("UserHistory " + new Date() + " called took " + msTime + " ms.");
+
+                return userHistory;
+            } catch (e) {
+                logger.error("UserHistory", e);
                 return {};
             }
         },
@@ -1927,6 +1969,48 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
     });
 }
 
+if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_HISTORY, async function () {
+        const millisecondsBefore = new Date().getTime();
+
+        const users = await User.find().lean();
+
+        for (const u of users) {
+
+            // Load User and History
+            const userHistoryLoaded =  await findHistoryByKey(u.key);
+
+            // Update History
+            if (userHistoryLoaded && u) {
+                const item = {
+                    date: new Date(),
+                    totalValue: u.totalValue ? u.totalValue : 0
+                };
+                userHistoryLoaded.values.push(item);
+                userHistoryLoaded.save();
+                return;
+            }
+
+            // Save New history
+            const createdUserHistory = await UserHistory.create({
+                key: u.key,
+                values: [{
+                    date: new Date(),
+                    totalValue: u.totalValue ? u.totalValue : 0
+                }]
+            });
+
+        }
+
+        const millisecondsAfter = new Date().getTime();
+        const msTime = millisecondsAfter - millisecondsBefore;
+
+        logger.info("History Job executed time: " + new Date() + " in " + msTime + " ms.");
+
+
+    });
+}
+
 const corsOptions = {
     origin: '*',
     credentials: true // <-- REQUIRED backend setting
@@ -1968,6 +2052,7 @@ app.listen({ port: 4000 }, () => {
         logger.info(`🚀 Server ready at http://localhost:4000/graphql`)
         logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
+        logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
         logger.info("DEBUG " + process.env.DEBUG)
 
 }
