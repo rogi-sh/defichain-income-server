@@ -1331,7 +1331,8 @@ const resolvers = {
                     adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     key: StrUtil.random(8),
-                    wallet: Object.assign({}, user.wallet)
+                    wallet: Object.assign({}, user.wallet),
+                    totalValue: user.totalValue
                 });
 
                 const millisecondsAfter = new Date().getTime();
