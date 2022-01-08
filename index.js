@@ -1830,6 +1830,7 @@ const app = express();
 if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
+        logger.info("===============Pools Job started " + new Date() +  " =================");
 
         Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolFarming(), getPoolPairs()])
             .then(function (results) {
@@ -1898,7 +1899,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
-                logger.info("Pools Job executed time: " + new Date() + " in " + msTime + " ms.");
+                logger.info("=============Pools Job executed time: " + new Date() + " in " + msTime + " ms.============");
 
             }).catch(function (error) {
             // handle error
@@ -1928,6 +1929,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
 if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_STATS, function () {
         const millisecondsBefore = new Date().getTime();
+        logger.info("============Stats Job started " + new Date() + " =============");
         axios.all([
             getStats(),
             getStatsOcean()
@@ -1972,7 +1974,7 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
 if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_HISTORY, async function () {
         const millisecondsBefore = new Date().getTime();
-
+        logger.info("===========History Job started: " + new Date() + " ================");
         const users = await User.find().lean();
 
         for (const u of users) {
@@ -2005,7 +2007,7 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
         const millisecondsAfter = new Date().getTime();
         const msTime = millisecondsAfter - millisecondsBefore;
 
-        logger.info("History Job executed time: " + new Date() + " in " + msTime + " ms.");
+        logger.info("============History Job executed time: " + new Date() + " in " + msTime + " ms.=============");
 
 
     });
