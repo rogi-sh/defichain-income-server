@@ -914,6 +914,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        totalValue: Float
     }
 
     input DateInput {
@@ -1359,6 +1360,7 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
                 userLoaded.wallet = Object.assign({}, user.wallet);
+                userLoaded = user.totalValue();
 
                 const saved =  await userLoaded.save();
 
