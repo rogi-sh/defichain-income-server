@@ -596,6 +596,8 @@ const typeDefs = gql`
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
         totalValue: Float
+        totalValueIncomeDfi: Float
+        totalValueIncomeUsd: Float
     }
     
     type UserHistoryItem {
