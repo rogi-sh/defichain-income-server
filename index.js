@@ -225,7 +225,9 @@ const userTransactionsSchema = new mongoose.Schema({
 
 const userHistoryItemSchema = new mongoose.Schema({
     date: Date,
-    totalValue: Number
+    totalValue: Number,
+    totalValueIncomeDfi: Number,
+    totalValueIncomeUsd: Number
 });
 
 const userHistorySchema = new mongoose.Schema({
@@ -601,8 +603,11 @@ const typeDefs = gql`
     }
     
     type UserHistoryItem {
-        date: Date!,
-        totalValue: Float!
+        date: Date
+        totalValue: Float
+        totalValueIncomeDfi: Float
+        totalValueIncomeUsd: Float
+        
     }
 
     type UserHistory {
@@ -1999,7 +2004,9 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
             if (userHistoryLoaded && u) {
                 const item = {
                     date: new Date(),
-                    totalValue: u.totalValue ? u.totalValue : 0
+                    totalValue: u.totalValue ? u.totalValue : 0,
+                    totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
+                    totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
                 };
                 userHistoryLoaded.values.push(item);
                 userHistoryLoaded.save();
@@ -2011,7 +2018,9 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
                 key: u.key,
                 values: [{
                     date: new Date(),
-                    totalValue: u.totalValue ? u.totalValue : 0
+                    totalValue: u.totalValue ? u.totalValue : 0,
+                    totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
+                    totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
                 }]
             });
 
