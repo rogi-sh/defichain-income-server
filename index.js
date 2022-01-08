@@ -1332,7 +1332,7 @@ const resolvers = {
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet),
-                    totalValue: user.totalValue
+                    totalvalue: user.totalValue
                 });
 
                 const millisecondsAfter = new Date().getTime();
@@ -1361,7 +1361,7 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                userLoaded = user.totalValue();
+                userLoaded.totalvalue = user.totalValue;
 
                 const saved =  await userLoaded.save();
 
