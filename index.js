@@ -207,7 +207,9 @@ const userSchema = new mongoose.Schema({
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
-    totalValue: Number
+    totalValue: Number,
+    totalValueIncomeDfi: Number,
+    totalValueIncomeUsd: Number
 });
 
 const userTransactionsSchema = new mongoose.Schema({
@@ -927,6 +929,9 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        totalValue: Float
+        totalValueIncomeDfi: Float
+        totalValueIncomeUsd: Float
     }
 
     input UserUpdateInput {
@@ -937,6 +942,8 @@ const typeDefs = gql`
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
         totalValue: Float
+        totalValueIncomeDfi: Float
+        totalValueIncomeUsd: Float
     }
 
     input DateInput {
@@ -1374,7 +1381,9 @@ const resolvers = {
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet),
-                    totalValue: user.totalValue
+                    totalValue: user.totalValue,
+                    totalValueIncomeDfi: user.totalValueIncomeDfi,
+                    totalValueIncomeUsd: user.totalValueIncomeUsd
                 });
 
                 const millisecondsAfter = new Date().getTime();
@@ -1404,6 +1413,8 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
+                userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
+                userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
 
                 const saved =  await userLoaded.save();
 
