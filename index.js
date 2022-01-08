@@ -207,6 +207,7 @@ const userSchema = new mongoose.Schema({
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
+    totalValue: Number
 });
 
 const userTransactionsSchema = new mongoose.Schema({
@@ -581,6 +582,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        totalValue: Float
     }
 
     type UserTransaction {
