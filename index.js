@@ -2021,8 +2021,6 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
                         userHistoryLoaded.values.push(item);
                         await userHistoryLoaded.save();
                         updated = updated + 1;
-                        logger.info("============History Job user updated " + u.key + " and balance " + u.totalValue + " and income " + u.totalValueIncomeDfi + "/" + u.totalValueIncomeUsd +  " =============");
-
                         continue;
                     }
 
@@ -2039,7 +2037,6 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
 
                     created = created + 1;
 
-                    logger.info("============History Job user created " + u.key + " and balance " + u.totalValue + " and income " + u.totalValueIncomeDfi + "/" + u.totalValueIncomeUsd +  " =============");
                 }
 
             } catch (e) {
