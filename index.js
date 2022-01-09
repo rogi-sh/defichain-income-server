@@ -1993,44 +1993,67 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_HISTORY, async function () {
         const millisecondsBefore = new Date().getTime();
         logger.info("===========History Job started: " + new Date() + " ================");
+
         const users = await User.find().lean();
+
+        logger.info("===========History Job started users " + users.length + " ================");
+
+        let updated = 0;
+        let created = 0;
 
         for (const u of users) {
 
-            // Load User and History
-            const userHistoryLoaded =  await findHistoryByKey(u.key);
+            try {
 
-            // Update History
-            if (userHistoryLoaded && u) {
-                const item = {
-                    date: new Date(),
-                    totalValue: u.totalValue ? u.totalValue : 0,
-                    totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
-                    totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
-                };
-                userHistoryLoaded.values.push(item);
-                userHistoryLoaded.save();
-                return;
+                if (u.totalValue > 0 || u.totalValueIncomeDfi > 0 || u.totalValueIncomeUsd > 0) {
+
+                    // Load User and History
+                    const userHistoryLoaded = await findHistoryByKey(u.key);
+
+                    // Update History
+                    if (userHistoryLoaded && u) {
+                        const item = {
+                            date: new Date(),
+                            totalValue: u.totalValue ? u.totalValue : 0,
+                            totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
+                            totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
+                        };
+                        userHistoryLoaded.values.push(item);
+                        await userHistoryLoaded.save();
+                        updated = updated + 1;
+                        logger.info("============History Job user updated " + u.key + " and balance " + u.totalValue + " and income " + u.totalValueIncomeDfi + "/" + u.totalValueIncomeUsd +  " =============");
+
+                        continue;
+                    }
+
+                    // Save New history
+                    const createdUserHistory = await UserHistory.create({
+                        key: u.key,
+                        values: [{
+                            date: new Date(),
+                            totalValue: u.totalValue ? u.totalValue : 0,
+                            totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
+                            totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
+                        }]
+                    });
+
+                    created = created + 1;
+
+                    logger.info("============History Job user created " + u.key + " and balance " + u.totalValue + " and income " + u.totalValueIncomeDfi + "/" + u.totalValueIncomeUsd +  " =============");
+                }
+
+            } catch (e) {
+                // Something happened in setting up the request that triggered an Error
+                logger.error("============ History Job error with key " + u.key, e.message);
             }
-
-            // Save New history
-            const createdUserHistory = await UserHistory.create({
-                key: u.key,
-                values: [{
-                    date: new Date(),
-                    totalValue: u.totalValue ? u.totalValue : 0,
-                    totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
-                    totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
-                }]
-            });
 
         }
 
         const millisecondsAfter = new Date().getTime();
         const msTime = millisecondsAfter - millisecondsBefore;
 
+        logger.info("============History Job executed created " + created + " and updated " + updated + " =============");
         logger.info("============History Job executed time: " + new Date() + " in " + msTime + " ms.=============");
-
 
     });
 }
