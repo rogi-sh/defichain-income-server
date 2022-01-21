@@ -735,7 +735,9 @@ const typeDefs = gql`
         bittrexStatus: String,
         bittrexNotice: String,
         kucoinStatusDeposit: Boolean,
-        kucoinStatusWithdraw: Boolean
+        kucoinStatusWithdraw: Boolean,
+        dfxBuy: String,
+        dfxSell: String
     }
 
     type Correlation {
@@ -1153,16 +1155,20 @@ const resolvers = {
                 let bittrexNotice;
                 let kucoinStatusDeposit;
                 let kucoinStatusWithdraw;
+                let dfxBuy;
+                let dfxSell;
 
                 await axios.all([
-                    getStatusBittrex(), getStatusKucoin()
+                    getStatusBittrex(), getStatusKucoin(), getStatusDfx()
                 ])
-                    .then(axios.spread((response, response2) => {
+                    .then(axios.spread((response, response2, response3) => {
 
                     bittrexStatus = response.data.status;
                     bittrexNotice = response.data.notice;
                     kucoinStatusDeposit = response2.data.data.isDepositEnabled;
                     kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+                    dfxBuy = response3.data.buy;
+                    dfxSell = response3.data.sell;
 
                     }))
                     .catch(function (error) {
@@ -1187,7 +1193,9 @@ const resolvers = {
                     bittrexStatus: bittrexStatus,
                     bittrexNotice: bittrexNotice,
                     kucoinStatusDeposit: kucoinStatusDeposit,
-                    kucoinStatusWithdraw: kucoinStatusWithdraw
+                    kucoinStatusWithdraw: kucoinStatusWithdraw,
+                    dfxBuy: dfxBuy,
+                    dfxSell: dfxSell
                 };
 
                 const millisecondsAfter = new Date().getTime();
@@ -1537,6 +1545,10 @@ function getStatusBittrex() {
 
 function getStatusKucoin() {
     return axios.get(process.env.KUCOIN_API);
+}
+
+function getStatusDfx() {
+    return axios.get(process.env.DFX_API);
 }
 
 async function saveBTCPool(data) {
