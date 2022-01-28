@@ -198,6 +198,12 @@ const walletSchema = new mongoose.Schema({
     usdInPdbcPool: Number
 });
 
+const newsletterSchema = new mongoose.Schema({
+    email: String,
+    payingAddress: String
+
+});
+
 
 const userSchema = new mongoose.Schema({
     key: String,
@@ -207,6 +213,7 @@ const userSchema = new mongoose.Schema({
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
+    newsletter: newsletterSchema,
     totalValue: Number,
     totalValueIncomeDfi: Number,
     totalValueIncomeUsd: Number
@@ -221,6 +228,7 @@ const userTransactionsSchema = new mongoose.Schema({
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
     wallet: walletSchema,
+    newsletter: newsletterSchema
 });
 
 const userHistoryItemSchema = new mongoose.Schema({
@@ -588,11 +596,17 @@ const typeDefs = gql`
         date: Date
     }
     
+    type Newsletter {
+        email: String,
+        payingAddress: String
+    }
+    
     type User {
         id: ID!
         key: String!
         createdDate: Date
         wallet: Wallet
+        newsletter: Newsletter
         addresses: [String]
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
@@ -621,6 +635,7 @@ const typeDefs = gql`
         date: Date
         type: String!
         wallet: Wallet
+        newsletter: Newsletter
         addresses: [String]
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
@@ -954,6 +969,12 @@ const typeDefs = gql`
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
     }
+    
+    input UserUpdateNewsletterInput {
+        key: String!
+        email: String!
+        payingAddress: String
+    }
 
     input DateInput {
         year: Int!
@@ -974,6 +995,7 @@ const typeDefs = gql`
         updateUser(user: UserUpdateInput): User
         addUserAddress(user: UserAddressInput): User
         updateWallet(wallet: WalletInput): User
+        updateUserNewsletter(user: UserUpdateNewsletterInput): User
     }
 `;
 
@@ -986,7 +1008,7 @@ async function findHistoryByKey(key) {
 }
 
 async function findUserTransactionsByKey(key) {
-    return UserTransaction.find({key: key}).lean();
+    return UserTransaction.find({key: key}).sort({ _id: -1 }).limit(10).lean();
 }
 
 function checkAuth(auth) {
@@ -1069,8 +1091,16 @@ const resolvers = {
         },
         userTransactionsByKey: async (obj, {key}, {auth}) => {
             try {
+                const millisecondsBefore = new Date().getTime();
 
-                return await findUserTransactionsByKey(key);
+                const userTransactions = await findUserTransactionsByKey(key);
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                logger.info("userTransactions  " + new Date() + " called took " + msTime + " ms.");
+
+                return userTransactions;
+
             } catch (e) {
                 logger.error("userTransactionsByKey", e);
                 return {};
@@ -1450,6 +1480,43 @@ const resolvers = {
 
             } catch (e) {
                 logger.error("updateUser", e);
+                return [];
+            }
+        },
+        updateUserNewsletter: async (obj, {user}, {auth}) => {
+            try {
+
+                const millisecondsBefore = new Date().getTime();
+
+                const userLoaded =  await findUserByKey(user.key);
+                if (!userLoaded) {
+                    return null;
+                }
+
+                const newsletter = {email: user.email, payingAddress: user.payingAddress}
+
+                userLoaded.newsletter = newsletter
+
+                const saved =  await userLoaded.save();
+
+                // save transaction
+                await UserTransaction.create({
+                    date: new Date(),
+                    type: "UPDATE",
+                    addresses: user.addresses,
+                    key: user.key,
+                    wallet: Object.assign({}, user.wallet),
+                    newsletter: newsletter
+                });
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                logger.info("Update User Newsletter called took " + msTime + " ms.");
+                return saved;
+
+            } catch (e) {
+                logger.error("updateUserNewsletter", e);
                 return [];
             }
         },
