@@ -6,12 +6,20 @@ const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
 const CorrelationComputing = require("calculate-correlation");
+const { WhaleApiClient } = require('@defichain/whale-api-client');
+const fromScriptHex = require('@defichain/jellyfish-address');
 
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
 const winston = require('winston');
 const { SeqTransport } = require('@datalust/winston-seq');
 
+const client = new WhaleApiClient({
+    url: 'https://ocean.defichain.com',
+    timeout: 60000,
+    version: 'v0',
+    network: 'mainnet'
+})
 
 const logger = winston.createLogger({
     level: 'info',
@@ -51,8 +59,9 @@ const db = mongoose.connection;
 const axios = require('axios').default;
 const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
+const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
 
-
+const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
 const walletSchema = new mongoose.Schema({
     dfi: Number,
@@ -200,7 +209,8 @@ const walletSchema = new mongoose.Schema({
 
 const newsletterSchema = new mongoose.Schema({
     email: String,
-    payingAddress: String
+    payingAddress: String,
+    status: String
 
 });
 
@@ -598,7 +608,8 @@ const typeDefs = gql`
     
     type Newsletter {
         email: String,
-        payingAddress: String
+        payingAddress: String,
+        status: String
     }
     
     type User {
@@ -1493,7 +1504,25 @@ const resolvers = {
                     return null;
                 }
 
-                const newsletter = {email: user.email, payingAddress: user.payingAddress}
+                // kalkuliere Status
+                let status = "";
+
+                // 1. Subscribed
+                if (user.email) {
+                    status = "subscribed";
+                }
+
+                if (user.email && user.payingAddress) {
+                    status = "subscribedWithAddress";
+                }
+
+                // 2. payed
+                const payed = await checkNewsletterPayed(user.payingAddress);
+                if (payed) {
+                    status = "payed";
+                }
+
+                const newsletter = {email: user.email, payingAddress: user.payingAddress, status: status}
 
                 userLoaded.newsletter = newsletter
 
@@ -1616,6 +1645,45 @@ function getStatusKucoin() {
 
 function getStatusDfx() {
     return axios.get(process.env.DFX_API);
+}
+
+async function checkNewsletterPayed(address) {
+    const dateNow = new Date();
+    const firstPage = await client.address.listTransaction(payingAddress, 100)
+    const network = MainNet.name
+    let foundSource = false;
+    let foundTarget = false;
+    let foundTargetPayed = false;
+    for (const t of firstPage) {
+        const txId = t.txid;
+        const date = new Date(t.block.time);
+        if (dateNow.getMonth() === date.getMonth()) {
+            const outs = await client.transactions.getVouts(txId, 100);
+            const ins = await client.transactions.getVins(txId, 100);
+            // Source is correct
+            for (const i of ins) {
+                const addressDec = fromScriptHex.fromScriptHex(i.vout.script?.hex, network);
+                if (addressDec && addressDec.address === address) {
+                    foundSource = true;
+                    break;
+                }
+            }
+            // Target is correct and payed
+            for (const o of outs) {
+                const addressDec = fromScriptHex.fromScriptHex(o.script?.hex, network);
+                if (addressDec && addressDec.address === payingAddress) {
+                    foundTarget = true;
+                    if (+o.value > 0.99 && +o.value < 1.2) {
+                        foundTargetPayed = true;
+                        break;
+                    }
+
+                }
+            }
+
+        }
+    }
+    return foundSource && foundTarget && foundTargetPayed;
 }
 
 async function saveBTCPool(data) {
