@@ -1194,7 +1194,7 @@ const resolvers = {
         getAuthKey: async (obj, {key}, {auth}) => {
             try {
 
-                return  StrUtil.random(8)
+                return  StrUtil.random(16)
             } catch (e) {
                 logger.error("getAuthKey", e);
                 return {};
