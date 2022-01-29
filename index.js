@@ -234,7 +234,8 @@ const walletSchema = new mongoose.Schema({
 const newsletterSchema = new mongoose.Schema({
     email: String,
     payingAddress: String,
-    status: String
+    status: String,
+    subscribed: Date
 
 });
 
@@ -657,7 +658,8 @@ const typeDefs = gql`
     type Newsletter {
         email: String,
         payingAddress: String,
-        status: String
+        status: String,
+        subscribed: Date
     }
     
     type User {
@@ -1576,6 +1578,13 @@ const resolvers = {
                     return null;
                 }
 
+                let subscribed = null;
+                if (!userLoaded.newsletter || !userLoaded.newsletter.subscribed) {
+                    subscribed = new Date();
+                } else {
+                    subscribed = userLoaded.newsletter.subscribed;
+                }
+
                 // kalkuliere Status
                 let status = "";
 
@@ -1594,7 +1603,7 @@ const resolvers = {
                     status = "payed";
                 }
 
-                const newsletter = {email: user.email, payingAddress: user.payingAddress, status: status}
+                const newsletter = {email: user.email, payingAddress: user.payingAddress, status: status, subscribed: subscribed}
 
                 userLoaded.newsletter = newsletter
 
