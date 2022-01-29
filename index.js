@@ -88,6 +88,10 @@ const walletSchema = new mongoose.Schema({
     urthusd: Number,
     tltusd: Number,
     pdbcusd: Number,
+    amznusd: Number,
+    nvdausd: Number,
+    coinusd: Number,
+    eemusd: Number,
 
     dfiInStaking: Number,
 
@@ -204,7 +208,27 @@ const walletSchema = new mongoose.Schema({
     // PDBC Pool
     pdbcInPdbcPool: Number,
     pdbc: Number,
-    usdInPdbcPool: Number
+    usdInPdbcPool: Number,
+
+    // AMZN Pool
+    amznInAmznPool: Number,
+    amzn: Number,
+    usdInAmznPool: Number,
+
+    // NVDA Pool
+    nvdaInNvdaPool: Number,
+    nvda: Number,
+    usdInNvdaPool: Number,
+
+    // COIN Pool
+    coinInCoinPool: Number,
+    coin: Number,
+    usdInCoinPool: Number,
+
+    // EEM Pool
+    eemInEemPool: Number,
+    eem: Number,
+    usdInEemPool: Number
 });
 
 const newsletterSchema = new mongoose.Schema({
@@ -451,6 +475,10 @@ const typeDefs = gql`
         urthusd: Float
         tltusd: Float
         pdbcusd: Float
+        amznusd: Float
+        nvdausd: Float
+        coinusd: Float
+        eemusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -566,6 +594,26 @@ const typeDefs = gql`
         pdbcInPdbcPool: Float
         pdbc: Float
         usdInPdbcPool: Float
+        
+        # AMZN Pool
+        amznInAmznPool: Float
+        amzn: Float
+        usdInAmznPool: Float
+
+        # NVDA Pool
+        nvdaInNvdaPool: Float
+        nvda: Float
+        usdInNvdaPool: Float
+
+        # COIN Pool
+        coinInCoinPool: Float
+        coin: Float
+        usdInCoinPool: Float
+
+        # EEM Pool
+        eemInEemPool: Float
+        eem: Float
+        usdInEemPool: Float
     }
     
     type Pool {
@@ -839,6 +887,10 @@ const typeDefs = gql`
         urthusd: Float
         tltusd: Float
         pdbcusd: Float
+        amznusd: Float
+        nvdausd: Float
+        coinusd: Float
+        eemusd: Float
         
         dfiInStaking: Float
 
@@ -956,6 +1008,26 @@ const typeDefs = gql`
         pdbcInPdbcPool: Float
         pdbc: Float
         usdInPdbcPool: Float
+        
+        # AMZN Pool
+        amznInAmznPool: Float
+        amzn: Float
+        usdInAmznPool: Float
+
+        # NVDA Pool
+        nvdaInNvdaPool: Float
+        nvda: Float
+        usdInNvdaPool: Float
+
+        # COIN Pool
+        coinInCoinPool: Float
+        coin: Float
+        usdInCoinPool: Float
+
+        # EEM Pool
+        eemInEemPool: Float
+        eem: Float
+        usdInEemPool: Float        
     }
     
     input UserInput {
