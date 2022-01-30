@@ -8,6 +8,7 @@ require('dotenv').config();
 const CorrelationComputing = require("calculate-correlation");
 const { WhaleApiClient } = require('@defichain/whale-api-client');
 const fromScriptHex = require('@defichain/jellyfish-address');
+const nodemailer = require("nodemailer");
 
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
@@ -20,6 +21,16 @@ const client = new WhaleApiClient({
     version: 'v0',
     network: 'mainnet'
 })
+
+const mailer = nodemailer.createTransport({
+    host: process.env.MAIL_SERVER,
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD,
+    },
+});
 
 const logger = winston.createLogger({
     level: 'info',
@@ -1619,6 +1630,9 @@ const resolvers = {
                     newsletter: newsletter
                 });
 
+                logger.info("Send Mail to " + user.email);
+                await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
+
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
@@ -1726,6 +1740,30 @@ function getStatusKucoin() {
 
 function getStatusDfx() {
     return axios.get(process.env.DFX_API);
+}
+
+async function sendUpdateNewsletterMail(mail, address, status) {
+
+    const content = "Newsletter Updated, Mail: "  + mail + ", Address:" + address + ", Status: " + status;
+    const contentHtml = "<b>" + content + "</b>";
+
+    try {
+        // send mail with defined transport object
+        let info = await mailer.sendMail({
+            from: 'defichain-income@topiet.de', // sender address
+            to: mail, // list of receivers
+            subject: "Newsletter Updated", // Subject line
+            text: content, // plain text body
+            html: contentHtml, // html body
+        });
+
+        logger.info("Message to " + mail + ", sent: %s", info.messageId);
+        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+    } catch(err) {
+        logger.error("Send Mail error", err)// TypeError: failed to fetch
+    }
+
 }
 
 async function checkNewsletterPayed(address) {
