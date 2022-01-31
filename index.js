@@ -1896,8 +1896,8 @@ async function saveFarmingPool(dataPairs) {
     const usdPrice = usdPool.totalLiquidityUsd / 2 / usdPool.reserveA
 
     poolPairs.forEach(p => {
-        const pool = assignDataValue(p, {}, p.poolPairId);
-        const poolFromPairs = poolPairs.find(x => x.id === p.id);
+        const pool = assignDataValue(p, {}, p.id);
+        const poolFromPairs = p;
         pool.totalLiquidityUsd = poolFromPairs.totalLiquidityUsd;
         pool.rewardPct = poolFromPairs.rewardPct;
         pool.symbol = poolFromPairs.symbol;
@@ -1908,14 +1908,20 @@ async function saveFarmingPool(dataPairs) {
         pool.totalLiquidityLpToken = poolFromPairs.totalLiquidity;
         pool.totalLiquidity = poolFromPairs.totalLiquidity;
 
+        // Crypto Pool price
+        if (+p.id < 17) {
+            pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
+            pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
+        }
+
         // USD Pool price
-        if (p.poolPairId === '17') {
+        if (+p.id === 17) {
             pool.priceA = usdPrice;
             pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
         }
 
         // Other Stocks
-        if (+p.poolPairId > 17) {
+        if (+p.id > 17) {
             pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
             pool.priceB = usdPrice;
         }
