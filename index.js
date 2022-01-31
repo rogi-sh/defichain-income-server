@@ -1718,10 +1718,6 @@ function getStatsOcean() {
     return axios.get(process.env.STATS_OCEAN_API);
 }
 
-function getPoolFarming() {
-    return axios.get(process.env.POOL_FARMING_API);
-}
-
 function getPoolPairs() {
     return axios.get(process.env.POOL_PAIRS_API);
 }
@@ -1891,15 +1887,14 @@ async function saveTSLAPool(data) {
     return createdTSLAPool;
 }
 
-async function saveFarmingPool(data, dataPairs) {
+async function saveFarmingPool(dataPairs) {
     const pools = [];
-    const yieldPools = Object.values(data);
 
     const poolPairs = Object.values(dataPairs);
     const usdPool = poolPairs.find(x => x.id === '17');
     const usdPrice = usdPool.totalLiquidityUsd / 2 / usdPool.reserveA
 
-    yieldPools.forEach(p => {
+    poolPairs.forEach(p => {
         const pool = assignDataValue(p, {}, p.poolPairId);
         const poolFromPairs = poolPairs.find(x => x.id === p.poolPairId);
         pool.totalLiquidityUsd = poolFromPairs.totalLiquidityUsd;
@@ -2116,7 +2111,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
         const millisecondsBefore = new Date().getTime();
         logger.info("===============Pools Job started " + new Date() +  " =================");
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolFarming(), getPoolPairs()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolPairs()])
             .then(function (results) {
                const btc = results[0];
                 saveBTCPool(btc.data)
@@ -2173,9 +2168,8 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         // handle error
                         logger.error("saveTSLAPool", error);
                     });
-                const farming = results[9];
-                const pairs = results[10];
-                saveFarmingPool(farming.data, pairs.data).catch(function (error) {
+                const pairs = results[9];
+                saveFarmingPool(pairs.data).catch(function (error) {
                     // handle error
                     logger.error("saveFarmingPool", error);
                 });
