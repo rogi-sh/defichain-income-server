@@ -654,6 +654,7 @@ const typeDefs = gql`
         priceA: Float
         priceB: Float
         totalLiquidityLpToken: Float
+        totalLiquidityUsd: Float
         date: Date,
         totalLiquidity: Float
         rewardPct: Float
@@ -1896,7 +1897,7 @@ async function saveFarmingPool(dataPairs) {
 
     poolPairs.forEach(p => {
         const pool = assignDataValue(p, {}, p.poolPairId);
-        const poolFromPairs = poolPairs.find(x => x.id === p.poolPairId);
+        const poolFromPairs = poolPairs.find(x => x.id === p.id);
         pool.totalLiquidityUsd = poolFromPairs.totalLiquidityUsd;
         pool.rewardPct = poolFromPairs.rewardPct;
         pool.symbol = poolFromPairs.symbol;
