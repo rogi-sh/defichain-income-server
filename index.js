@@ -2322,6 +2322,55 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     });
 }
 
+if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER, async function () {
+        const millisecondsBefore = new Date().getTime();
+        logger.info("===========Newsletter Job started: " + new Date() + " ================");
+
+        const users = await User.find().lean();
+
+        logger.info("===========Newsletter Job started users " + users.length + " ================");
+
+        let newsletter = 0;
+        let mail = 0;
+        let address = 0;
+
+        for (let i = 0; i < users.length; i++) {
+
+            const u = users[i];
+
+            try {
+
+               if (u.newsletter) {
+                   newsletter ++;
+                   if (u.newsletter.email && u.newsletter.email.length > 0) {
+                       mail ++;
+                   }
+                   if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                       address ++;
+                   }
+
+                }
+
+            } catch (e) {
+                // Something happened in setting up the request that triggered an Error
+                logger.error("============ Newsletter Job error with key " + u.key, e.message);
+            }
+
+        }
+
+        logger.info("===========Newsletter Subscriber " + newsletter + " ================");
+        logger.info("===========Newsletter Subscriber Mail s" + mail + " ================");
+        logger.info("===========Newsletter Subscriber Addresses " + mail + " ================");
+
+        const millisecondsAfter = new Date().getTime();
+        const msTime = millisecondsAfter - millisecondsBefore;
+
+        logger.info("============Newsletter Job executed time: " + new Date() + " in " + msTime + " ms.=============");
+
+    });
+}
+
 const corsOptions = {
     origin: '*',
     credentials: true // <-- REQUIRED backend setting
@@ -2364,6 +2413,7 @@ app.listen({ port: 4000 }, () => {
         logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
+        logger.info("JOB Newsleter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER)
         logger.info("DEBUG " + process.env.DEBUG)
 
 }
