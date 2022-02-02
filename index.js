@@ -859,6 +859,7 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
+        getExecuteCode: String
         getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
@@ -1207,6 +1208,34 @@ const resolvers = {
             try {
 
                 return  StrUtil.random(16)
+            } catch (e) {
+                logger.error("getAuthKey", e);
+                return {};
+            }
+        },
+        getExecuteCode: async (obj, {key}, {auth}) => {
+            try {
+                console.log(" Start glitch clearing ")
+                const users = await UserHistory.find();
+                console.log(" User loaded ")
+                for (let i = 0; i < users.length; i++) {
+                    const values = users[i].values;
+
+                    for (let j = 0; j < values.length; j++) {
+                        const date = new Date(values[j].date);
+                        const month = date.getUTCMonth();
+                        const day = date.getUTCDate();
+                        const year = date.getFullYear();
+                        const hours = date.getUTCHours();
+                        if (day === 31 && month === 0 && (hours === 12 || hours === 11 || hours === 13 || hours === 10 || hours === 14|| hours === 9 || hours === 15)) {
+                            if (values[j].totalValue > 1000000)
+                            console.log("user " + users[i].key + " date " + date + " values " + values[j].totalValue)
+                        }
+                    }
+                }
+
+                console.log(" End glitch clearing ")
+                return  "Finished"
             } catch (e) {
                 logger.error("getAuthKey", e);
                 return {};
@@ -2322,6 +2351,7 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     });
 }
 
+
 const corsOptions = {
     origin: '*',
     credentials: true // <-- REQUIRED backend setting
@@ -2355,6 +2385,7 @@ async function startServer() {
 
     server.applyMiddleware({ app, cors: corsOptions });
 
+
 }
 
 startServer();
@@ -2365,6 +2396,8 @@ app.listen({ port: 4000 }, () => {
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
         logger.info("DEBUG " + process.env.DEBUG)
+
+
 
 }
 );
