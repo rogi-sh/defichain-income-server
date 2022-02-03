@@ -1772,8 +1772,8 @@ async function checkNewsletterPayed(address) {
     let foundTargetPayed = false;
     for (const t of firstPage) {
         const txId = t.txid;
-        const date = new Date(t.block.time);
-        if (dateNow.getMonth() === date.getMonth()) {
+        const date = new Date(t.block.time * 1000);
+        if (dateNow.getUTCMonth() === date.getUTCMonth()) {
             const outs = await client.transactions.getVouts(txId, 100);
             const ins = await client.transactions.getVins(txId, 100);
             // Source is correct
@@ -1789,7 +1789,7 @@ async function checkNewsletterPayed(address) {
                 const addressDec = fromScriptHex.fromScriptHex(o.script?.hex, network);
                 if (addressDec && addressDec.address === payingAddress) {
                     foundTarget = true;
-                    if (+o.value > 0.99 && +o.value < 1.2) {
+                    if (+o.value > 0.99) {
                         foundTargetPayed = true;
                         break;
                     }
