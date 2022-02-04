@@ -250,6 +250,12 @@ const newsletterSchema = new mongoose.Schema({
 
 });
 
+const addressV2Definition = {
+    addressId: String,
+    masternode: Boolean,
+    freezer: String,
+    name: String,
+};
 
 const userSchema = new mongoose.Schema({
     key: String,
@@ -258,6 +264,7 @@ const userSchema = new mongoose.Schema({
     addressesMasternodes: [String],
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
+    addressesV2: [addressV2Definition],
     wallet: walletSchema,
     newsletter: newsletterSchema,
     totalValue: Number,
@@ -273,6 +280,7 @@ const userTransactionsSchema = new mongoose.Schema({
     addressesMasternodes: [String],
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
+    addressesV2: [addressV2Definition],
     wallet: walletSchema,
     newsletter: newsletterSchema
 });
@@ -320,6 +328,8 @@ const poolDefinition = {
     rewardPct: Number,
     commission: Number
 }
+
+
 
 const poolFarming = new mongoose.Schema({
     pools: [poolDefinition],
@@ -668,10 +678,17 @@ const typeDefs = gql`
     }
     
     type Newsletter {
-        email: String,
-        payingAddress: String,
-        status: String,
+        email: String
+        payingAddress: String
+        status: String
         subscribed: Date
+    }
+    
+    type AddressV2 {
+        address: String
+        masternode: Boolean
+        freezer: String
+        name: String
     }
     
     type User {
@@ -684,6 +701,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -713,6 +731,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2]
     }
 
     type Rewards {
@@ -1044,12 +1063,20 @@ const typeDefs = gql`
         usdInEemPool: Float        
     }
     
+    input AddressV2Input {
+        address: String
+        masternode: Boolean
+        freezer: String
+        name: String
+    }
+    
     input UserInput {
         wallet: WalletInput
         addresses: [String]
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2Input]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -1062,6 +1089,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2Input]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -1521,6 +1549,7 @@ const resolvers = {
                     addressesMasternodes: user.addressesMasternodes,
                     adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
+                    addressesV2: user.addressesV2,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet),
                     totalValue: user.totalValue,
@@ -1553,6 +1582,7 @@ const resolvers = {
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
+                userLoaded.addressesV2 = user.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
@@ -1565,6 +1595,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
+                    addressesV2: user.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet)
                 });
@@ -1626,6 +1657,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
+                    addressesV2: user.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet),
                     newsletter: newsletter
