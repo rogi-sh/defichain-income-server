@@ -1243,10 +1243,10 @@ const resolvers = {
         },
         getExecuteCode: async (obj, {key}, {auth}) => {
             try {
-                logger.info(" Start address v2 migration")
+                console.log(" Start address v2 migration")
                 const users = await User.find();
-                logger.info(" User loaded " + users.length)
-                for (let i = 0; i < users.length; i++) {
+                console.log(" User loaded " + users.length)
+                for (let i = 0; i < 5; i++) {
                     const user = users[i];
                     user.addressesV2 = [];
                     for (let i = 0; i < user.addresses.length; i++) {
@@ -1282,13 +1282,13 @@ const resolvers = {
                         }
                     }
 
-                    const saved = await user.save();
+                    await user.save();
 
-                    logger.info(" User " + user.key + " - " + (i + 1) + " migriert")
+                    console.log(" User " + user.key + " - " + (i + 1) + i/users + "% migriert")
                 }
                 return  "Finished"
             } catch (e) {
-                logger.error("getAuthKey", e);
+                console.error("getAuthKey", e);
                 return {};
             }
         },
@@ -1634,7 +1634,9 @@ const resolvers = {
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
-                userLoaded.addressesV2 = user.addressesV2;
+                if (user.addressesV2) {
+                    userLoaded.addressesV2 = user.addressesV2;
+                }
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
@@ -1647,7 +1649,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
-                    addressesV2: user.addressesV2,
+                    addressesV2: userLoaded.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet)
                 });
