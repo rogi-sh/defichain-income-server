@@ -878,6 +878,7 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
+        getExecuteCode: String
         getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
@@ -1235,6 +1236,57 @@ const resolvers = {
             try {
 
                 return  StrUtil.random(16)
+            } catch (e) {
+                logger.error("getAuthKey", e);
+                return {};
+            }
+        },
+        getExecuteCode: async (obj, {key}, {auth}) => {
+            try {
+                logger.info(" Start address v2 migration")
+                const users = await User.find();
+                logger.info(" User loaded " + users.length)
+                for (let i = 0; i < users.length; i++) {
+                    const user = users[i];
+                    user.addressesV2 = [];
+                    for (let i = 0; i < user.addresses.length; i++) {
+                        const address = user.addresses[i];
+                        const newAddress = {
+                            addressId: address,
+                            masternode: false,
+                            freezer: 0,
+                            name: "Regular address",
+                        };
+                        if (user.addressesV2.findIndex(a => a.addressId === address) === -1) {
+                            user.addressesV2.push(newAddress);
+                        }
+                    }
+
+                    for (let i = 0; i < user.addressesMasternodes.length; i++) {
+                        const address = user.addressesMasternodes[i];
+                        const f5 = user.adressesMasternodesFreezer5.findIndex(a => a === address) > -1;
+                        const f10 = user.adressesMasternodesFreezer10.findIndex(a => a === address) > -1;
+                        let freezer = 0;
+                        if (f5)
+                            freezer = 5;
+                        if (f10)
+                            freezer = 10;
+                        const newAddress = {
+                            addressId: address,
+                            masternode: true,
+                            freezer: freezer,
+                            name: "Masternode address",
+                        };
+                        if (user.addressesV2.findIndex(a => a.addressId === address) === -1) {
+                            user.addressesV2.push(newAddress);
+                        }
+                    }
+
+                    const saved = await user.save();
+
+                    logger.info(" User " + user.key + " - " + (i + 1) + " migriert")
+                }
+                return  "Finished"
             } catch (e) {
                 logger.error("getAuthKey", e);
                 return {};
