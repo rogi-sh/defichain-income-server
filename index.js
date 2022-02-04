@@ -253,7 +253,7 @@ const newsletterSchema = new mongoose.Schema({
 const addressV2Definition = {
     addressId: String,
     masternode: Boolean,
-    freezer: String,
+    freezer: Number,
     name: String,
 };
 
@@ -685,9 +685,9 @@ const typeDefs = gql`
     }
     
     type AddressV2 {
-        address: String
+        addressId: String
         masternode: Boolean
-        freezer: String
+        freezer: Float
         name: String
     }
     
@@ -1064,9 +1064,9 @@ const typeDefs = gql`
     }
     
     input AddressV2Input {
-        address: String
+        addressId: String
         masternode: Boolean
-        freezer: String
+        freezer: Float
         name: String
     }
     
@@ -1210,7 +1210,7 @@ const resolvers = {
 
                 return userHistory;
             } catch (e) {
-                logger.error("UserHistory", e);
+                logger.error("userHistoryByKey", e);
                 return {};
             }
         },
