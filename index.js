@@ -1582,7 +1582,7 @@ const resolvers = {
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
-                userLoaded.addressesV2 = user.addressesV2;
+                userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
@@ -1595,7 +1595,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
-                    addressesV2: user.addressesV2,
+                    addressesV2: userLoaded.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet)
                 });
