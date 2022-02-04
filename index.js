@@ -250,6 +250,12 @@ const newsletterSchema = new mongoose.Schema({
 
 });
 
+const addressV2Definition = {
+    addressId: String,
+    masternode: Boolean,
+    freezer: Number,
+    name: String,
+};
 
 const userSchema = new mongoose.Schema({
     key: String,
@@ -258,6 +264,7 @@ const userSchema = new mongoose.Schema({
     addressesMasternodes: [String],
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
+    addressesV2: [addressV2Definition],
     wallet: walletSchema,
     newsletter: newsletterSchema,
     totalValue: Number,
@@ -273,6 +280,7 @@ const userTransactionsSchema = new mongoose.Schema({
     addressesMasternodes: [String],
     adressesMasternodesFreezer5: [String],
     adressesMasternodesFreezer10: [String],
+    addressesV2: [addressV2Definition],
     wallet: walletSchema,
     newsletter: newsletterSchema
 });
@@ -320,6 +328,8 @@ const poolDefinition = {
     rewardPct: Number,
     commission: Number
 }
+
+
 
 const poolFarming = new mongoose.Schema({
     pools: [poolDefinition],
@@ -668,10 +678,17 @@ const typeDefs = gql`
     }
     
     type Newsletter {
-        email: String,
-        payingAddress: String,
-        status: String,
+        email: String
+        payingAddress: String
+        status: String
         subscribed: Date
+    }
+    
+    type AddressV2 {
+        addressId: String
+        masternode: Boolean
+        freezer: Float
+        name: String
     }
     
     type User {
@@ -684,6 +701,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -713,6 +731,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2]
     }
 
     type Rewards {
@@ -859,7 +878,6 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
-        getExecuteCode: String
         getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
@@ -1045,12 +1063,20 @@ const typeDefs = gql`
         usdInEemPool: Float        
     }
     
+    input AddressV2Input {
+        addressId: String
+        masternode: Boolean
+        freezer: Float
+        name: String
+    }
+    
     input UserInput {
         wallet: WalletInput
         addresses: [String]
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2Input]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -1063,6 +1089,7 @@ const typeDefs = gql`
         addressesMasternodes: [String]
         adressesMasternodesFreezer5: [String]
         adressesMasternodesFreezer10: [String]
+        addressesV2: [AddressV2Input]
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
@@ -1183,7 +1210,7 @@ const resolvers = {
 
                 return userHistory;
             } catch (e) {
-                logger.error("UserHistory", e);
+                logger.error("userHistoryByKey", e);
                 return {};
             }
         },
@@ -1208,34 +1235,6 @@ const resolvers = {
             try {
 
                 return  StrUtil.random(16)
-            } catch (e) {
-                logger.error("getAuthKey", e);
-                return {};
-            }
-        },
-        getExecuteCode: async (obj, {key}, {auth}) => {
-            try {
-                console.log(" Start glitch clearing ")
-                const users = await UserHistory.find();
-                console.log(" User loaded ")
-                for (let i = 0; i < users.length; i++) {
-                    const values = users[i].values;
-
-                    for (let j = 0; j < values.length; j++) {
-                        const date = new Date(values[j].date);
-                        const month = date.getUTCMonth();
-                        const day = date.getUTCDate();
-                        const year = date.getFullYear();
-                        const hours = date.getUTCHours();
-                        if (day === 31 && month === 0 && (hours === 12 || hours === 11 || hours === 13 || hours === 10 || hours === 14|| hours === 9 || hours === 15)) {
-                            if (values[j].totalValue > 1000000)
-                            console.log("user " + users[i].key + " date " + date + " values " + values[j].totalValue)
-                        }
-                    }
-                }
-
-                console.log(" End glitch clearing ")
-                return  "Finished"
             } catch (e) {
                 logger.error("getAuthKey", e);
                 return {};
@@ -1550,6 +1549,7 @@ const resolvers = {
                     addressesMasternodes: user.addressesMasternodes,
                     adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
+                    addressesV2: user.addressesV2,
                     key: StrUtil.random(8),
                     wallet: Object.assign({}, user.wallet),
                     totalValue: user.totalValue,
@@ -1582,6 +1582,7 @@ const resolvers = {
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
                 userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
+                userLoaded.addressesV2 = user.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
@@ -1594,6 +1595,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
+                    addressesV2: user.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet)
                 });
@@ -1655,6 +1657,7 @@ const resolvers = {
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
+                    addressesV2: user.addressesV2,
                     key: user.key,
                     wallet: Object.assign({}, user.wallet),
                     newsletter: newsletter
@@ -1801,8 +1804,8 @@ async function checkNewsletterPayed(address) {
     let foundTargetPayed = false;
     for (const t of firstPage) {
         const txId = t.txid;
-        const date = new Date(t.block.time);
-        if (dateNow.getMonth() === date.getMonth()) {
+        const date = new Date(t.block.time * 1000);
+        if (dateNow.getUTCMonth() === date.getUTCMonth()) {
             const outs = await client.transactions.getVouts(txId, 100);
             const ins = await client.transactions.getVins(txId, 100);
             // Source is correct
@@ -1818,7 +1821,7 @@ async function checkNewsletterPayed(address) {
                 const addressDec = fromScriptHex.fromScriptHex(o.script?.hex, network);
                 if (addressDec && addressDec.address === payingAddress) {
                     foundTarget = true;
-                    if (+o.value > 0.99 && +o.value < 1.2) {
+                    if (+o.value > 0.99) {
                         foundTargetPayed = true;
                         break;
                     }
@@ -2351,6 +2354,54 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     });
 }
 
+if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER, async function () {
+        const millisecondsBefore = new Date().getTime();
+        logger.info("===========Newsletter Job started: " + new Date() + " ================");
+
+        const users = await User.find().lean();
+
+        logger.info("===========Newsletter Job started users " + users.length + " ================");
+
+        let newsletter = 0;
+        let mail = 0;
+        let address = 0;
+
+        for (let i = 0; i < users.length; i++) {
+
+            const u = users[i];
+
+            try {
+
+               if (u.newsletter) {
+                   newsletter ++;
+                   if (u.newsletter.email && u.newsletter.email.length > 0) {
+                       mail ++;
+                   }
+                   if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                       address ++;
+                   }
+
+                }
+
+            } catch (e) {
+                // Something happened in setting up the request that triggered an Error
+                logger.error("============ Newsletter Job error with key " + u.key, e.message);
+            }
+
+        }
+
+        logger.info("===========Newsletter Subscriber " + newsletter + " ================");
+        logger.info("===========Newsletter Subscriber Mail s" + mail + " ================");
+        logger.info("===========Newsletter Subscriber Addresses " + mail + " ================");
+
+        const millisecondsAfter = new Date().getTime();
+        const msTime = millisecondsAfter - millisecondsBefore;
+
+        logger.info("============Newsletter Job executed time: " + new Date() + " in " + msTime + " ms.=============");
+
+    });
+}
 
 const corsOptions = {
     origin: '*',
@@ -2385,7 +2436,6 @@ async function startServer() {
 
     server.applyMiddleware({ app, cors: corsOptions });
 
-
 }
 
 startServer();
@@ -2395,9 +2445,8 @@ app.listen({ port: 4000 }, () => {
         logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
+        logger.info("JOB Newsleter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER)
         logger.info("DEBUG " + process.env.DEBUG)
-
-
 
 }
 );
