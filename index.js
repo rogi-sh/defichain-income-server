@@ -13,6 +13,8 @@ const nodemailer = require("nodemailer");
 const messageAuth = "This ist not public Query. You need to provide an auth Key";
 
 const winston = require('winston');
+const mjml2html = require('mjml');
+
 const { SeqTransport } = require('@datalust/winston-seq');
 
 const client = new WhaleApiClient({
@@ -71,6 +73,7 @@ const axios = require('axios').default;
 const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
 const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
+const fs = require("fs");
 
 const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
@@ -1773,25 +1776,38 @@ function getStatusDfx() {
 
 async function sendUpdateNewsletterMail(mail, address, status) {
 
-    const content = "Newsletter Updated, Mail: "  + mail + ", Address:" + address + ", Status: " + status;
-    const contentHtml = "<b>" + content + "</b>";
+    fs.readFile(__dirname + '/templates/update.mjml', 'utf8', async function read(err, data) {
 
-    try {
-        // send mail with defined transport object
-        let info = await mailer.sendMail({
-            from: 'defichain-income@topiet.de', // sender address
-            to: mail, // list of receivers
-            subject: "Newsletter Updated", // Subject line
-            text: content, // plain text body
-            html: contentHtml, // html body
-        });
+        if (err) {
+            logger.error("Read template update error");
+            logger.error(err.message);
+            return;
+        }
 
-        logger.info("Message to " + mail + ", sent: %s", info.messageId);
-        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+        try {
 
-    } catch(err) {
-        logger.error("Send Mail error", err)// TypeError: failed to fetch
-    }
+            let contentHtml = mjml2html(data.toString('utf8')).html;
+            contentHtml = contentHtml.replace("{{mail}}", mail);
+            contentHtml = contentHtml.replace("{{address}}", address);
+            contentHtml = contentHtml.replace("{{status}}", status);
+
+
+            // send mail with defined transport object
+            let info = await mailer.sendMail({
+                from: 'defichain-income@topiet.de', // sender address
+                to: mail, // list of receivers
+                subject: "Newsletter Updated", // Subject line
+                text: contentHtml, // plain text body
+                html: contentHtml, // html body
+            });
+
+            logger.info("Message to " + mail + ", sent: " + info.messageId);
+            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+        } catch (err) {
+            logger.error("Send Mail error", err)// TypeError: failed to fetch
+        }
+    });
 
 }
 
