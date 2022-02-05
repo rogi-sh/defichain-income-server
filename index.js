@@ -1249,12 +1249,13 @@ const resolvers = {
                 const millisecondsBefore = new Date().getTime();
 
                 const users = await User.find().lean();
-                const usersCount = users.length;
+                let usersCount = 0;
                 let addresses = 0;
                 let addressesMasternodes = 0;
                 users.forEach(u => {
                     addresses += u.addresses ? u.addresses?.length: 0;
                     addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
+                    usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)) ? 1 : 0;
                 });
 
                 let visits = 0;
