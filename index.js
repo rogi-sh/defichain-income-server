@@ -22,6 +22,8 @@ const client = new WhaleApiClient({
     network: 'mainnet'
 })
 
+require('events').EventEmitter.defaultMaxListeners = 15;
+
 const mailer = nodemailer.createTransport({
     host: process.env.MAIL_SERVER,
     port: 587,
@@ -71,6 +73,7 @@ const axios = require('axios').default;
 const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
 const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
+const {isNameContinue} = require("graphql/language/characterClasses");
 
 const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
@@ -878,7 +881,7 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
-        getExecuteCode: String
+        migrateAdressV2: String
         getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
         getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
@@ -1241,14 +1244,27 @@ const resolvers = {
                 return {};
             }
         },
-        getExecuteCode: async (obj, {key}, {auth}) => {
+        migrateAdressV2: async (obj, {key}, {auth}) => {
             try {
-                console.log(" Start address v2 migration")
+                logger.info(" Start address v2 migration")
                 const users = await User.find();
-                console.log(" User loaded " + users.length)
-                for (let i = 0; i < 5; i++) {
+
+                let leereUser = 0;
+                let migriert = 0;
+                for (let i = 0; i < users.length; i++) {
+
                     const user = users[i];
-                    user.addressesV2 = [];
+
+                    if (user.addresses.length === 0 && user.addressesMasternodes.length === 0) {
+                        leereUser = leereUser + 1;
+                        continue;
+                    }
+
+                    migriert = migriert + 1;
+
+                    if (user.addressesV2 && user.addressesV2.length > 0 ) {
+                        user.addressesV2 = [];
+                    }
                     for (let i = 0; i < user.addresses.length; i++) {
                         const address = user.addresses[i];
                         const newAddress = {
@@ -1284,11 +1300,13 @@ const resolvers = {
 
                     await user.save();
 
-                    console.log(" User " + user.key + " - " + (i + 1) + i/users + "% migriert")
+                    logger.info(" User " + user.key + " - " + (i + 1) + " Prozent " + Math.round((i + 1)/users.length* 100) + "% migriert")
                 }
+                logger.info(" User leer insgesamt " + leereUser)
+                logger.info(" User migriert insgesamt " +  migriert)
                 return  "Finished"
             } catch (e) {
-                console.error("getAuthKey", e);
+                logger.debug("getAuthKey", e);
                 return {};
             }
         },
