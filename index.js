@@ -2409,8 +2409,9 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
         }
 
         logger.info("===========Newsletter Subscriber " + newsletter + " ================");
-        logger.info("===========Newsletter Subscriber Mail s" + mail + " ================");
-        logger.info("===========Newsletter Subscriber Addresses " + mail + " ================");
+        logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
+        logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
+
 
         const millisecondsAfter = new Date().getTime();
         const msTime = millisecondsAfter - millisecondsBefore;
