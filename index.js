@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
 require('dotenv').config();
 const CorrelationComputing = require("calculate-correlation");
-const { WhaleApiClient } = require('@defichain/whale-api-client');
+const {WhaleApiClient} = require('@defichain/whale-api-client');
 const fromScriptHex = require('@defichain/jellyfish-address');
 const nodemailer = require("nodemailer");
 
@@ -15,7 +15,7 @@ const messageAuth = "This ist not public Query. You need to provide an auth Key"
 const winston = require('winston');
 const mjml2html = require('mjml');
 
-const { SeqTransport } = require('@datalust/winston-seq');
+const {SeqTransport} = require('@datalust/winston-seq');
 
 const client = new WhaleApiClient({
     url: 'https://ocean.defichain.com',
@@ -37,10 +37,10 @@ const mailer = nodemailer.createTransport({
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(  /* This is required to get errors to log with stack traces. See https://github.com/winstonjs/winston/issues/1498 */
-        winston.format.errors({ stack: true }),
+        winston.format.errors({stack: true}),
         winston.format.json(),
     ),
-    defaultMeta: { /* application: 'your-app-name' */ },
+    defaultMeta: { /* application: 'your-app-name' */},
     transports: [
         new winston.transports.Console({
             format: winston.format.simple(),
@@ -48,7 +48,9 @@ const logger = winston.createLogger({
         new SeqTransport({
             serverUrl: "https://log.defichain-income.com",
             apiKey: "3hedtJfVKArc0DQWH9og",
-            onError: (e => { console.error(e) }),
+            onError: (e => {
+                console.error(e)
+            }),
             handleExceptions: true,
             handleRejections: true,
         })
@@ -79,6 +81,7 @@ const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
 const walletSchema = new mongoose.Schema({
     dfi: Number,
+
     btcdfi: Number,
     ethdfi: Number,
     ltcdfi: Number,
@@ -331,7 +334,6 @@ const poolDefinition = {
     rewardPct: Number,
     commission: Number
 }
-
 
 
 const poolFarming = new mongoose.Schema({
@@ -1136,7 +1138,7 @@ async function findHistoryByKey(key) {
 }
 
 async function findUserTransactionsByKey(key) {
-    return UserTransaction.find({key: key}).sort({ _id: -1 }).limit(10).lean();
+    return UserTransaction.find({key: key}).sort({_id: -1}).limit(10).lean();
 }
 
 function checkAuth(auth) {
@@ -1237,7 +1239,7 @@ const resolvers = {
         getAuthKey: async (obj, {key}, {auth}) => {
             try {
 
-                return  StrUtil.random(16)
+                return StrUtil.random(16)
             } catch (e) {
                 logger.error("getAuthKey", e);
                 return {};
@@ -1253,8 +1255,8 @@ const resolvers = {
                 let addresses = 0;
                 let addressesMasternodes = 0;
                 users.forEach(u => {
-                    addresses += u.addresses ? u.addresses?.length: 0;
-                    addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
+                    addresses += u.addresses ? u.addresses?.length : 0;
+                    addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length : 0;
                     usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)) ? 1 : 0;
                 });
 
@@ -1269,7 +1271,7 @@ const resolvers = {
                         visits = Math.round((visitsValues[0] + visitsValues[1] + visitsValues[2]
                             + visitsValues[3] + visitsValues[4]) / 5);
 
-                   }))
+                    }))
                     .catch(function (error) {
                         // handle error
                         if (error.response) {
@@ -1322,12 +1324,12 @@ const resolvers = {
                 ])
                     .then(axios.spread((response, response2, response3) => {
 
-                    bittrexStatus = response.data.status;
-                    bittrexNotice = response.data.notice;
-                    kucoinStatusDeposit = response2.data.data.isDepositEnabled;
-                    kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
-                    dfxBuy = response3.data.buy;
-                    dfxSell = response3.data.sell;
+                        bittrexStatus = response.data.status;
+                        bittrexNotice = response.data.notice;
+                        kucoinStatusDeposit = response2.data.data.isDepositEnabled;
+                        kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+                        dfxBuy = response3.data.buy;
+                        dfxSell = response3.data.sell;
 
                     }))
                     .catch(function (error) {
@@ -1336,8 +1338,8 @@ const resolvers = {
                             // Request made and server responded
                             logger.error("==================== ERROR Exchange Status in Call to API BEGIN ====================");
                             logger.error("getExchangeStatus", error.response.data);
-                            logger.error("getExchangeStatus",error.response.status);
-                            logger.error("getExchangeStatus",error.response.statusText);
+                            logger.error("getExchangeStatus", error.response.status);
+                            logger.error("getExchangeStatus", error.response.statusText);
                             logger.error("==================== ERROR Exchange Status in Call to API END ====================");
                         } else if (error.request) {
                             // The request was made but no response was received
@@ -1492,7 +1494,7 @@ const resolvers = {
                 const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
                 const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
 
-                let farming = await PoolFarming.find({ date: {'$gte': fromDate, '$lte': tillDate}}).lean();
+                let farming = await PoolFarming.find({date: {'$gte': fromDate, '$lte': tillDate}}).lean();
 
                 const diff = Math.abs(fromDate.getTime() - tillDate.getTime());
                 const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
@@ -1519,7 +1521,7 @@ const resolvers = {
             try {
                 const millisecondsBefore = new Date().getTime();
 
-                const stats =  await Stats.find().lean();
+                const stats = await Stats.find().lean();
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1577,7 +1579,7 @@ const resolvers = {
 
                 const millisecondsBefore = new Date().getTime();
 
-                const userLoaded =  await findUserByKey(user.key);
+                const userLoaded = await findUserByKey(user.key);
                 if (!userLoaded) {
                     return null;
                 }
@@ -1585,14 +1587,14 @@ const resolvers = {
                 userLoaded.addresses = user.addresses;
                 userLoaded.addressesMasternodes = user.addressesMasternodes;
                 userLoaded.adressesMasternodesFreezer5 = user.adressesMasternodesFreezer5;
-                userLoaded.adressesMasternodesFreezer10 =  user.adressesMasternodesFreezer10;
+                userLoaded.adressesMasternodesFreezer10 = user.adressesMasternodesFreezer10;
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
                 userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
 
-                const saved =  await userLoaded.save();
+                const saved = await userLoaded.save();
 
                 // save transaction
                 await UserTransaction.create({
@@ -1620,7 +1622,7 @@ const resolvers = {
 
                 const millisecondsBefore = new Date().getTime();
 
-                const userLoaded =  await findUserByKey(user.key);
+                const userLoaded = await findUserByKey(user.key);
                 if (!userLoaded) {
                     return null;
                 }
@@ -1650,11 +1652,16 @@ const resolvers = {
                     status = "payed";
                 }
 
-                const newsletter = {email: user.email, payingAddress: user.payingAddress, status: status, subscribed: subscribed}
+                const newsletter = {
+                    email: user.email,
+                    payingAddress: user.payingAddress,
+                    status: status,
+                    subscribed: subscribed
+                }
 
                 userLoaded.newsletter = newsletter
 
-                const saved =  await userLoaded.save();
+                const saved = await userLoaded.save();
 
                 // save transaction
                 await UserTransaction.create({
@@ -1668,7 +1675,8 @@ const resolvers = {
                 });
 
                 logger.info("Send Mail to " + user.email);
-                await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
+                //await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
+                await sendNewsletterMail(saved);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1785,31 +1793,115 @@ async function sendUpdateNewsletterMail(mail, address, status) {
             return;
         }
 
-        try {
+        let contentHtml = mjml2html(data.toString('utf8')).html;
+        contentHtml = contentHtml.replace("{{mail}}", mail);
+        contentHtml = contentHtml.replace("{{address}}", address);
+        contentHtml = contentHtml.replace("{{status}}", status);
 
-            let contentHtml = mjml2html(data.toString('utf8')).html;
-            contentHtml = contentHtml.replace("{{mail}}", mail);
-            contentHtml = contentHtml.replace("{{address}}", address);
-            contentHtml = contentHtml.replace("{{status}}", status);
+        await sendMail(mail, "Newsletter Data Updated", contentHtml);
 
-
-            // send mail with defined transport object
-            let info = await mailer.sendMail({
-                from: 'defichain-income@topiet.de', // sender address
-                to: mail, // list of receivers
-                subject: "Newsletter Updated", // Subject line
-                text: contentHtml, // plain text body
-                html: contentHtml, // html body
-            });
-
-            logger.info("Message to " + mail + ", sent: " + info.messageId);
-            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-        } catch (err) {
-            logger.error("Send Mail error", err)// TypeError: failed to fetch
-        }
     });
 
+}
+
+async function sendNewsletterMail(user) {
+
+    fs.readFile(__dirname + '/templates/newsletter.mjml', 'utf8', async function read(err, data) {
+
+        if (err) {
+            logger.error("Read template newsletter error");
+            logger.error(err.message);
+            return;
+        }
+
+        const price = await client.prices.get("DFI", "USD");
+        const vaults = []
+
+        for (let i = 0; i < user.addresses.length; i++) {
+            const vaultsAddress = await client.address.listVault(user.addresses[i]);
+            for (let j = 0; j < vaultsAddress.length; j++) {
+                vaults.push(vaultsAddress[j]);
+            }
+
+        }
+
+        // transform mjml to html
+        let contentHtml = mjml2html(data.toString()).html;
+
+        // basic infos of account
+        contentHtml = contentHtml.replace("{{account}}", user.key);
+        contentHtml = contentHtml.replace("{{value}}", Math.round(user.totalValue).toString());
+        contentHtml = contentHtml.replace("{{incomeDfi}}", Math.round(user.totalValueIncomeDfi).toString());
+        contentHtml = contentHtml.replace("{{incomeUsd}}", Math.round(user.totalValueIncomeUsd).toString());
+        contentHtml = contentHtml.replace("{{dfiPrice}}", ""+ (Math.round(price?.price.aggregated.amount * 100) / 100));
+
+        // wallet
+        const wallet = user.wallet;
+        contentHtml = contentHtml.replace("{{walletBtc}}", wallet.btc);
+        contentHtml = contentHtml.replace("{{walletEth}}", wallet.eth);
+        contentHtml = contentHtml.replace("{{walletUsdt}}", wallet.usdt);
+        contentHtml = contentHtml.replace("{{walletUsdc}}", wallet.usdc);
+        contentHtml = contentHtml.replace("{{walletLtc}}", wallet.ltc);
+        contentHtml = contentHtml.replace("{{walletBch}}", wallet.bch);
+        contentHtml = contentHtml.replace("{{walletDoge}}", wallet.doge);
+
+        contentHtml = contentHtml.replace("{{lmBtc}}", wallet.btcInBtcPool);
+        contentHtml = contentHtml.replace("{{lmEth}}", wallet.ethInEthPool);
+        contentHtml = contentHtml.replace("{{lmUsdt}}", wallet.usdtInUsdtPool);
+        contentHtml = contentHtml.replace("{{lmUsdc}}", wallet.usdcInUsdcPool);
+        contentHtml = contentHtml.replace("{{lmLtc}}", wallet.ltcInLtcPool);
+        contentHtml = contentHtml.replace("{{lmBch}}", wallet.bchInBchPool);
+        contentHtml = contentHtml.replace("{{lmDoge}}", wallet.dogeInDogePool);
+
+        contentHtml = contentHtml.replace("{{dfiBtc}}", wallet.dfiInBtcPool);
+        contentHtml = contentHtml.replace("{{dfiEth}}", wallet.dfiInEthPool);
+        contentHtml = contentHtml.replace("{{dfiUsdt}}", wallet.dfiInUsdtPool);
+        contentHtml = contentHtml.replace("{{dfiUsdc}}", wallet.dfiInUsdcPool);
+        contentHtml = contentHtml.replace("{{dfiLtc}}", wallet.dfiInLtcPool);
+        contentHtml = contentHtml.replace("{{dfiDoge}}", wallet.dfiInDogePool);
+        contentHtml = contentHtml.replace("{{dfiBch}}", wallet.dogeInDogePool);
+        contentHtml = contentHtml.replace("{{dfiWallet}}", wallet.dfi);
+        contentHtml = contentHtml.replace("{{dfiStaking}}", wallet.dfiInStaking);
+
+        // Vaults
+        const templateVault =  fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding:'utf8', flag:'r'});
+        let vaultsHtml = mjml2html(templateVault).html;
+        let vaultsHtmlResult = "";
+
+        for (let i = 0; i < vaults.length; i++) {
+            let contentHtmlVault = vaultsHtml;
+            contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
+            const nameVault = "..." + vaults[i].vaultId.slice( vaults[i].vaultId.length - 5,  vaults[i].vaultId.length)
+                + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%"  ;
+            contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
+            vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
+        }
+
+        contentHtml = contentHtml.replace("{{vaults}}", vaultsHtmlResult);
+
+
+        await sendMail(user.newsletter.email, "Newsletter", contentHtml);
+
+    });
+
+}
+
+async function sendMail(receiver, subject, content) {
+    try {
+
+        let info = await mailer.sendMail({
+            from: "DeFiChain-Income.com <defichain-income@topiet.de>",
+            to: receiver,
+            subject: subject,
+            text: content,
+            html: content,
+        });
+
+        logger.info("Mail to " + receiver + ", sent: " + info.messageId);
+
+    } catch (err) {
+        logger.error("Send Mail error", err)
+    }
 }
 
 async function checkNewsletterPayed(address) {
@@ -1996,7 +2088,7 @@ async function computeCorrelation(data) {
     const millisecondsBefore = new Date().getTime();
 
     const tillDate = new Date();
-    const fromDate = new Date(tillDate - (24*60*60*1000) * (data ? data: 365));
+    const fromDate = new Date(tillDate - (24 * 60 * 60 * 1000) * (data ? data : 365));
 
     const poollist = await PoolFarming.find({
         date: {'$gte': fromDate, '$lte': tillDate},
@@ -2028,54 +2120,54 @@ async function computeCorrelation(data) {
     const dfiUsd = []
     const dfiTsla = []
 
-   poollist.forEach (p => {
-       p.pools.forEach(pool => {
-           if (!pool.priceB || !pool.priceA) {
-               return;
-           }
-           if (pool.pair === "BTC-DFI") {
-               btc.push(pool.priceA);
-               dfiBtc.push(pool.priceB);
-           } else if (pool.pair === "ETH-DFI") {
-               eth.push(pool.priceA);
-               dfiEth.push(pool.priceB);
-           } else if (pool.pair === "LTC-DFI") {
-               ltc.push(pool.priceA);
-               dfiLtc.push(pool.priceB);
-           } else if (pool.pair === "BCH-DFI") {
-               bch.push(pool.priceA);
-               dfiBch.push(pool.priceB);
-           } else if (pool.pair === "DOGE-DFI") {
-               doge.push(pool.priceA);
-               dfiDoge.push(pool.priceB);
-           } else if (pool.pair === "USDT-DFI") {
-               usdt.push(pool.priceA);
-           } else if (pool.pair === "USDC-DFI") {
-               usdc.push(pool.priceA);
-               dfiUsdc.push(pool.priceB);
-           } else if (pool.pair === "DUSD-DFI") {
-               usd.push(pool.priceA);
-               dfiUsd.push(pool.priceB);
-           } else if (pool.pair === "TSLA-DFI") {
-               tsla.push(pool.priceA);
-               dfiTsla.push(pool.priceB);
-           }
-       });
+    poollist.forEach(p => {
+        p.pools.forEach(pool => {
+            if (!pool.priceB || !pool.priceA) {
+                return;
+            }
+            if (pool.pair === "BTC-DFI") {
+                btc.push(pool.priceA);
+                dfiBtc.push(pool.priceB);
+            } else if (pool.pair === "ETH-DFI") {
+                eth.push(pool.priceA);
+                dfiEth.push(pool.priceB);
+            } else if (pool.pair === "LTC-DFI") {
+                ltc.push(pool.priceA);
+                dfiLtc.push(pool.priceB);
+            } else if (pool.pair === "BCH-DFI") {
+                bch.push(pool.priceA);
+                dfiBch.push(pool.priceB);
+            } else if (pool.pair === "DOGE-DFI") {
+                doge.push(pool.priceA);
+                dfiDoge.push(pool.priceB);
+            } else if (pool.pair === "USDT-DFI") {
+                usdt.push(pool.priceA);
+            } else if (pool.pair === "USDC-DFI") {
+                usdc.push(pool.priceA);
+                dfiUsdc.push(pool.priceB);
+            } else if (pool.pair === "DUSD-DFI") {
+                usd.push(pool.priceA);
+                dfiUsd.push(pool.priceB);
+            } else if (pool.pair === "TSLA-DFI") {
+                tsla.push(pool.priceA);
+                dfiTsla.push(pool.priceB);
+            }
+        });
     });
 
-    const corUsd = (usd.length > 0 && dfiUsd > 0) ? CorrelationComputing(usd, dfiUsd): -1;
+    const corUsd = (usd.length > 0 && dfiUsd > 0) ? CorrelationComputing(usd, dfiUsd) : -1;
     const corTsla = (tsla.length > 0 && dfiTsla > 0) ? CorrelationComputing(tsla, dfiTsla) : -1;
 
     const correlation = {
         btcPool: (Math.round(CorrelationComputing(btc, dfiBtc) * 1000) / 1000).toFixed(3),
         ethPool: (Math.round(CorrelationComputing(eth, dfiEth) * 1000) / 1000).toFixed(3),
         ltcPool: (Math.round(CorrelationComputing(ltc, dfiLtc) * 1000) / 1000).toFixed(3),
-        bchPool:  (Math.round(CorrelationComputing(bch, dfiBch) * 1000) / 1000).toFixed(3),
+        bchPool: (Math.round(CorrelationComputing(bch, dfiBch) * 1000) / 1000).toFixed(3),
         dogePool: (Math.round(CorrelationComputing(doge, dfiDoge) * 1000) / 1000).toFixed(3),
         usdtPool: (Math.round(CorrelationComputing(usdt, dfiBtc) * 1000) / 1000).toFixed(3),
         usdcPool: (Math.round(CorrelationComputing(usdc, dfiUsdc) * 1000) / 1000).toFixed(3),
-        usdPool: isNaN(corUsd) ? 999 : (Math.round(corUsd  * 1000) / 1000).toFixed(3),
-        tslaPool: isNaN(corTsla) ? 999 : (Math.round(corTsla  * 1000) / 1000).toFixed(3),
+        usdPool: isNaN(corUsd) ? 999 : (Math.round(corUsd * 1000) / 1000).toFixed(3),
+        tslaPool: isNaN(corTsla) ? 999 : (Math.round(corTsla * 1000) / 1000).toFixed(3),
 
         btcPricesDex: btc,
         ethPricesDex: eth,
@@ -2102,7 +2194,7 @@ function assignDataValue(data, object, id) {
 
     object.date = new Date();
     object.poolId = id;
-    object.poolPairId= data.poolPairId;
+    object.poolPairId = data.poolPairId;
     object.apr = data.apr;
     object.name = data.name;
     object.pair = data.pair;
@@ -2125,7 +2217,7 @@ function assignDataValue(data, object, id) {
     object.totalLiquidityLpToken = data.totalLiquidityLpToken;
     object.totalLiquidity = data.totalLiquidity;
 
-    object.rewardPct= data.rewardPct;
+    object.rewardPct = data.rewardPct;
     object.commission = data.commission;
     object.symbol = data.symbol;
     object.volumeA30 = data.volumeA30;
@@ -2165,11 +2257,11 @@ const app = express();
 if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
         const millisecondsBefore = new Date().getTime();
-        logger.info("===============Pools Job started " + new Date() +  " =================");
+        logger.info("===============Pools Job started " + new Date() + " =================");
 
         Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolPairs()])
             .then(function (results) {
-               const btc = results[0];
+                const btc = results[0];
                 saveBTCPool(btc.data)
                     .catch(function (error) {
                         // handle error
@@ -2241,8 +2333,8 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                 // Request made and server responded
                 logger.error("==================== ERROR PoolJob in Call to API BEGIN ====================");
                 logger.error("PoolJob", error.response.data);
-                logger.error("PoolJob",error.response.status);
-                logger.error("PoolJob",error.response.statusText);
+                logger.error("PoolJob", error.response.status);
+                logger.error("PoolJob", error.response.statusText);
                 logger.error("==================== ERROR PoolJob in Call to API END ====================");
             } else if (error.request) {
                 // The request was made but no response was received
@@ -2268,7 +2360,7 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
             getStats(),
             getStatsOcean()
         ])
-        .then(axios.spread((response, response2) => {
+            .then(axios.spread((response, response2) => {
                 saveStats(response.data, response2.data)
                     .catch(function (error) {
                         // handle error
@@ -2294,7 +2386,7 @@ if (process.env.JOB_SCHEDULER_ON_STATS === "on") {
                     logger.error("Stats Job", error.request);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    logger.error("Stats Job",  error.message);
+                    logger.error("Stats Job", error.message);
                 }
 
                 const millisecondsAfter = new Date().getTime();
@@ -2377,6 +2469,7 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
         logger.info("===========Newsletter Job started: " + new Date() + " ================");
 
         const users = await User.find().lean();
+        const usersWithNewsletter = [];
 
         logger.info("===========Newsletter Job started users " + users.length + " ================");
 
@@ -2389,15 +2482,15 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
             const u = users[i];
 
             try {
-
-               if (u.newsletter) {
-                   newsletter ++;
-                   if (u.newsletter.email && u.newsletter.email.length > 0) {
-                       mail ++;
-                   }
-                   if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
-                       address ++;
-                   }
+                if (u.newsletter) {
+                    newsletter++;
+                    if (u.newsletter.email && u.newsletter.email.length > 0) {
+                        mail++;
+                        usersWithNewsletter.push(u);
+                    }
+                    if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                        address++;
+                    }
 
                 }
 
@@ -2405,8 +2498,13 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
                 // Something happened in setting up the request that triggered an Error
                 logger.error("============ Newsletter Job error with key " + u.key, e.message);
             }
-
         }
+
+        // Test Account
+        const testUser = users.findOne(u => u.key === "testKey").lean();
+        logger.info("===========Send Newsletter to tester " + newsletter + " ================");
+        await sendNewsletterMail(testUser)
+
 
         logger.info("===========Newsletter Subscriber " + newsletter + " ================");
         logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
@@ -2434,7 +2532,7 @@ async function startServer() {
         formatError: (err) => {
             // When debug return only message
             if (process.env.DEBUG === "off")
-                return {message : err.message};
+                return {message: err.message};
 
             return err;
         },
@@ -2452,21 +2550,21 @@ async function startServer() {
 
     await server.start();
 
-    server.applyMiddleware({ app, cors: corsOptions });
+    server.applyMiddleware({app, cors: corsOptions});
 
 }
 
 startServer();
 
-app.listen({ port: 4000 }, () => {
+app.listen({port: 4000}, () => {
         logger.info(`🚀 Server ready at http://localhost:4000/graphql`)
         logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
-        logger.info("JOB Newsleter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER)
+        logger.info("JOB Newsletter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER)
         logger.info("DEBUG " + process.env.DEBUG)
 
-}
+    }
 );
 
 

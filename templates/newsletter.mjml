@@ -1,0 +1,71 @@
+<mjml version="3.3.3">
+  <mj-body background-color="#ff00af" color="#55575d" font-family="Arial, sans-serif">
+    <mj-section background-color="#ff00af" background-repeat="repeat" padding="20px 0" text-align="center" vertical-align="top"></mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" padding="20px 0" text-align="center" vertical-align="top">
+      <mj-column>
+        <mj-image align="center" alt="Defichain Income" container-background-color="#ffffff" padding="10px 25px" src="https://res.cloudinary.com/dw6kq38wo/image/upload/v1644073788/defichain/Defi-income_pstcqj.svg" width="160px"></mj-image>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto"  text-align="center" vertical-align="top">
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="24px" line-height="28px" >Nesletter for {{account}}</mj-text>
+      <mj-spacer></mj-spacer>
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="18px" line-height="20px" >DFI Price: {{dfiPrice}}</mj-text>
+      <mj-spacer></mj-spacer>
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="24px" line-height="24px" >Account</mj-text>
+      <mj-spacer></mj-spacer>
+
+      <mj-column width="45%">
+        <mj-text color="#ff00af" font-weight="bold" font-family="Arial, sans-serif" font-size="20px">Value: {{value}} $</mj-text>
+        <mj-spacer></mj-spacer>
+      </mj-column >
+      <mj-column width="55%">
+        <mj-text color="#ff00af" font-weight="bold" font-family="Arial, sans-serif" font-size="18px">Income DFI: {{incomeDfi}}</mj-text>
+        <mj-spacer></mj-spacer>
+        <mj-text color="#ff00af" font-weight="bold" font-family="Arial, sans-serif" font-size="18px">Income $: {{incomeUsd}}</mj-text>
+        <mj-spacer></mj-spacer>
+      </mj-column>
+      <mj-section background-color="#ff00af" background-repeat="repeat" padding="20px 0" text-align="center" vertical-align="top"></mj-section>
+
+      <mj-spacer></mj-spacer>
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="24px" line-height="24px" >Wallet</mj-text>
+      <mj-spacer></mj-spacer>
+      <mj-column width="50%">
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="18px" line-height="20px" >Crypto (Wallet/LM)</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >BTC {{walletBtc}} / {{lmBtc}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >ETH {{walletEth}} / {{lmEth}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >USDT {{walletUsdt}} / {{lmUsdt}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >USDC {{walletUsdc}} / {{lmUsdc}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DOGE {{walletDoge}} / {{lmDoge}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >BCH {{walletBch}} / {{lmBch}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >LTC {{walletLtc}} / {{lmLtc}}</mj-text>
+      </mj-column>
+      <mj-column width="50%">
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="20px" line-height="20px" >DFI </mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI BTC Pool {{dfiBtc}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI ETH Pool {{dfiEth}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Usdt Pool {{dfiUsdt}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Usdc Pool {{dfiUsdc}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Ltc Pool {{dfiLtc}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Bch Pool {{dfiBch}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Doge Pool {{dfiDoge}}</mj-text>
+
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Wallet {{dfiWallet}}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="14px" line-height="20px" >DFI Staking {{dfiStaking}}</mj-text>
+
+      </mj-column>
+
+      <mj-section background-color="#ff00af" background-repeat="repeat" padding="20px 0px 20px" text-align="center" vertical-align="top"></mj-section>
+      <mj-spacer></mj-spacer>
+
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="24px" line-height="24px" >Vaults</mj-text>
+      <mj-spacer></mj-spacer>
+
+      <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="24px" line-height="24px" >{{vaults}}</mj-text>
+
+
+      <mj-spacer></mj-spacer>
+    </mj-section>
+    <mj-section background-color="#ff00af" background-repeat="repeat" padding="20px 0" text-align="center" vertical-align="top"></mj-section>
+
+  </mj-body>
+</mjml>
