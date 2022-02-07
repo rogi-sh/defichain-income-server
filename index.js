@@ -1596,7 +1596,7 @@ const resolvers = {
                 const saved =  await userLoaded.save();
 
                 // save transaction
-                await UserTransaction.create({
+                UserTransaction.create({
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
@@ -1658,7 +1658,7 @@ const resolvers = {
                 const saved =  await userLoaded.save();
 
                 // save transaction
-                await UserTransaction.create({
+                UserTransaction.create({
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
