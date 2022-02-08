@@ -1255,7 +1255,8 @@ const resolvers = {
                 users.forEach(u => {
                     addresses += u.addresses ? u.addresses?.length: 0;
                     addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
-                    usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)) ? 1 : 0;
+                    usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)
+                    || u.dfiInStaking > 0) ? 1 : 0;
                 });
 
                 let visits = 0;
