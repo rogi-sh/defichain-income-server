@@ -847,7 +847,8 @@ const typeDefs = gql`
         kucoinStatusDeposit: Boolean,
         kucoinStatusWithdraw: Boolean,
         dfxBuy: String,
-        dfxSell: String
+        dfxSell: String,
+        dfxStaking: String
     }
 
     type Correlation {
@@ -1317,18 +1318,20 @@ const resolvers = {
                 let kucoinStatusWithdraw;
                 let dfxBuy;
                 let dfxSell;
+                let dfxStaking
 
                 await axios.all([
                     getStatusBittrex(), getStatusKucoin(), getStatusDfx()
                 ])
                     .then(axios.spread((response, response2, response3) => {
 
-                    bittrexStatus = response.data.status;
-                    bittrexNotice = response.data.notice;
-                    kucoinStatusDeposit = response2.data.data.isDepositEnabled;
-                    kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
-                    dfxBuy = response3.data.buy;
-                    dfxSell = response3.data.sell;
+                        bittrexStatus = response.data.status;
+                        bittrexNotice = response.data.notice;
+                        kucoinStatusDeposit = response2.data.data.isDepositEnabled;
+                        kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+                        dfxBuy = response3.data.buy;
+                        dfxSell = response3.data.sell;
+                        dfxStaking = response3.data.staking;
 
                     }))
                     .catch(function (error) {
@@ -1355,7 +1358,8 @@ const resolvers = {
                     kucoinStatusDeposit: kucoinStatusDeposit,
                     kucoinStatusWithdraw: kucoinStatusWithdraw,
                     dfxBuy: dfxBuy,
-                    dfxSell: dfxSell
+                    dfxSell: dfxSell,
+                    dfxStaking: dfxStaking
                 };
 
                 const millisecondsAfter = new Date().getTime();
