@@ -1256,9 +1256,10 @@ const resolvers = {
                 let addresses = 0;
                 let addressesMasternodes = 0;
                 users.forEach(u => {
-                    addresses += u.addresses ? u.addresses?.length : 0;
-                    addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length : 0;
-                    usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)) ? 1 : 0;
+                    addresses += u.addresses ? u.addresses?.length: 0;
+                    addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
+                    usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)
+                    || u.dfiInStaking > 0) ? 1 : 0;
                 });
 
                 let visits = 0;
@@ -1594,14 +1595,15 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer10 = user.adressesMasternodesFreezer10;
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                userLoaded.totalValue = user.totalValue;
+                // Glitch protection if new value more than 10x
+                userLoaded.totalValue = userLoaded.totalValue * 10 < user.totalValue ?  userLoaded.totalValue : user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
                 userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
 
                 const saved = await userLoaded.save();
 
                 // save transaction
-                await UserTransaction.create({
+                UserTransaction.create({
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
@@ -1668,7 +1670,7 @@ const resolvers = {
                 const saved = await userLoaded.save();
 
                 // save transaction
-                await UserTransaction.create({
+                UserTransaction.create({
                     date: new Date(),
                     type: "UPDATE",
                     addresses: user.addresses,
@@ -2495,6 +2497,8 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
                     if (u.newsletter.email && u.newsletter.email.length > 0) {
                         mail++;
                         usersWithNewsletter.push(u);
+                        await sendNewsletterMail(u)
+                        logger.info("============ Newsletter Job send Mail to User: " + u.key);
                     }
                     if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
                         address++;
@@ -2508,16 +2512,9 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
             }
         }
 
-        // Test Account
-        const testUser = users.findOne(u => u.key === "testKey").lean();
-        logger.info("===========Send Newsletter to tester " + newsletter + " ================");
-        await sendNewsletterMail(testUser)
-
-
         logger.info("===========Newsletter Subscriber " + newsletter + " ================");
         logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
         logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
-
 
         const millisecondsAfter = new Date().getTime();
         const msTime = millisecondsAfter - millisecondsBefore;
