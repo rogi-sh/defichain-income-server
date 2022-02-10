@@ -13,11 +13,10 @@
     </mj-section>
     <mj-section>
       <mj-column>
-        <mj-text  align="center" font-family="Roboto" color="#ff00af">
+        <mj-text align="center" font-family="Roboto" color="#ff00af">
           <span style="font-size: 24px;"><strong>DFI Price: {{dfiPrice}}</strong> </span>
         </mj-text>
-        <mj-divider border-color="#ff00af">
-        </mj-divider>
+        <mj-divider border-color="#ff00af" />
       </mj-column>
     </mj-section>
     <mj-section background-color="#ff00af" padding-top="0" padding-bottom="0">
@@ -27,7 +26,8 @@
         </mj-text>
       </mj-column>
     </mj-section>
-    <mj-section padding-top="0"></mj-section>
+    <mj-section padding-top="0">
+    </mj-section>
     <mj-section background-color="#e7e7e7">
       <mj-column>
         <mj-text font-family="Roboto">
@@ -54,7 +54,7 @@
       </mj-column>
       <mj-column>
         <mj-text color="#ff00af" font-family="Roboto">
-          <span  style="font-size:18px;">
+          <span style="font-size:18px;">
             <strong>{{incomeDfi}} DFI</strong>
           </span>
         </mj-text>
@@ -65,19 +65,17 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section padding-top="20px" padding-bottom="20px">
       <mj-column>
         <mj-image src="https://res.cloudinary.com/dw6kq38wo/image/upload/c_pad,w_1280,h_720,f_auto,q_auto/v1644441596/defichain/photo_2022-01-09_18-53-42_xmswff.jpg" padding-top="0" padding-bottom="0" padding-right="0" padding-left="0" height="300px" />
       </mj-column>
     </mj-section>
-
     <mj-section text-align="left" padding-top="0" padding-bottom="0">
       <mj-column border-radius="0 0 0 0" border="0 solid black">
-        <mj-text font-family="Roboto" align="center" color="#fff" font-size="40px" font-family="Helvetica Neue" container-background-color="#ff00af" padding-top="20px" padding-bottom="20px">
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="40px" container-background-color="#ff00af" padding-top="20px" padding-bottom="20px">
           <font face="Ubuntu, Helvetica, Arial, sans-serif">
             <span style="font-size: 26px;"><b>Wallet
-            </b></span>
+              </b></span>
           </font>
         </mj-text>
       </mj-column>
@@ -89,21 +87,19 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="20%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">BTC<s>
-          </s></span>
+            </s></span>
         </mj-text>
       </mj-column>
       <mj-column width="80%">
         <mj-text font-family="Roboto">
-          <span style="font-size:16px;"><strong>{{walletBtc}} BTC |  {{lmBtc}} BTC  / {{dfiBtc}} DFI</strong></span>
+          <span style="font-size:16px;"><strong>{{walletBtc}} BTC | {{lmBtc}} BTC / {{dfiBtc}} DFI</strong></span>
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="20%">
         <mj-text font-family="Roboto">
@@ -116,12 +112,11 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="20%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">USDT<s>
-          </s></span>
+            </s></span>
         </mj-text>
       </mj-column>
       <mj-column width="80%">
@@ -130,7 +125,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="20%">
         <mj-text font-family="Roboto">
@@ -143,7 +137,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="20%">
         <mj-text font-family="Roboto">
@@ -156,7 +149,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="20%">
         <mj-text font-family="Roboto">
@@ -169,7 +161,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="20%">
         <mj-text font-family="Roboto">
@@ -182,25 +173,21 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section padding-top="40px" padding-bottom="0">
       <mj-column>
         <mj-image src="https://res.cloudinary.com/dw6kq38wo/image/upload/c_pad,w_1280,h_720,f_auto,q_auto/v1644483368/defichain/Jelly_2_2560x1440_l70k3u.jpg" padding-top="0" padding-bottom="20px" padding-right="0" padding-left="0" height="300px" />
       </mj-column>
     </mj-section>
-
-
     <!-- DEFI POOL -->
     <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
       <mj-column>
-        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px" font-family="Helvetica Neue">DFI
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">DFI
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
-        <mj-text   font-family="Roboto">
+        <mj-text font-family="Roboto">
           <span style="font-size:15px;">DFI Total</span>
         </mj-text>
       </mj-column>
@@ -210,7 +197,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -223,7 +209,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -236,9 +221,8 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
-      <mj-column width="30%" >
+      <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size: 15px;">DFI Staking</span>
         </mj-text>
@@ -249,7 +233,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -262,34 +245,30 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section padding-top="20px" padding-bottom="20px">
       <mj-column>
         <mj-image src="https://res.cloudinary.com/dw6kq38wo/image/upload/c_pad,w_1280,h_720,f_auto,q_auto/v1644483368/defichain/Jelly_1_2560x1440_rprwet.jpg" padding-top="0" padding-bottom="0" padding-right="0" padding-left="0" height="300px" />
       </mj-column>
     </mj-section>
-
     <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
       <mj-column>
-        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px" font-family="Helvetica Neue">Stock Pools (Wallet | dStock/DUsd):
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Stock Pools (Wallet | dStock/DUsd):
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">DUSD<s>
-          </s></span>
+            </s></span>
         </mj-text>
       </mj-column>
       <mj-column width="70%">
         <mj-text font-family="Roboto">
-          <span style="font-size:15px;">{{walletDusd}} DUSD |  {{lmDusd}} DUSD / {{dfiDusd}} DUSD</span>
+          <span style="font-size:15px;">{{walletDusd}} DUSD | {{lmDusd}} DUSD / {{dfiDusd}} DUSD</span>
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -298,16 +277,15 @@
       </mj-column>
       <mj-column width="70%">
         <mj-text font-family="Roboto">
-          <span style="font-size:15px;">{{walletSpy}} |  {{lmSpy}} / {{dusdSpy}} DUSD</span>
+          <span style="font-size:15px;">{{walletSpy}} | {{lmSpy}} / {{dusdSpy}} DUSD</span>
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">TSLA<s>
-          </s></span>
+            </s></span>
         </mj-text>
       </mj-column>
       <mj-column width="70%">
@@ -316,7 +294,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -329,7 +306,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -342,7 +318,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -355,7 +330,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -368,7 +342,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -377,16 +350,15 @@
       </mj-column>
       <mj-column width="70%">
         <mj-text font-family="Roboto">
-          <span style="font-size:15px;">{{walletCoin}} COIN |  {{lmCoin}} COIN / {{dusdCoin}} DUSD</span>
+          <span style="font-size:15px;">{{walletCoin}} COIN | {{lmCoin}} COIN / {{dusdCoin}} DUSD</span>
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">AMZN<s>
-          </s></span>
+            </s></span>
         </mj-text>
       </mj-column>
       <mj-column width="70%">
@@ -395,7 +367,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -408,7 +379,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -421,7 +391,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -434,7 +403,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -447,7 +415,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -460,7 +427,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -473,7 +439,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -486,8 +451,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -500,7 +463,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -513,7 +475,6 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section background-color="#e7e7e7">
       <mj-column width="30%">
         <mj-text font-family="Roboto">
@@ -526,11 +487,10 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
-          <span style="font-size:15px;">PDBC</span>
+          <span id="idrk9l">PDBC</span>
         </mj-text>
       </mj-column>
       <mj-column width="70%">
@@ -539,25 +499,123 @@
         </mj-text>
       </mj-column>
     </mj-section>
-
     <!-- Ne section -->
     <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
       <mj-column>
-        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px" font-family="Helvetica Neue">Vaults:
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Vaults:
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section background-size="cover" background-repeat="no-repeat">
       <mj-column>
-        <mj-text font-family="Roboto" align="center"  font-size="26px">
+        <mj-text font-family="Roboto" align="center" font-size="26px">
           {{vaults}}
         </mj-text>
       </mj-column>
     </mj-section>
-
-
-
     <!-- Footer -->
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Block Rewards in DFI:
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="15px">
+          <b>Total:
+          </b> {{rewards?.rewards?.total}}
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="im7hwu"><b>LM:
+            </b> {{rewards?.rewards?.liquidity}}</span>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="i9wose"><b>LM Stocks:
+            </b>{{rewards?.rewards?.liquidityStocks}}</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="15px">
+          <b>Masternode:
+          </b> {{rewards?.rewards?.minter}}
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="iamg0e"><b>Anchor:
+            </b> {{rewards?.rewards?.anchor}}</span>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="ikp3d9"><b>Community:
+            </b>{{rewards?.rewards?.commnunity}}</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Block: {{rewards?.blockHeight}} / Blocktime: 30s
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#e7e7e7">
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="iwh9m7"><b>Computed Blocktime (200 Blocks):
+            </b></span>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">Avg ~ {{avgFirstLastBlocktime}}s
+        </mj-text>
+        <mj-text font-size="15px">Median ~ {{medianBlocktime}}s
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="isufyp"><b>Blöcke bis zum nächsten Zyklus (Belohnungen verringern sich um 1,658%)
+            </b></span>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">{{ getBlockToNextCycle() }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#e7e7e7">
+      <mj-column>
+        <mj-text font-size="15px">
+          <b>Blöcke bis zur nächsten Schwierigkeitsänderung
+          </b>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">{{ getBlockToNextDiffChange() }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="15px">
+          <b>Blocks to next Oracle Price
+          </b>
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">{{ getBlockToNextOracle() }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
     <mj-section background-color="#e7e7e7">
       <mj-column>
         <mj-text font-family="Roboto" align="center">
@@ -567,10 +625,8 @@
         </mj-button>
         <mj-social font-size="15px" icon-size="30px" mode="horizontal">
           <mj-social-element name="web" href="https://t.me/defichainincome">
-            Telegram
           </mj-social-element>
           <mj-social-element name="twitter" href="https://twitter.com/IgorShelkovenk1">
-            Twitter
           </mj-social-element>
         </mj-social>
       </mj-column>
