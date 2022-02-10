@@ -1559,7 +1559,7 @@ const resolvers = {
                     adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     addressesV2: user.addressesV2,
-                    key: StrUtil.random(8),
+                    key: StrUtil.random(16),
                     wallet: Object.assign({}, user.wallet),
                     totalValue: user.totalValue,
                     totalValueIncomeDfi: user.totalValueIncomeDfi,
