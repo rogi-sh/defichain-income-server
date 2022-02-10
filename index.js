@@ -1561,7 +1561,7 @@ const resolvers = {
                     adressesMasternodesFreezer5: user.adressesMasternodesFreezer5,
                     adressesMasternodesFreezer10: user.adressesMasternodesFreezer10,
                     addressesV2: user.addressesV2,
-                    key: StrUtil.random(8),
+                    key: StrUtil.random(16),
                     wallet: Object.assign({}, user.wallet),
                     totalValue: user.totalValue,
                     totalValueIncomeDfi: user.totalValueIncomeDfi,
@@ -1680,7 +1680,7 @@ const resolvers = {
                     newsletter: newsletter
                 });
 
-                logger.info("Send Mail to " + user.email);
+                logger.info("Start Mail sendind to " + user.email);
                 //await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
                 await sendNewsletterMail(saved);
 
@@ -1810,6 +1810,122 @@ async function sendUpdateNewsletterMail(mail, address, status) {
 
 }
 
+function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo) {
+    contentHtml = contentHtml.replace("{{dfiWallet}}", round(wallet.dfi));
+    contentHtml = contentHtml.replace("{{dfiStaking}}", round(wallet.dfiInStaking));
+    contentHtml = contentHtml.replace("{{dfiLm}}", round(dfiInLm));
+    contentHtml = contentHtml.replace("{{dfiMasternodes}}", round(balanceMasternodeToken + balanceMasternodeUtxo));
+    return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + balanceMasternodeToken + balanceMasternodeUtxo));
+}
+
+function lmForNewsletter(contentHtml, wallet) {
+    // Crypto
+    contentHtml = contentHtml.replace("{{lmBtc}}", round(wallet.btcInBtcPool));
+    contentHtml = contentHtml.replace("{{lmEth}}", round(wallet.ethInEthPool));
+    contentHtml = contentHtml.replace("{{lmUsdt}}", round(wallet.usdtInUsdtPool));
+    contentHtml = contentHtml.replace("{{lmUsdc}}", round(wallet.usdcInUsdcPool));
+    contentHtml = contentHtml.replace("{{lmLtc}}", round(wallet.ltcInLtcPool));
+    contentHtml = contentHtml.replace("{{lmBch}}", round(wallet.bchInBchPool));
+    contentHtml = contentHtml.replace("{{lmDoge}}", round(wallet.dogeInDogePool));
+    contentHtml = contentHtml.replace("{{dfiBch}}", round(wallet.dfiInBchPool));
+
+    contentHtml = contentHtml.replace("{{dfiBtc}}", round(wallet.dfiInBtcPool));
+    contentHtml = contentHtml.replace("{{dfiEth}}", round(wallet.dfiInEthPool));
+    contentHtml = contentHtml.replace("{{dfiUsdt}}", round(wallet.dfiInUsdtPool));
+    contentHtml = contentHtml.replace("{{dfiUsdc}}", round(wallet.dfiInUsdcPool));
+    contentHtml = contentHtml.replace("{{dfiLtc}}", round(wallet.dfiInLtcPool));
+    contentHtml = contentHtml.replace("{{dfiDoge}}", round(wallet.dfiInDogePool));
+
+    // Stocks
+    contentHtml = contentHtml.replace("{{lmDusd}}", round(wallet.usdInUsdPool));
+    contentHtml = contentHtml.replace("{{lmSpy}}", round(wallet.spyInSpyPool));
+    contentHtml = contentHtml.replace("{{lmQqq}}", round(wallet.qqqInQqqPool));
+    contentHtml = contentHtml.replace("{{lmTsla}}", round(wallet.tslaInTslaPool));
+    contentHtml = contentHtml.replace("{{lmAapl}}", round(wallet.aaplInAaplPool));
+    contentHtml = contentHtml.replace("{{lmNvda}}", round(wallet.nvdaInNvdaPool));
+    contentHtml = contentHtml.replace("{{lmGme}}", round(wallet.gmeInGmePool));
+    contentHtml = contentHtml.replace("{{lmQqq}}", round(wallet.qqqInQqqPool));
+    contentHtml = contentHtml.replace("{{lmCoin}}", round(wallet.coinInCoinPool));
+    contentHtml = contentHtml.replace("{{lmAmzn}}", round(wallet.amznInAmznPool));
+    contentHtml = contentHtml.replace("{{lmBaba}}", round(wallet.babaInBabaPool));
+    contentHtml = contentHtml.replace("{{lmArkk}}", round(wallet.arkkInArkkPool));
+    contentHtml = contentHtml.replace("{{lmPltr}}", round(wallet.pltrInPltrPool));
+    contentHtml = contentHtml.replace("{{lmGoogl}}", round(wallet.googlInGooglPool));
+    contentHtml = contentHtml.replace("{{lmTlt}}", round(wallet.tltInTltPool));
+    contentHtml = contentHtml.replace("{{lmEem}}", round(wallet.eemInEemPool));
+    contentHtml = contentHtml.replace("{{lmSlv}}", round(wallet.slvInSlvPool));
+    contentHtml = contentHtml.replace("{{lmGld}}", round(wallet.gldInGldPool));
+    contentHtml = contentHtml.replace("{{lmVnq}}", round(wallet.vnqInVnqPool));
+    contentHtml = contentHtml.replace("{{lmUrth}}", round(wallet.urthInUrthPool));
+    contentHtml = contentHtml.replace("{{lmPdbc}}", round(wallet.pdbcInPdbcPool));
+
+    contentHtml = contentHtml.replace("{{dfiDusd}}", round(wallet.dfiInUsdPool));
+    contentHtml = contentHtml.replace("{{dusdSpy}}", round(wallet.usdInSpyPool));
+    contentHtml = contentHtml.replace("{{dusdQqq}}", round(wallet.usdInQqqPool));
+    contentHtml = contentHtml.replace("{{dusdTsla}}", round(wallet.usdInTslaPool));
+    contentHtml = contentHtml.replace("{{dusdAapl}}", round(wallet.usdInAaplPool));
+    contentHtml = contentHtml.replace("{{dusdNvda}}", round(wallet.usdInNvdaPool));
+    contentHtml = contentHtml.replace("{{dusdGme}}", round(wallet.usdInGmePool));
+    contentHtml = contentHtml.replace("{{dusdQqq}}", round(wallet.usdInQqqPool));
+    contentHtml = contentHtml.replace("{{dusdCoin}}", round(wallet.usdInCoinPool));
+    contentHtml = contentHtml.replace("{{dusdAmzn}}", round(wallet.usdInAmznPool));
+    contentHtml = contentHtml.replace("{{dusdBaba}}", round(wallet.usdInBabaPool));
+    contentHtml = contentHtml.replace("{{dusdArkk}}", round(wallet.usdInArkkPool));
+    contentHtml = contentHtml.replace("{{dusdPltr}}", round(wallet.usdInPltrPool));
+    contentHtml = contentHtml.replace("{{dusdGoogl}}", round(wallet.usdInGooglPool));
+    contentHtml = contentHtml.replace("{{dusdTlt}}", round(wallet.usdInTltPool));
+    contentHtml = contentHtml.replace("{{dusdEem}}", round(wallet.usdInEemPool));
+    contentHtml = contentHtml.replace("{{dusdSlv}}", round(wallet.usdInSlvPool));
+    contentHtml = contentHtml.replace("{{dusdGld}}", round(wallet.usdInGldPool));
+    contentHtml = contentHtml.replace("{{dusdVnq}}", round(wallet.usdInVnqPool));
+    contentHtml = contentHtml.replace("{{dusdUrth}}", round(wallet.usdInUrthPool));
+    contentHtml = contentHtml.replace("{{dusdPdbc}}", round(wallet.usdInPdbcPool));
+    return contentHtml;
+}
+
+function walletForNewsletter(contentHtml, wallet) {
+    // Crypto
+    contentHtml = contentHtml.replace("{{walletBtc}}", round(wallet.btc));
+    contentHtml = contentHtml.replace("{{walletEth}}", round(wallet.eth));
+    contentHtml = contentHtml.replace("{{walletUsdt}}", round(wallet.usdt));
+    contentHtml = contentHtml.replace("{{walletUsdc}}", round(wallet.usdc));
+    contentHtml = contentHtml.replace("{{walletLtc}}", round(wallet.ltc));
+    contentHtml = contentHtml.replace("{{walletBch}}", round(wallet.bch));
+    contentHtml = contentHtml.replace("{{walletDoge}}", round(wallet.doge));
+    // Stocks
+    contentHtml = contentHtml.replace("{{walletDusd}}", round(wallet.usd));
+    contentHtml = contentHtml.replace("{{walletSpy}}", round(wallet.spy));
+    contentHtml = contentHtml.replace("{{walletQqq}}", round(wallet.qqq));
+    contentHtml = contentHtml.replace("{{walletTsla}}", round(wallet.tsla));
+    contentHtml = contentHtml.replace("{{walletAapl}}", round(wallet.aapl));
+    contentHtml = contentHtml.replace("{{walletNvda}}", round(wallet.nvda));
+    contentHtml = contentHtml.replace("{{walletGme}}", round(wallet.gme));
+    contentHtml = contentHtml.replace("{{walletQqq}}", round(wallet.qqq));
+    contentHtml = contentHtml.replace("{{walletCoin}}", round(wallet.coin));
+    contentHtml = contentHtml.replace("{{walletAmzn}}", round(wallet.amzn));
+    contentHtml = contentHtml.replace("{{walletBaba}}", round(wallet.baba));
+    contentHtml = contentHtml.replace("{{walletArkk}}", round(wallet.arkk));
+    contentHtml = contentHtml.replace("{{walletPltr}}", round(wallet.pltr));
+    contentHtml = contentHtml.replace("{{walletGoogl}}", round(wallet.googl));
+    contentHtml = contentHtml.replace("{{walletTlt}}", round(wallet.tlt));
+    contentHtml = contentHtml.replace("{{walletEem}}", round(wallet.eem));
+    contentHtml = contentHtml.replace("{{walletSlv}}", round(wallet.slv));
+    contentHtml = contentHtml.replace("{{walletGld}}", round(wallet.gld));
+    contentHtml = contentHtml.replace("{{walletVnq}}", round(wallet.vnq));
+    contentHtml = contentHtml.replace("{{walletUrth}}", round(wallet.urth));
+    contentHtml = contentHtml.replace("{{walletPdbc}}", round(wallet.pdbc));
+
+    return contentHtml;
+}
+
+function accountInfoForNewsletter(contentHtml, user, price) {
+    contentHtml = contentHtml.replace("{{account}}", user.key);
+    contentHtml = contentHtml.replace("{{value}}", round(user.totalValue));
+    contentHtml = contentHtml.replace("{{incomeDfi}}", round(user.totalValueIncomeDfi));
+    contentHtml = contentHtml.replace("{{incomeUsd}}", round(user.totalValueIncomeUsd));
+    return contentHtml.replace("{{dfiPrice}}", "" + round(price?.price.aggregated.amount));
+}
+
 async function sendNewsletterMail(user) {
 
     fs.readFile(__dirname + '/templates/newsletter.mjml', 'utf8', async function read(err, data) {
@@ -1831,26 +1947,28 @@ async function sendNewsletterMail(user) {
 
         }
 
+        let balanceMasternodeUtxo = 0;
+        let balanceMasternodeToken = 0;
+        for (let i = 0; i < user.addressesMasternodes.length; i++) {
+            balanceMasternodeUtxo += +await client.address.getBalance(user.addressesMasternodes[i]);
+            balanceMasternodeToken += +(await client.address.listToken(user.addressesMasternodes[i])).filter(t => t.id === "0");
+        }
+        const wallet = user.wallet;
+        const dfiInLm = wallet.dfiInBtcPool + wallet.dfiInEthPool + wallet.dfiInUsdtPool + wallet.dfiInUsdcPool
+            + wallet.dfiInLtcPool + wallet.dfiInDogePool +wallet.dfiInBchPool;
+
         // transform mjml to html
         let contentHtml = mjml2html(data.toString()).html;
 
         // basic infos of account
-        contentHtml = contentHtml.replace("{{account}}", user.key);
-        contentHtml = contentHtml.replace("{{value}}", round(user.totalValue));
-        contentHtml = contentHtml.replace("{{incomeDfi}}", round(user.totalValueIncomeDfi));
-        contentHtml = contentHtml.replace("{{incomeUsd}}", round(user.totalValueIncomeUsd));
-        contentHtml = contentHtml.replace("{{dfiPrice}}", ""+ round(price?.price.aggregated.amount));
-
+        contentHtml = accountInfoForNewsletter(contentHtml, user, price);
         // wallet
-        const wallet = user.wallet;
-        contentHtml = contentHtml.replace("{{walletBtc}}", round(wallet.btc));
-        contentHtml = contentHtml.replace("{{walletEth}}", round(wallet.eth));
-        contentHtml = contentHtml.replace("{{walletUsdt}}", round(wallet.usdt));
-        contentHtml = contentHtml.replace("{{walletUsdc}}", round(wallet.usdc));
-        contentHtml = contentHtml.replace("{{walletLtc}}", round(wallet.ltc));
-        contentHtml = contentHtml.replace("{{walletBch}}", round(wallet.bch));
-        contentHtml = contentHtml.replace("{{walletDoge}}", round(wallet.doge));
-
+        contentHtml = walletForNewsletter(contentHtml, wallet);
+        // lm
+        contentHtml = lmForNewsletter(contentHtml, wallet);
+        // dfi
+        contentHtml = dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo);
+        // stocks
         contentHtml = contentHtml.replace("{{lmBtc}}", round(wallet.btcInBtcPool));
         contentHtml = contentHtml.replace("{{lmEth}}", round(wallet.ethInEthPool));
         contentHtml = contentHtml.replace("{{lmUsdt}}", round(wallet.usdtInUsdtPool));
@@ -1865,9 +1983,8 @@ async function sendNewsletterMail(user) {
         contentHtml = contentHtml.replace("{{dfiUsdc}}", round(wallet.dfiInUsdcPool));
         contentHtml = contentHtml.replace("{{dfiLtc}}", round(wallet.dfiInLtcPool));
         contentHtml = contentHtml.replace("{{dfiDoge}}", round(wallet.dfiInDogePool));
-        contentHtml = contentHtml.replace("{{dfiBch}}", round(wallet.dogeInDogePool));
-        contentHtml = contentHtml.replace("{{dfiWallet}}", round(wallet.dfi));
-        contentHtml = contentHtml.replace("{{dfiStaking}}", round(wallet.dfiInStaking));
+
+
 
         // Vaults
         const templateVault =  fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding:'utf8', flag:'r'});
@@ -1893,11 +2010,13 @@ async function sendNewsletterMail(user) {
 }
 
 function round(number) {
-    return (Math.round(number * 100) / 100).toString();
+    return number > 0 ? (Math.round(number * 100) / 100).toString() : 0;
 }
 
 async function sendMail(receiver, subject, content) {
     try {
+
+        logger.info("Mail send to " + receiver);
 
         let info = await mailer.sendMail({
             from: "DeFiChain-Income.com <defichain-income@topiet.de>",
