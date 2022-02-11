@@ -25,14 +25,15 @@ const client = new WhaleApiClient({
 })
 
 const mailer = nodemailer.createTransport({
+    pool: true,
+    maxConnections: 3,
     host: process.env.MAIL_SERVER,
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
-    },
-});
+    }});
 
 const logger = winston.createLogger({
     level: 'info',
@@ -2675,7 +2676,7 @@ app.listen({port: 4000}, () => {
         logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON  + " Cron " + process.env.JOB_SCHEDULER_TURNUS)
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS + " Cron " + process.env.JOB_SCHEDULER_TURNUS_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY + " Cron " + process.env.JOB_SCHEDULER_TURNUS_HISTORY)
-        logger.info("JOB Newsletter test" + process.env.JOB_SCHEDULER_ON_NEWSLETTER + " Cron " + process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER)
+        logger.info("JOB Newsletter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER + " Cron " + process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER)
         logger.info("DEBUG " + process.env.DEBUG)
 
     }
