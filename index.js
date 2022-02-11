@@ -1596,8 +1596,8 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer10 = user.adressesMasternodesFreezer10;
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                // Glitch protection if new value more than 10x and not negative
-                if (user.totalValue > 0 && user.totalValue < userLoaded.totalValue * 10) {
+                // Glitch protection if new value 5x too low or high and not negative
+                if (user.totalValue > 0 && user.totalValue < userLoaded.totalValue * 5 && user.totalValue > userLoaded.totalValue / 5) {
                     userLoaded.totalValue = user.totalValue;
                 }
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
