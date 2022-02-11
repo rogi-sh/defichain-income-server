@@ -17,6 +17,8 @@ const mjml2html = require('mjml');
 
 const {SeqTransport} = require('@datalust/winston-seq');
 
+require('events').EventEmitter.prototype._maxListeners = 100;
+
 const client = new WhaleApiClient({
     url: 'https://ocean.defichain.com',
     timeout: 60000,
@@ -26,7 +28,7 @@ const client = new WhaleApiClient({
 
 const mailer = nodemailer.createTransport({
     pool: true,
-    maxConnections: 3,
+    maxConnections: 10,
     host: process.env.MAIL_SERVER,
     port: 587,
     secure: false, // true for 465, false for other ports
@@ -34,6 +36,14 @@ const mailer = nodemailer.createTransport({
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
     }});
+
+mailer.verify(function(error, success) {
+    if (error) {
+        logger.error(error);
+    } else {
+        logger.info('Mail Server is ready to take our messages');
+    }
+});
 
 const logger = winston.createLogger({
     level: 'info',
@@ -1950,6 +1960,11 @@ async function sendNewsletterMail(user) {
             const vaults = []
 
             for (let i = 0; i < user.addresses.length; i++) {
+
+                if(user.addresses[i].length === 0) {
+                    continue;
+                }
+
                 const vaultsAddress = await client.address.listVault(user.addresses[i]);
                 for (let j = 0; j < vaultsAddress.length; j++) {
                     vaults.push(vaultsAddress[j]);
@@ -1995,7 +2010,7 @@ async function sendNewsletterMail(user) {
 
             contentHtml = contentHtml.replace("{{vaults}}", vaultsHtmlResult);
 
-            await sendMail(user.newsletter.email, "Newsletter", contentHtml);
+            const result = await sendMail(user.newsletter.email, "Newsletter", contentHtml);
 
         });
 
@@ -2014,15 +2029,20 @@ async function sendMail(receiver, subject, content) {
 
         logger.info("Mail sending start  to " + receiver);
 
-        let info = await mailer.sendMail({
+        const mail = {
             from: "DeFiChain-Income.com <defichain-income@topiet.de>",
             to: receiver,
             subject: subject,
             text: content,
             html: content,
-        });
+        };
 
-        logger.info("Mail sending to " + receiver + ", sent and finished: " + info.messageId);
+        const result = await mailer.sendMail(mail, (error, info) => {
+            if (error) {
+                return logger.error("Mail sending FAILED to " + receiver + " reason: " + error);
+            }
+            logger.info("Mail sending SUCCESS to " + receiver + " ID " + info.messageId);
+        });
 
     } catch (err) {
         logger.error("Send Mail error for receiver: " + receiver, err)
@@ -2588,48 +2608,52 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
     });
 }
 
+async function executeNewsletter() {
+    const millisecondsBefore = new Date().getTime();
+    logger.info("===========Newsletter Job: started: " + new Date() + " ================");
+
+    const users = await User.find({newsletter: {$ne: null}}).lean();
+
+    logger.info("===========Newsletter Job: Start Sending Newsletter for subscribers: " + users.length + " ================");
+
+    let mail = 0;
+    let address = 0;
+
+    for (let i = 0; i < users.length; i++) {
+
+        const u = users[i];
+
+        try {
+
+            if (u.newsletter.email && u.newsletter.email.length > 0) {
+                mail++;
+                logger.info("===========Newsletter start for user:  " + u.key + " ================");
+                const result = await sendNewsletterMail(u);
+                logger.info("============ Newsletter finished for user: " + u.key + " ================");
+            }
+            if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                address++;
+            }
+
+
+        } catch (e) {
+            logger.error("============ Newsletter Job error for user with key " + u.key, e.message);
+        }
+    }
+
+    logger.info("===========Newsletter Subscriber " + users.length + " ================");
+    logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
+    logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
+
+    const millisecondsAfter = new Date().getTime();
+    const msTime = millisecondsAfter - millisecondsBefore;
+
+    logger.info("============Newsletter Job executed time: " + new Date() + " in " + msTime + " ms.=============");
+}
+
 if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER, async function () {
-        const millisecondsBefore = new Date().getTime();
-        logger.info("===========Newsletter Job: started: " + new Date() + " ================");
-
-        const users = await User.find({ newsletter: { $ne: null } }).lean();
-
-        logger.info("===========Newsletter Job: Start Sending Newsletter for subscribers: " + users.length + " ================");
-
-        let mail = 0;
-        let address = 0;
-
-        for (let i = 0; i < users.length; i++) {
-
-            const u = users[i];
-
-            try {
-
-                if (u.newsletter.email && u.newsletter.email.length > 0) {
-                    mail++;
-                    logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                    await sendNewsletterMail(u)
-                    logger.info("============ Newsletter finished for user: " + u.key + " ================");
-                }
-                if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
-                    address++;
-                }
-
-
-            } catch (e) {
-                logger.error("============ Newsletter Job error for user with key " + u.key, e.message);
-            }
-        }
-
-        logger.info("===========Newsletter Subscriber " + users.length + " ================");
-        logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
-        logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
-
-        const millisecondsAfter = new Date().getTime();
-        const msTime = millisecondsAfter - millisecondsBefore;
-
-        logger.info("============Newsletter Job executed time: " + new Date() + " in " + msTime + " ms.=============");
+        await executeNewsletter();
 
     });
 }
