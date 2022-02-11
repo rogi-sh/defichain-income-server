@@ -1682,9 +1682,8 @@ const resolvers = {
                     newsletter: newsletter
                 });
 
-                logger.info("Start Mail sendind to " + user.email);
-                //await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
-                await sendNewsletterMail(saved);
+                logger.info("Start Mail sending for update Newsletter to " + user.email);
+                await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1793,22 +1792,28 @@ function getStatusDfx() {
 
 async function sendUpdateNewsletterMail(mail, address, status) {
 
-    fs.readFile(__dirname + '/templates/update.mjml', 'utf8', async function read(err, data) {
+    try {
 
-        if (err) {
-            logger.error("Read template update error");
-            logger.error(err.message);
-            return;
-        }
+        fs.readFile(__dirname + '/templates/update.mjml', 'utf8', async function read(err, data) {
 
-        let contentHtml = mjml2html(data.toString('utf8')).html;
-        contentHtml = contentHtml.replace("{{mail}}", mail);
-        contentHtml = contentHtml.replace("{{address}}", address);
-        contentHtml = contentHtml.replace("{{status}}", status);
+            if (err) {
+                logger.error("Read template update error");
+                logger.error(err.message);
+                return;
+            }
 
-        await sendMail(mail, "Newsletter Data Updated", contentHtml);
+            let contentHtml = mjml2html(data.toString('utf8')).html;
+            contentHtml = contentHtml.replace("{{mail}}", mail);
+            contentHtml = contentHtml.replace("{{address}}", address);
+            contentHtml = contentHtml.replace("{{status}}", status);
 
-    });
+            await sendMail(mail, "Newsletter Data Updated", contentHtml);
+
+        });
+
+    } catch (err) {
+        logger.error("SendUpdateNewsletterMail error for receiver: " + mail, err)
+    }
 
 }
 
@@ -1930,84 +1935,72 @@ function accountInfoForNewsletter(contentHtml, user, price) {
 
 async function sendNewsletterMail(user) {
 
-    fs.readFile(__dirname + '/templates/newsletter.mjml', 'utf8', async function read(err, data) {
+    try {
 
-        if (err) {
-            logger.error("Read template newsletter error");
-            logger.error(err.message);
-            return;
-        }
+        fs.readFile(__dirname + '/templates/newsletter.mjml', 'utf8', async function read(err, data) {
 
-        const price = await client.prices.get("DFI", "USD");
-        const vaults = []
-
-        for (let i = 0; i < user.addresses.length; i++) {
-            const vaultsAddress = await client.address.listVault(user.addresses[i]);
-            for (let j = 0; j < vaultsAddress.length; j++) {
-                vaults.push(vaultsAddress[j]);
+            if (err) {
+                logger.error("Read template newsletter error");
+                logger.error(err.message);
+                return;
             }
 
-        }
+            const price = await client.prices.get("DFI", "USD");
+            const vaults = []
 
-        let balanceMasternodeUtxo = 0;
-        let balanceMasternodeToken = 0;
-        for (let i = 0; i < user.addressesMasternodes.length; i++) {
-            balanceMasternodeUtxo += +await client.address.getBalance(user.addressesMasternodes[i]);
-            balanceMasternodeToken += +(await client.address.listToken(user.addressesMasternodes[i])).filter(t => t.id === "0");
-        }
-        const wallet = user.wallet;
-        const dfiInLm = wallet.dfiInBtcPool + wallet.dfiInEthPool + wallet.dfiInUsdtPool + wallet.dfiInUsdcPool
-            + wallet.dfiInLtcPool + wallet.dfiInDogePool +wallet.dfiInBchPool;
+            for (let i = 0; i < user.addresses.length; i++) {
+                const vaultsAddress = await client.address.listVault(user.addresses[i]);
+                for (let j = 0; j < vaultsAddress.length; j++) {
+                    vaults.push(vaultsAddress[j]);
+                }
 
-        // transform mjml to html
-        let contentHtml = mjml2html(data.toString()).html;
+            }
 
-        // basic infos of account
-        contentHtml = accountInfoForNewsletter(contentHtml, user, price);
-        // wallet
-        contentHtml = walletForNewsletter(contentHtml, wallet);
-        // lm
-        contentHtml = lmForNewsletter(contentHtml, wallet);
-        // dfi
-        contentHtml = dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo);
-        // stocks
-        contentHtml = contentHtml.replace("{{lmBtc}}", round(wallet.btcInBtcPool));
-        contentHtml = contentHtml.replace("{{lmEth}}", round(wallet.ethInEthPool));
-        contentHtml = contentHtml.replace("{{lmUsdt}}", round(wallet.usdtInUsdtPool));
-        contentHtml = contentHtml.replace("{{lmUsdc}}", round(wallet.usdcInUsdcPool));
-        contentHtml = contentHtml.replace("{{lmLtc}}", round(wallet.ltcInLtcPool));
-        contentHtml = contentHtml.replace("{{lmBch}}", round(wallet.bchInBchPool));
-        contentHtml = contentHtml.replace("{{lmDoge}}", round(wallet.dogeInDogePool));
+            let balanceMasternodeUtxo = 0;
+            let balanceMasternodeToken = 0;
+            for (let i = 0; i < user.addressesMasternodes.length; i++) {
+                balanceMasternodeUtxo += +await client.address.getBalance(user.addressesMasternodes[i]);
+                balanceMasternodeToken += +(await client.address.listToken(user.addressesMasternodes[i])).filter(t => t.id === "0");
+            }
+            const wallet = user.wallet;
+            const dfiInLm = wallet.dfiInBtcPool + wallet.dfiInEthPool + wallet.dfiInUsdtPool + wallet.dfiInUsdcPool
+                + wallet.dfiInLtcPool + wallet.dfiInDogePool + wallet.dfiInBchPool;
 
-        contentHtml = contentHtml.replace("{{dfiBtc}}", round(wallet.dfiInBtcPool));
-        contentHtml = contentHtml.replace("{{dfiEth}}", round(wallet.dfiInEthPool));
-        contentHtml = contentHtml.replace("{{dfiUsdt}}", round(wallet.dfiInUsdtPool));
-        contentHtml = contentHtml.replace("{{dfiUsdc}}", round(wallet.dfiInUsdcPool));
-        contentHtml = contentHtml.replace("{{dfiLtc}}", round(wallet.dfiInLtcPool));
-        contentHtml = contentHtml.replace("{{dfiDoge}}", round(wallet.dfiInDogePool));
+            // transform mjml to html
+            let contentHtml = mjml2html(data.toString()).html;
 
+            // basic infos of account
+            contentHtml = accountInfoForNewsletter(contentHtml, user, price);
+            // wallet
+            contentHtml = walletForNewsletter(contentHtml, wallet);
+            // lm
+            contentHtml = lmForNewsletter(contentHtml, wallet);
+            // dfi
+            contentHtml = dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo);
 
+            // Vaults
+            const templateVault = fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding: 'utf8', flag: 'r'});
+            let vaultsHtml = mjml2html(templateVault).html;
+            let vaultsHtmlResult = "";
 
-        // Vaults
-        const templateVault =  fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding:'utf8', flag:'r'});
-        let vaultsHtml = mjml2html(templateVault).html;
-        let vaultsHtmlResult = "";
+            for (let i = 0; i < vaults.length; i++) {
+                let contentHtmlVault = vaultsHtml;
+                contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
+                const nameVault = "..." + vaults[i].vaultId.slice(vaults[i].vaultId.length - 5, vaults[i].vaultId.length)
+                    + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%";
+                contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
+                vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
+            }
 
-        for (let i = 0; i < vaults.length; i++) {
-            let contentHtmlVault = vaultsHtml;
-            contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
-            const nameVault = "..." + vaults[i].vaultId.slice( vaults[i].vaultId.length - 5,  vaults[i].vaultId.length)
-                + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%"  ;
-            contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
-            vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
-        }
+            contentHtml = contentHtml.replace("{{vaults}}", vaultsHtmlResult);
 
-        contentHtml = contentHtml.replace("{{vaults}}", vaultsHtmlResult);
+            await sendMail(user.newsletter.email, "Newsletter", contentHtml);
 
+        });
 
-        await sendMail(user.newsletter.email, "Newsletter", contentHtml);
-
-    });
+    } catch (err) {
+        logger.error("sendNewsletterMail error for user: " + user.key, err)
+    }
 
 }
 
@@ -2018,7 +2011,7 @@ function round(number) {
 async function sendMail(receiver, subject, content) {
     try {
 
-        logger.info("Mail send to " + receiver);
+        logger.info("Mail sending start  to " + receiver);
 
         let info = await mailer.sendMail({
             from: "DeFiChain-Income.com <defichain-income@topiet.de>",
@@ -2028,10 +2021,10 @@ async function sendMail(receiver, subject, content) {
             html: content,
         });
 
-        logger.info("Mail to " + receiver + ", sent: " + info.messageId);
+        logger.info("Mail sending to " + receiver + ", sent and finished: " + info.messageId);
 
     } catch (err) {
-        logger.error("Send Mail error", err)
+        logger.error("Send Mail error for receiver: " + receiver, err)
     }
 }
 
@@ -2597,14 +2590,12 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
 if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER, async function () {
         const millisecondsBefore = new Date().getTime();
-        logger.info("===========Newsletter Job started: " + new Date() + " ================");
+        logger.info("===========Newsletter Job: started: " + new Date() + " ================");
 
-        const users = await User.find().lean();
-        const usersWithNewsletter = [];
+        const users = await User.find({ newsletter: { $ne: null } }).lean();
 
-        logger.info("===========Newsletter Job started users " + users.length + " ================");
+        logger.info("===========Newsletter Job: Start Sending Newsletter for subscribers: " + users.length + " ================");
 
-        let newsletter = 0;
         let mail = 0;
         let address = 0;
 
@@ -2613,27 +2604,24 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
             const u = users[i];
 
             try {
-                if (u.newsletter) {
-                    newsletter++;
-                    if (u.newsletter.email && u.newsletter.email.length > 0) {
-                        mail++;
-                        usersWithNewsletter.push(u);
-                        await sendNewsletterMail(u)
-                        logger.info("============ Newsletter Job send Mail to User: " + u.key);
-                    }
-                    if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
-                        address++;
-                    }
 
+                if (u.newsletter.email && u.newsletter.email.length > 0) {
+                    mail++;
+                    logger.info("===========Newsletter start for user:  " + u.key + " ================");
+                    await sendNewsletterMail(u)
+                    logger.info("============ Newsletter finished for user: " + u.key + " ================");
+                }
+                if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                    address++;
                 }
 
+
             } catch (e) {
-                // Something happened in setting up the request that triggered an Error
-                logger.error("============ Newsletter Job error with key " + u.key, e.message);
+                logger.error("============ Newsletter Job error for user with key " + u.key, e.message);
             }
         }
 
-        logger.info("===========Newsletter Subscriber " + newsletter + " ================");
+        logger.info("===========Newsletter Subscriber " + users.length + " ================");
         logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
         logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
 
