@@ -2682,10 +2682,10 @@ startServer();
 
 app.listen({port: 4000}, () => {
         logger.info(`🚀 Server ready at http://localhost:4000/graphql`)
-        logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON)
-        logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS)
-        logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY)
-        logger.info("JOB Newsletter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER)
+        logger.info("JOB Pools " + process.env.JOB_SCHEDULER_ON  + " Cron " + process.env.JOB_SCHEDULER_TURNUS)
+        logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS + " Cron " + process.env.JOB_SCHEDULER_ON_STATS_TURNUS)
+        logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY + " Cron " + process.env.JOB_SCHEDULER_TURNUS_HISTORY)
+        logger.info("JOB Newsletter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER+ " Cron " + process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER)
         logger.info("DEBUG " + process.env.DEBUG)
 
     }
