@@ -1597,7 +1597,7 @@ const resolvers = {
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
                 // Glitch protection if new value more than 10x and not negative
-                if (user.totalValue > 0 && userLoaded.totalValue * 10 < user.totalValue) {
+                if (user.totalValue > 0 && user.totalValue < userLoaded.totalValue * 10) {
                     userLoaded.totalValue = user.totalValue;
                 }
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
