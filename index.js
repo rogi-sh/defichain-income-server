@@ -1980,7 +1980,7 @@ async function sendNewsletterMail(user) {
             }
             const wallet = user.wallet;
             const dfiInLm = wallet.dfiInBtcPool + wallet.dfiInEthPool + wallet.dfiInUsdtPool + wallet.dfiInUsdcPool
-                + wallet.dfiInLtcPool + wallet.dfiInDogePool + wallet.dfiInBchPool;
+                + wallet.dfiInLtcPool + wallet.dfiInDogePool + wallet.dfiInBchPool + wallet.dfiInUsdPool;
 
             // transform mjml to html
             let contentHtml = mjml2html(data.toString()).html;
