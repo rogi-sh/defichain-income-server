@@ -14,7 +14,7 @@
     <mj-section>
       <mj-column>
         <mj-text  align="center" font-family="Roboto" color="#ff00af">
-          <span style="font-size: 24px;"><strong>DFI Price: {{dfiPrice}}</strong> </span>
+          <span style="font-size: 24px;"><strong>DFI Price: {{dfiPrice}} $</strong> </span>
         </mj-text>
         <mj-divider border-color="#ff00af">
         </mj-divider>
