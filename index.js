@@ -1836,104 +1836,180 @@ function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, 
     return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + balanceMasternodeToken + balanceMasternodeUtxo));
 }
 
-function lmForNewsletter(contentHtml, wallet) {
-    // Crypto
-    contentHtml = contentHtml.replace("{{lmBtc}}", round(wallet.btcInBtcPool));
-    contentHtml = contentHtml.replace("{{lmEth}}", round(wallet.ethInEthPool));
-    contentHtml = contentHtml.replace("{{lmUsdt}}", round(wallet.usdtInUsdtPool));
-    contentHtml = contentHtml.replace("{{lmUsdc}}", round(wallet.usdcInUsdcPool));
-    contentHtml = contentHtml.replace("{{lmLtc}}", round(wallet.ltcInLtcPool));
-    contentHtml = contentHtml.replace("{{lmBch}}", round(wallet.bchInBchPool));
-    contentHtml = contentHtml.replace("{{lmDoge}}", round(wallet.dogeInDogePool));
-    contentHtml = contentHtml.replace("{{dfiBch}}", round(wallet.dfiInBchPool));
-
-    contentHtml = contentHtml.replace("{{dfiBtc}}", round(wallet.dfiInBtcPool));
-    contentHtml = contentHtml.replace("{{dfiEth}}", round(wallet.dfiInEthPool));
-    contentHtml = contentHtml.replace("{{dfiUsdt}}", round(wallet.dfiInUsdtPool));
-    contentHtml = contentHtml.replace("{{dfiUsdc}}", round(wallet.dfiInUsdcPool));
-    contentHtml = contentHtml.replace("{{dfiLtc}}", round(wallet.dfiInLtcPool));
-    contentHtml = contentHtml.replace("{{dfiDoge}}", round(wallet.dfiInDogePool));
-
-    // Stocks
-    contentHtml = contentHtml.replace("{{lmDusd}}", round(wallet.usdInUsdPool));
-    contentHtml = contentHtml.replace("{{lmSpy}}", round(wallet.spyInSpyPool));
-    contentHtml = contentHtml.replace("{{lmQqq}}", round(wallet.qqqInQqqPool));
-    contentHtml = contentHtml.replace("{{lmTsla}}", round(wallet.tslaInTslaPool));
-    contentHtml = contentHtml.replace("{{lmAapl}}", round(wallet.aaplInAaplPool));
-    contentHtml = contentHtml.replace("{{lmNvda}}", round(wallet.nvdaInNvdaPool));
-    contentHtml = contentHtml.replace("{{lmGme}}", round(wallet.gmeInGmePool));
-    contentHtml = contentHtml.replace("{{lmQqq}}", round(wallet.qqqInQqqPool));
-    contentHtml = contentHtml.replace("{{lmCoin}}", round(wallet.coinInCoinPool));
-    contentHtml = contentHtml.replace("{{lmAmzn}}", round(wallet.amznInAmznPool));
-    contentHtml = contentHtml.replace("{{lmBaba}}", round(wallet.babaInBabaPool));
-    contentHtml = contentHtml.replace("{{lmArkk}}", round(wallet.arkkInArkkPool));
-    contentHtml = contentHtml.replace("{{lmPltr}}", round(wallet.pltrInPltrPool));
-    contentHtml = contentHtml.replace("{{lmGoogl}}", round(wallet.googlInGooglPool));
-    contentHtml = contentHtml.replace("{{lmTlt}}", round(wallet.tltInTltPool));
-    contentHtml = contentHtml.replace("{{lmEem}}", round(wallet.eemInEemPool));
-    contentHtml = contentHtml.replace("{{lmSlv}}", round(wallet.slvInSlvPool));
-    contentHtml = contentHtml.replace("{{lmGld}}", round(wallet.gldInGldPool));
-    contentHtml = contentHtml.replace("{{lmVnq}}", round(wallet.vnqInVnqPool));
-    contentHtml = contentHtml.replace("{{lmUrth}}", round(wallet.urthInUrthPool));
-    contentHtml = contentHtml.replace("{{lmPdbc}}", round(wallet.pdbcInPdbcPool));
-
-    contentHtml = contentHtml.replace("{{dfiDusd}}", round(wallet.dfiInUsdPool));
-    contentHtml = contentHtml.replace("{{dusdSpy}}", round(wallet.usdInSpyPool));
-    contentHtml = contentHtml.replace("{{dusdQqq}}", round(wallet.usdInQqqPool));
-    contentHtml = contentHtml.replace("{{dusdTsla}}", round(wallet.usdInTslaPool));
-    contentHtml = contentHtml.replace("{{dusdAapl}}", round(wallet.usdInAaplPool));
-    contentHtml = contentHtml.replace("{{dusdNvda}}", round(wallet.usdInNvdaPool));
-    contentHtml = contentHtml.replace("{{dusdGme}}", round(wallet.usdInGmePool));
-    contentHtml = contentHtml.replace("{{dusdQqq}}", round(wallet.usdInQqqPool));
-    contentHtml = contentHtml.replace("{{dusdCoin}}", round(wallet.usdInCoinPool));
-    contentHtml = contentHtml.replace("{{dusdAmzn}}", round(wallet.usdInAmznPool));
-    contentHtml = contentHtml.replace("{{dusdBaba}}", round(wallet.usdInBabaPool));
-    contentHtml = contentHtml.replace("{{dusdArkk}}", round(wallet.usdInArkkPool));
-    contentHtml = contentHtml.replace("{{dusdPltr}}", round(wallet.usdInPltrPool));
-    contentHtml = contentHtml.replace("{{dusdGoogl}}", round(wallet.usdInGooglPool));
-    contentHtml = contentHtml.replace("{{dusdTlt}}", round(wallet.usdInTltPool));
-    contentHtml = contentHtml.replace("{{dusdEem}}", round(wallet.usdInEemPool));
-    contentHtml = contentHtml.replace("{{dusdSlv}}", round(wallet.usdInSlvPool));
-    contentHtml = contentHtml.replace("{{dusdGld}}", round(wallet.usdInGldPool));
-    contentHtml = contentHtml.replace("{{dusdVnq}}", round(wallet.usdInVnqPool));
-    contentHtml = contentHtml.replace("{{dusdUrth}}", round(wallet.usdInUrthPool));
-    contentHtml = contentHtml.replace("{{dusdPdbc}}", round(wallet.usdInPdbcPool));
-    return contentHtml;
+function replacePoolItem(contentHtmlCrypto, wallet, cryptoInPool, dfiInPool, index, crypto, dfi) {
+    contentHtmlCrypto = contentHtmlCrypto.replace("{{lm}}", round(cryptoInPool));
+    contentHtmlCrypto = contentHtmlCrypto.replace("{{dfi}}", round(dfiInPool));
+    contentHtmlCrypto = contentHtmlCrypto.replace("{{wallet}}", round(wallet));
+    contentHtmlCrypto = contentHtmlCrypto.replaceAll("{{walletTitle}}", crypto);
+    contentHtmlCrypto = contentHtmlCrypto.replaceAll("{{dfiName}}", dfi);
+    contentHtmlCrypto = contentHtmlCrypto.replace("{{color}}", index % 2 === 1 ? "e7e7e7" : 'fff');
+    return contentHtmlCrypto;
 }
 
-function walletForNewsletter(contentHtml, wallet) {
-    // Crypto
-    contentHtml = contentHtml.replace("{{walletBtc}}", round(wallet.btc));
-    contentHtml = contentHtml.replace("{{walletEth}}", round(wallet.eth));
-    contentHtml = contentHtml.replace("{{walletUsdt}}", round(wallet.usdt));
-    contentHtml = contentHtml.replace("{{walletUsdc}}", round(wallet.usdc));
-    contentHtml = contentHtml.replace("{{walletLtc}}", round(wallet.ltc));
-    contentHtml = contentHtml.replace("{{walletBch}}", round(wallet.bch));
-    contentHtml = contentHtml.replace("{{walletDoge}}", round(wallet.doge));
-    // Stocks
-    contentHtml = contentHtml.replace("{{walletDusd}}", round(wallet.usd));
-    contentHtml = contentHtml.replace("{{walletSpy}}", round(wallet.spy));
-    contentHtml = contentHtml.replace("{{walletQqq}}", round(wallet.qqq));
-    contentHtml = contentHtml.replace("{{walletTsla}}", round(wallet.tsla));
-    contentHtml = contentHtml.replace("{{walletAapl}}", round(wallet.aapl));
-    contentHtml = contentHtml.replace("{{walletNvda}}", round(wallet.nvda));
-    contentHtml = contentHtml.replace("{{walletGme}}", round(wallet.gme));
-    contentHtml = contentHtml.replace("{{walletQqq}}", round(wallet.qqq));
-    contentHtml = contentHtml.replace("{{walletCoin}}", round(wallet.coin));
-    contentHtml = contentHtml.replace("{{walletAmzn}}", round(wallet.amzn));
-    contentHtml = contentHtml.replace("{{walletBaba}}", round(wallet.baba));
-    contentHtml = contentHtml.replace("{{walletArkk}}", round(wallet.arkk));
-    contentHtml = contentHtml.replace("{{walletPltr}}", round(wallet.pltr));
-    contentHtml = contentHtml.replace("{{walletGoogl}}", round(wallet.googl));
-    contentHtml = contentHtml.replace("{{walletTlt}}", round(wallet.tlt));
-    contentHtml = contentHtml.replace("{{walletEem}}", round(wallet.eem));
-    contentHtml = contentHtml.replace("{{walletSlv}}", round(wallet.slv));
-    contentHtml = contentHtml.replace("{{walletGld}}", round(wallet.gld));
-    contentHtml = contentHtml.replace("{{walletVnq}}", round(wallet.vnq));
-    contentHtml = contentHtml.replace("{{walletUrth}}", round(wallet.urth));
-    contentHtml = contentHtml.replace("{{walletPdbc}}", round(wallet.pdbc));
+function crypto(contentHtml, wallet) {
+
+    const template = fs.readFileSync(__dirname + '/templates/wallet.mjml', {encoding: 'utf8', flag: 'r'});
+    let cryptoHtml = template;
+    let cryptoHtmlResult = "";
+    let index = 1;
+
+    let contentHtmlCrypto = cryptoHtml;
+
+    if (wallet.btcInBtcPool > 0 || wallet.dfiInBtcPool > 0 || wallet.btc > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.btc, wallet.btcInBtcPool, wallet.dfiInBtcPool, index, 'BTC', 'DFI');
+        index ++;
+    }
+
+    if (wallet.ethInEthPool > 0 || wallet.dfiInEthPool > 0 || wallet.eth > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.eth, wallet.ethInEthPool, wallet.dfiInEthPool, index, 'ETH', 'DFI');
+        index ++;
+    }
+
+    if (wallet.ltcInLtcPool > 0 || wallet.dfiInLtcPool > 0 || wallet.eth > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.ltc, wallet.ltcInLtcPool, wallet.dfiInLtcPool, index, 'LTC', 'DFI');
+        index ++;
+    }
+
+    if (wallet.usdtInUsdtPool > 0 || wallet.dfiInUsdtPool > 0 || wallet.usdt > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.usdt, wallet.usdtInUsdtPool, wallet.dfiInUsdtPool, index, 'USDT', 'DFI');
+        index ++;
+    }
+
+    if (wallet.usdcInUsdcPool > 0 || wallet.dfiInUsdcPool > 0 || wallet.usdc > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.usdc, wallet.usdcInUsdcPool, wallet.dfiInUsdcPool, index, 'USDC', 'DFI');
+        index ++;
+    }
+
+    if (wallet.bchInBchPool > 0 || wallet.dfiInBchPool > 0 || wallet.bch > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.bch, wallet.bchInBchPool, wallet.dfiInBchPool, index, 'BCH', 'DFI');
+        index ++;
+    }
+
+    if (wallet.dogeInDogePool > 0 || wallet.dfiInDogePool > 0 || wallet.doge > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.doge, wallet.dogeInDogePool, wallet.dfiInDogePool, index, 'DOGE', 'DFI');
+        index ++;
+    }
+
+    contentHtml = contentHtml.replace("{{cryptos}}", cryptoHtmlResult);
 
     return contentHtml;
+
+}
+
+function stocks(contentHtml, wallet) {
+
+    const template = fs.readFileSync(__dirname + '/templates/wallet.mjml', {encoding: 'utf8', flag: 'r'});
+    let cryptoHtml = template;
+    let cryptoHtmlResult = "";
+    let index = 1;
+
+    let contentHtmlCrypto = cryptoHtml;
+
+    if (wallet.usdInUsdPool > 0 || wallet.dfiInUsdPool() > 0 || wallet.usd > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.usd, wallet.usdInUsdPool, wallet.dfiInUsdPool, index, 'DUSD', 'DFI');
+        index ++;
+    }
+
+    if (wallet.spyInSpyPool > 0 || wallet.usdInSpyPool > 0 || wallet.spy > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.spy, wallet.spyInSpyPool, wallet.usdInSpyPool, index, 'SPY', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.qqqInQqqPool > 0 || wallet.usdInQqqPool > 0 || wallet.qqq > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.qqq, wallet.qqqInQqqPool, wallet.usdInQqqPool, index, 'QQQ', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.tslaInTslaPool > 0 || wallet.usdInTslaPool > 0 || wallet.tsla > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.tsla, wallet.tslaInTslaPool, wallet.usdInTslaPool, index, 'TSLA', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.aaplInAaplPool > 0 || wallet.usdInAaplPool > 0 || wallet.aapl > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.aapl, wallet.aaplInAaplPool, wallet.usdInAaplPool, index, 'AAPL', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.nvdaInNvdaPool > 0 || wallet.usdInNvdaPool > 0 || wallet.nvda > 0) {
+        cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.nvda, wallet.nvdaInNvdaPool, wallet.usdInNvdaPool, index, 'NVDA', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.gmeInGmePool > 0 || wallet.usdInGmePool > 0 || wallet.gme > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.gme, wallet.gmeInGmePool, wallet.usdInGmePool, index, 'GME', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.coinInCoinPool > 0 || wallet.usdInCoinPool > 0 || wallet.coin > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.coin, wallet.coinInCoinPool, wallet.usdInCoinPool, index, 'COIN', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.amznInAmznPool > 0 || wallet.usdInAmznPool > 0 || wallet.amzn > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.amzn, wallet.amznInAmznPool, wallet.usdInAmznPool, index, 'AMZN', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.babaInBabaPool > 0 || wallet.usdInBabaPool > 0 || wallet.baba > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.baba, wallet.babaInBabaPool, wallet.usdInBabaPool, index, 'BABA', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.arkkInArkkPool > 0 || wallet.usdInArkkPool > 0 || wallet.arkk > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.arkk, wallet.arkkInArkkPool, wallet.usdInArkkPool, index, 'ARKK', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.pltrInPltrPool > 0 || wallet.usdInPltrPool > 0 || wallet.pltr > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.pltr, wallet.pltrInPltrPool, wallet.usdInPltrPool, index, 'PLTR', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.googlInGooglPool > 0 || wallet.usdInGooglPool > 0 || wallet.googl > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.googl, wallet.googlInGooglPool, wallet.usdInGooglPool, index, 'GOOGL', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.eemInEemPool > 0 || wallet.usdInEemPool > 0 || wallet.eem > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.eem, wallet.eemInEemPool, wallet.usdInEemPool, index, 'EEM', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.tltInTltPool > 0 || wallet.usdInTltPool > 0 || wallet.tlt > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.tlt, wallet.tltInTltPool, wallet.usdInTltPool, index, 'TLT', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.slvInSlvPool > 0 || wallet.usdInSlvPool > 0 || wallet.slv > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.slv, wallet.slvInSlvPool, wallet.usdInSlvPool, index, 'SLV', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.gldInGldPool > 0 || wallet.usdInGldPool > 0 || wallet.gld > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.gld, wallet.gldInGldPool, wallet.usdInGldPool, index, 'GLD', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.vnqInVnqPool > 0 || wallet.usdInVnqPool > 0 || wallet.vnq > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.vnq, wallet.vnqInVnqPool, wallet.usdInVnqPool, index, 'VNQ', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.urthInUrthPool > 0 || wallet.usdInUrthPool > 0 || wallet.urth > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.urth, wallet.urthInUrthPool, wallet.usdInUrthPool, index, 'URTH', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.pdbcInPdbcPool > 0 || wallet.usdInPdbcPool > 0 || wallet.pdbc > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.pdbc, wallet.pdbcInPdbcPool, wallet.usdInPdbcPool, index, 'PDBC', 'DUSD');
+        index ++;
+    }
+
+
+    contentHtml = contentHtml.replace("{{stocks}}", cryptoHtmlResult);
+
+    return contentHtml;
+
 }
 
 function accountInfoForNewsletter(contentHtml, user, price) {
@@ -1942,6 +2018,36 @@ function accountInfoForNewsletter(contentHtml, user, price) {
     contentHtml = contentHtml.replace("{{incomeDfi}}", round(user.totalValueIncomeDfi));
     contentHtml = contentHtml.replace("{{incomeUsd}}", round(user.totalValueIncomeUsd));
     return contentHtml.replace("{{dfiPrice}}", "" + round(price?.price.aggregated.amount));
+}
+
+async function vaults(user, contentHtml) {
+    const vaults = []
+    for (let i = 0; i < user.addresses.length; i++) {
+
+        if (user.addresses[i].length === 0) {
+            continue;
+        }
+
+        const vaultsAddress = await client.address.listVault(user.addresses[i]);
+        for (let j = 0; j < vaultsAddress.length; j++) {
+            vaults.push(vaultsAddress[j]);
+        }
+
+    }
+    const templateVault = fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding: 'utf8', flag: 'r'});
+    let vaultsHtml = templateVault;
+    let vaultsHtmlResult = "";
+
+    for (let i = 0; i < vaults.length; i++) {
+        let contentHtmlVault = vaultsHtml;
+        contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
+        const nameVault = "..." + vaults[i].vaultId.slice(vaults[i].vaultId.length - 5, vaults[i].vaultId.length)
+            + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%";
+        contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
+        vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
+    }
+
+    return contentHtml.replace("{{vaults}}", vaultsHtmlResult);
 }
 
 async function sendNewsletterMail(user) {
@@ -1957,20 +2063,9 @@ async function sendNewsletterMail(user) {
             }
 
             const price = await client.prices.get("DFI", "USD");
-            const vaults = []
 
-            for (let i = 0; i < user.addresses.length; i++) {
 
-                if(user.addresses[i].length === 0) {
-                    continue;
-                }
 
-                const vaultsAddress = await client.address.listVault(user.addresses[i]);
-                for (let j = 0; j < vaultsAddress.length; j++) {
-                    vaults.push(vaultsAddress[j]);
-                }
-
-            }
 
             let balanceMasternodeUtxo = 0;
             let balanceMasternodeToken = 0;
@@ -1982,35 +2077,24 @@ async function sendNewsletterMail(user) {
             const dfiInLm = wallet.dfiInBtcPool + wallet.dfiInEthPool + wallet.dfiInUsdtPool + wallet.dfiInUsdcPool
                 + wallet.dfiInLtcPool + wallet.dfiInDogePool + wallet.dfiInBchPool + wallet.dfiInUsdPool;
 
-            // transform mjml to html
-            let contentHtml = mjml2html(data.toString()).html;
+            let contentHtml = data.toString();
 
             // basic infos of account
             contentHtml = accountInfoForNewsletter(contentHtml, user, price);
-            // wallet
-            contentHtml = walletForNewsletter(contentHtml, wallet);
-            // lm
-            contentHtml = lmForNewsletter(contentHtml, wallet);
+
+            // crypto tokens
+            contentHtml = crypto(contentHtml, wallet);
+
+            // stocks tokens
+            contentHtml = stocks(contentHtml, wallet);
+
             // dfi
             contentHtml = dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo);
 
             // Vaults
-            const templateVault = fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding: 'utf8', flag: 'r'});
-            let vaultsHtml = mjml2html(templateVault).html;
-            let vaultsHtmlResult = "";
+            contentHtml = await vaults(user, contentHtml);
 
-            for (let i = 0; i < vaults.length; i++) {
-                let contentHtmlVault = vaultsHtml;
-                contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
-                const nameVault = "..." + vaults[i].vaultId.slice(vaults[i].vaultId.length - 5, vaults[i].vaultId.length)
-                    + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%";
-                contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
-                vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
-            }
-
-            contentHtml = contentHtml.replace("{{vaults}}", vaultsHtmlResult);
-
-            const result = await sendMail(user.newsletter.email, "Newsletter", contentHtml);
+            const result = await sendMail(user.newsletter.email, "Newsletter", mjml2html(contentHtml).html);
 
         });
 
@@ -2021,7 +2105,7 @@ async function sendNewsletterMail(user) {
 }
 
 function round(number) {
-    return number > 0 ? (Math.round(number * 100) / 100).toString() : 0;
+    return number > 0 ? (Math.round(number * 1000) / 1000).toString() : 0;
 }
 
 async function sendMail(receiver, subject, content) {
@@ -2641,9 +2725,8 @@ async function executeNewsletter() {
         }
     }
 
-    logger.info("===========Newsletter Subscriber " + users.length + " ================");
-    logger.info("===========Newsletter Subscriber Mail " + mail + " ================");
-    logger.info("===========Newsletter Subscriber Addresses " + address + " ================");
+    logger.info("===========Newsletter Subscriber " + users.length + " with Mails: " + mail + " ================");
+    logger.info("===========Newsletter Subscriber with Addresses " + address + " ================");
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
