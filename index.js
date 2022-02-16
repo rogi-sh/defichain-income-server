@@ -1606,10 +1606,7 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer10 = user.adressesMasternodesFreezer10;
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                // Glitch protection if new value 5x too low or high and not negative
-                if (user.totalValue > 0 && user.totalValue < userLoaded.totalValue * 5 && user.totalValue > userLoaded.totalValue / 5) {
-                    userLoaded.totalValue = user.totalValue;
-                }
+                userLoaded.totalValue = user.totalValue;
                 userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
                 userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
 
@@ -1905,7 +1902,7 @@ function stocks(contentHtml, wallet) {
 
     let contentHtmlCrypto = cryptoHtml;
 
-    if (wallet.usdInUsdPool > 0 || wallet.dfiInUsdPool() > 0 || wallet.usd > 0) {
+    if (wallet.usdInUsdPool > 0 || wallet.dfiInUsdPool > 0 || wallet.usd > 0) {
         cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.usd, wallet.usdInUsdPool, wallet.dfiInUsdPool, index, 'DUSD', 'DFI');
         index ++;
     }
@@ -2028,26 +2025,36 @@ async function vaults(user, contentHtml) {
             continue;
         }
 
-        const vaultsAddress = await client.address.listVault(user.addresses[i]);
-        for (let j = 0; j < vaultsAddress.length; j++) {
-            vaults.push(vaultsAddress[j]);
+        const vaultsAddress = await client.address.listVault(user.addresses[i]).catch( reason =>{
+                logger.error("Error during vault request for address " + user.addresses[i] + " reason " + reason);
+        });
+        if (vaultsAddress && vaultsAddress.length > 0) {
+            for (let j = 0; j < vaultsAddress.length; j++) {
+                vaults.push(vaultsAddress[j]);
+            }
         }
 
-    }
-    const templateVault = fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding: 'utf8', flag: 'r'});
-    let vaultsHtml = templateVault;
-    let vaultsHtmlResult = "";
 
-    for (let i = 0; i < vaults.length; i++) {
-        let contentHtmlVault = vaultsHtml;
-        contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
-        const nameVault = "..." + vaults[i].vaultId.slice(vaults[i].vaultId.length - 5, vaults[i].vaultId.length)
-            + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%";
-        contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
-        vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
     }
 
-    return contentHtml.replace("{{vaults}}", vaultsHtmlResult);
+    if (vaults && vaults.length > 0) {
+        const templateVault = fs.readFileSync(__dirname + '/templates/vault.mjml', {encoding: 'utf8', flag: 'r'});
+        let vaultsHtml = templateVault;
+        let vaultsHtmlResult = "";
+
+        for (let i = 0; i < vaults.length; i++) {
+            let contentHtmlVault = vaultsHtml;
+            contentHtmlVault = contentHtmlVault.replace("{{vaultId}}", vaults[i].vaultId);
+            const nameVault = "..." + vaults[i].vaultId.slice(vaults[i].vaultId.length - 5, vaults[i].vaultId.length)
+                + " - " + vaults[i].state + " - " + vaults[i].collateralRatio + " %/" + vaults[i].loanScheme.minColRatio + "%";
+            contentHtmlVault = contentHtmlVault.replace("{{vault}}", nameVault);
+            vaultsHtmlResult = vaultsHtmlResult + contentHtmlVault;
+        }
+
+        return contentHtml.replace("{{vaults}}", vaultsHtmlResult);
+    } else {
+        return contentHtml.replace("{{vaults}}", "");
+    }
 }
 
 async function sendNewsletterMail(user) {
