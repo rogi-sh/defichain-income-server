@@ -1,6 +1,6 @@
 const {ApolloServer, gql} = require("apollo-server-express");
 const express = require('express');
-const {GraphQLScalarType} = require("graphql");
+const {GraphQLScalarType, subscribe} = require("graphql");
 const {Kind} = require("graphql/language");
 const mongoose = require('mongoose');
 const StrUtil = require('@supercharge/strings')
@@ -1825,6 +1825,33 @@ async function sendUpdateNewsletterMail(mail, address, status) {
 
 }
 
+async function sendReportNewsletterMail(mail, subscriber, addresses, payed) {
+
+    try {
+
+        fs.readFile(__dirname + '/templates/report.mjml', 'utf8', async function read(err, data) {
+
+            if (err) {
+                logger.error("Read template report error");
+                logger.error(err.message);
+                return;
+            }
+
+            let contentHtml = mjml2html(data.toString('utf8')).html;
+            contentHtml = contentHtml.replace("{{subscriber}}", subscriber);
+            contentHtml = contentHtml.replace("{{addresses}}", addresses);
+            contentHtml = contentHtml.replace("{{payed}}", payed);
+
+            await sendMail(mail, "Newsletter Report", contentHtml);
+
+        });
+
+    } catch (err) {
+        logger.error("sendReportNewsletterMail error for receiver: " + mail, err)
+    }
+
+}
+
 function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo) {
     contentHtml = contentHtml.replace("{{dfiWallet}}", round(wallet.dfi));
     contentHtml = contentHtml.replace("{{dfiStaking}}", round(wallet.dfiInStaking));
@@ -2709,6 +2736,7 @@ async function executeNewsletter() {
 
     let mail = 0;
     let address = 0;
+    let payed = 0;
 
     for (let i = 0; i < users.length; i++) {
 
@@ -2725,6 +2753,9 @@ async function executeNewsletter() {
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
                 address++;
             }
+            if (u.newsletter.status && u.newsletter.status.length === "payed") {
+                payed++;
+            }
 
 
         } catch (e) {
@@ -2732,8 +2763,12 @@ async function executeNewsletter() {
         }
     }
 
+    logger.info("===========Newsletter Subscriber send report Mail  ================");
+    await sendReportNewsletterMail("crypto@shelkovenkov.de", mail, address, payed)
+
     logger.info("===========Newsletter Subscriber " + users.length + " with Mails: " + mail + " ================");
     logger.info("===========Newsletter Subscriber with Addresses " + address + " ================");
+    logger.info("===========Newsletter Subscriber payed " + payed + " ================");
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
