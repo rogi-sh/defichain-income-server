@@ -14,7 +14,7 @@
     <mj-section>
       <mj-column>
         <mj-text  align="center" font-family="Roboto" color="#ff00af">
-          <span style="font-size: 24px;"><strong>DFI Price: {{dfiPrice}} $</strong> </span>
+          <span style="font-size: 20px;"><strong>DFI Price - CEX {{dfiPrice}} $ / DEX {{dfiPriceDex}} $ / Premium {{dfiPremium}} % </strong> </span>
         </mj-text>
         <mj-divider border-color="#ff00af">
         </mj-divider>
@@ -108,8 +108,8 @@
       </mj-column>
     </mj-section>
 
-    <mj-section>
-      <mj-column width="30%">
+    <mj-section background-color="#e7e7e7">
+      <mj-column width="30%" >
         <mj-text   font-family="Roboto">
           <span style="font-size:15px;">DFI Total</span>
         </mj-text>
@@ -121,7 +121,7 @@
       </mj-column>
     </mj-section>
 
-    <mj-section background-color="#e7e7e7">
+    <mj-section >
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">DFI LM</span>
@@ -132,9 +132,7 @@
           <span style="font-size:16px;"><strong>{{dfiLm}}</strong></span>
         </mj-text>
       </mj-column>
-    </mj-section>
 
-    <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">DFI Wallet</span>
@@ -158,9 +156,7 @@
           <span style="font-size:16px;"><strong>{{dfiStaking}}</strong></span>
         </mj-text>
       </mj-column>
-    </mj-section>
 
-    <mj-section>
       <mj-column width="30%">
         <mj-text font-family="Roboto">
           <span style="font-size:15px;">DFI Masternodes</span>
@@ -258,6 +254,17 @@
         </mj-text>
       </mj-column>
     </mj-section>
+
+
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Pools
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+
+    {{pools}}
 
 
 

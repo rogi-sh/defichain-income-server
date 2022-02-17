@@ -1696,7 +1696,10 @@ const resolvers = {
 
                 //TEST NEWSLETTER
                 //const stats = await client.stats.get();
-               // const result = await sendNewsletterMail(saved, stats);
+                //const price = await client.prices.get("DFI", "USD");
+                //const pools = await client.poolpairs.list(100);
+                //const prices = await client.prices.list(1000);
+                //const result = await sendNewsletterMail(saved, stats, price, pools, prices);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1865,11 +1868,31 @@ function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, 
     return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + balanceMasternodeToken + balanceMasternodeUtxo));
 }
 
-function statisticsForNewsletter(contentHtml, stats) {
+function statisticsForNewsletter(contentHtml, stats, pools, prices) {
+
+    // tvl
     contentHtml = contentHtml.replace("{{tvl.total}}", round(stats.tvl.total));
     contentHtml = contentHtml.replace("{{tvl.masternodes}}", round(stats.tvl.masternodes));
     contentHtml = contentHtml.replace("{{tvl.vaults}}", round(stats.tvl.loan));
     contentHtml = contentHtml.replace("{{tvl.dex}}", round(stats.tvl.dex));
+
+    // pools
+    const template = fs.readFileSync(__dirname + '/templates/pool.mjml', {encoding: 'utf8', flag: 'r'});
+    let cryptoHtml = template;
+    let cryptoHtmlResult = "";
+    let index = 1;
+
+    pools = pools.sort((a, b) => b.totalLiquidity.usd - a.totalLiquidity.usd);
+    for (let i = 0; i < pools.length; i++) {
+        const pool = pools[i];
+        const price = pool.id === "17" ? 1: prices.find(p => p.id === (pool.tokenA.symbol + "-USD")).price.aggregated.amount;
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolStatisticsItem(cryptoHtml, pool, index, price);
+        index++;
+    }
+
+    contentHtml = contentHtml.replace("{{pools}}", cryptoHtmlResult);
+
+
     return contentHtml;
 }
 
@@ -1881,6 +1904,26 @@ function replacePoolItem(contentHtmlCrypto, wallet, cryptoInPool, dfiInPool, ind
     contentHtmlCrypto = contentHtmlCrypto.replaceAll("{{dfiName}}", dfi);
     contentHtmlCrypto = contentHtmlCrypto.replace("{{color}}", index % 2 === 1 ? "e7e7e7" : 'fff');
     return contentHtmlCrypto;
+}
+
+function replacePoolStatisticsItem(contentHtmlPool, pool, index, price) {
+    contentHtmlPool = contentHtmlPool.replace("{{pool.tvl}}", round2(pool.totalLiquidity.usd));
+    contentHtmlPool = contentHtmlPool.replace("{{pool.name}}", pool.symbol);
+    contentHtmlPool = contentHtmlPool.replace("{{pool.apr}}", round2(pool.apr.total * 100));
+    const apy = 100 * (Math.pow(1 + (pool.apr.total * 100 / 100 / 52), 52) - 1);
+    contentHtmlPool = contentHtmlPool.replace("{{pool.apy}}", round2(apy));
+    contentHtmlPool = contentHtmlPool.replace("{{pool.t1.name}}", pool.tokenA.symbol);
+    contentHtmlPool = contentHtmlPool.replace("{{pool.t2.name}}", pool.tokenB.symbol);
+    contentHtmlPool = contentHtmlPool.replace("{{pool.t1.reserve}}", round2(pool.tokenA.reserve));
+    contentHtmlPool = contentHtmlPool.replace("{{pool.t2.reserve}}", round2(pool.tokenB.reserve));
+    const priceDex = pool.totalLiquidity.usd / pool.tokenA.reserve / 2;
+    const premium = (priceDex / price * 100) - 100;
+    contentHtmlPool = contentHtmlPool.replace("{{pool.cex}}", round2(price));
+    contentHtmlPool = contentHtmlPool.replace("{{pool.dex}}", round2(priceDex));
+    contentHtmlPool = contentHtmlPool.replace("{{pool.premium}}", roundNeg(premium));
+    contentHtmlPool = contentHtmlPool.replace("{{color}}", index % 2 === 1 ? "e7e7e7" : 'fff');
+
+    return contentHtmlPool;
 }
 
 function crypto(contentHtml, wallet) {
@@ -2049,12 +2092,19 @@ function stocks(contentHtml, wallet) {
 
 }
 
-function accountInfoForNewsletter(contentHtml, user, price) {
+function accountInfoForNewsletter(contentHtml, user, price, pools) {
     contentHtml = contentHtml.replace("{{account}}", user.key);
-    contentHtml = contentHtml.replace("{{value}}", round(user.totalValue));
-    contentHtml = contentHtml.replace("{{incomeDfi}}", round(user.totalValueIncomeDfi));
-    contentHtml = contentHtml.replace("{{incomeUsd}}", round(user.totalValueIncomeUsd));
-    return contentHtml.replace("{{dfiPrice}}", "" + round(price?.price.aggregated.amount));
+    contentHtml = contentHtml.replace("{{value}}", round2(user.totalValue));
+    contentHtml = contentHtml.replace("{{incomeDfi}}", round2(user.totalValueIncomeDfi));
+    contentHtml = contentHtml.replace("{{incomeUsd}}", round2(user.totalValueIncomeUsd));
+    const cexDfiPrice = price?.price.aggregated.amount;
+    const btcPool = pools.find(p => p.id === "5");
+    const dexDfiPrice = btcPool.totalLiquidity.usd / btcPool.tokenB.reserve / 2;
+    const premium = (dexDfiPrice / cexDfiPrice * 100) - 100;
+    contentHtml = contentHtml.replace("{{dfiPrice}}", "" + round2(cexDfiPrice));
+    contentHtml = contentHtml.replace("{{dfiPriceDex}}", "" + round2(dexDfiPrice));
+    contentHtml = contentHtml.replace("{{dfiPremium}}", "" + round2(premium));
+    return contentHtml;
 }
 
 async function vaults(user, contentHtml) {
@@ -2097,7 +2147,7 @@ async function vaults(user, contentHtml) {
     }
 }
 
-async function sendNewsletterMail(user, stats) {
+async function sendNewsletterMail(user, stats, price, pools, prices) {
 
     try {
 
@@ -2108,8 +2158,6 @@ async function sendNewsletterMail(user, stats) {
                 logger.error(err.message);
                 return;
             }
-
-            const price = await client.prices.get("DFI", "USD");
 
             let balanceMasternodeUtxo = 0;
             let balanceMasternodeToken = 0;
@@ -2124,7 +2172,7 @@ async function sendNewsletterMail(user, stats) {
             let contentHtml = data.toString();
 
             // basic infos of account
-            contentHtml = accountInfoForNewsletter(contentHtml, user, price);
+            contentHtml = accountInfoForNewsletter(contentHtml, user, price, pools);
 
             // crypto tokens
             contentHtml = crypto(contentHtml, wallet);
@@ -2139,9 +2187,9 @@ async function sendNewsletterMail(user, stats) {
             contentHtml = await vaults(user, contentHtml);
 
             // Statistics
-            contentHtml = statisticsForNewsletter(contentHtml, stats);
+            contentHtml = statisticsForNewsletter(contentHtml, stats, pools, prices);
 
-            const result = await sendMail(user.newsletter.email, "Newsletter", mjml2html(contentHtml).html);
+            const result = await sendMail(user.newsletter.email, "Newsletter - Daily Defichain Statistics", mjml2html(contentHtml).html);
 
         });
 
@@ -2155,6 +2203,17 @@ function round(number) {
     const nf = Intl.NumberFormat();
     return number > 0 ? nf.format(Math.round(number * 1000) / 1000) : 0;
 }
+
+function round2(number) {
+    const nf = Intl.NumberFormat();
+    return number > 0 ? nf.format(Math.round(number * 100) / 100) : 0;
+}
+
+function roundNeg(number) {
+    const nf = Intl.NumberFormat();
+    return nf.format(Math.round(number * 1000) / 1000);
+}
+
 
 async function sendMail(receiver, subject, content) {
     try {
@@ -2750,6 +2809,9 @@ async function executeNewsletter() {
 
     // get stats of blockchain
     const stats = await client.stats.get();
+    const price = await client.prices.get("DFI", "USD");
+    const pools = await client.poolpairs.list(100);
+    const prices = await client.prices.list(1000);
 
     let mail = 0;
     let address = 0;
@@ -2764,7 +2826,7 @@ async function executeNewsletter() {
             if (u.newsletter.email && u.newsletter.email.length > 0) {
                 mail++;
                 logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                const result = await sendNewsletterMail(u, stats);
+                const result = await sendNewsletterMail(u, stats, price, pools, prices);
                 logger.info("============ Newsletter finished for user: " + u.key + " ================");
             }
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {

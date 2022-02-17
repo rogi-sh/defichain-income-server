@@ -1,0 +1,29 @@
+<mj-section background-color="#{{color}}">
+    <mj-column>
+        <mj-text font-size="16px">
+            <span><b>{{pool.name}}
+            </b></span>
+        </mj-text>
+        <mj-text font-size="14px">TVL {{pool.tvl}} $
+        </mj-text>
+    </mj-column>
+    <mj-column>
+        <mj-text font-size="14px">APR {{pool.apr}} %
+        </mj-text>
+        <mj-text font-size="12px">~ APY {{pool.apy}} %
+        </mj-text>
+        <mj-text font-size="12px">{{pool.t1.name}} {{pool.t1.reserve}}
+        </mj-text>
+        <mj-text font-size="12px">{{pool.t2.name}} {{pool.t2.reserve}}
+        </mj-text>
+
+    </mj-column>
+    <mj-column>
+        <mj-text font-size="14px">Premium ~ {{pool.premium}} %
+        </mj-text>
+        <mj-text font-size="12px">Dex {{pool.cex}} $
+        </mj-text>
+        <mj-text font-size="12px">Cex {{pool.dex}} $
+        </mj-text>
+    </mj-column>
+</mj-section>
