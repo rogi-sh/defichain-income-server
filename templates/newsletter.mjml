@@ -203,6 +203,62 @@
       </mj-column>
     </mj-section>
 
+    <mj-spacer>
+
+    </mj-spacer>
+    <mj-section background-color="#ff00af" padding-top="0" padding-bottom="0">
+      <mj-column>
+        <mj-text font-family="Roboto" color="#ffffff" align="center" font-weight="600">
+          <span style="font-size:26px;">DeFiChain Statistics</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-spacer>
+
+    </mj-spacer>
+    <mj-section padding-top="20px" padding-bottom="20px">
+      <mj-column>
+        <mj-image src="https://res.cloudinary.com/dw6kq38wo/image/upload/v1645092511/defichain/960x0_quoesg.jpg" padding-top="0" padding-bottom="0" padding-right="0" padding-left="0" height="300px" />
+      </mj-column>
+    </mj-section>
+
+
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Total Value Locked
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="18px">
+          <b>Total:
+          </b> {{tvl.total}} $
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="im7hwu"><b>Masternodes:
+          </b> {{tvl.masternodes}} $</span>
+        </mj-text>
+      </mj-column>
+
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="15px">
+          <b>Vaults:
+          </b> {{tvl.vaults}} $
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text font-size="15px">
+          <span id="i9wose"><b>DEX:
+          </b>{{tvl.dex}} $</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
 
 
     <!-- Footer -->

@@ -1693,6 +1693,11 @@ const resolvers = {
                 logger.info("Start Mail sending for update Newsletter to " + user.email);
                 await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
 
+
+                //TEST NEWSLETTER
+                const stats = await client.stats.get();
+                const result = await sendNewsletterMail(saved, stats);
+
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
 
@@ -1858,6 +1863,14 @@ function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, 
     contentHtml = contentHtml.replace("{{dfiLm}}", round(dfiInLm));
     contentHtml = contentHtml.replace("{{dfiMasternodes}}", round(balanceMasternodeToken + balanceMasternodeUtxo));
     return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + balanceMasternodeToken + balanceMasternodeUtxo));
+}
+
+function statisticsForNewsletter(contentHtml, stats) {
+    contentHtml = contentHtml.replace("{{tvl.total}}", round(stats.tvl.total));
+    contentHtml = contentHtml.replace("{{tvl.masternodes}}", round(stats.tvl.masternodes));
+    contentHtml = contentHtml.replace("{{tvl.vaults}}", round(stats.tvl.loan));
+    contentHtml = contentHtml.replace("{{tvl.dex}}", round(stats.tvl.dex));
+    return contentHtml;
 }
 
 function replacePoolItem(contentHtmlCrypto, wallet, cryptoInPool, dfiInPool, index, crypto, dfi) {
@@ -2084,7 +2097,7 @@ async function vaults(user, contentHtml) {
     }
 }
 
-async function sendNewsletterMail(user) {
+async function sendNewsletterMail(user, stats) {
 
     try {
 
@@ -2097,9 +2110,6 @@ async function sendNewsletterMail(user) {
             }
 
             const price = await client.prices.get("DFI", "USD");
-
-
-
 
             let balanceMasternodeUtxo = 0;
             let balanceMasternodeToken = 0;
@@ -2128,6 +2138,9 @@ async function sendNewsletterMail(user) {
             // Vaults
             contentHtml = await vaults(user, contentHtml);
 
+            // Statistics
+            contentHtml = statisticsForNewsletter(contentHtml, stats);
+
             const result = await sendMail(user.newsletter.email, "Newsletter", mjml2html(contentHtml).html);
 
         });
@@ -2139,7 +2152,8 @@ async function sendNewsletterMail(user) {
 }
 
 function round(number) {
-    return number > 0 ? (Math.round(number * 1000) / 1000).toString() : 0;
+    const nf = Intl.NumberFormat();
+    return number > 0 ? nf.format(Math.round(number * 1000) / 1000) : 0;
 }
 
 async function sendMail(receiver, subject, content) {
@@ -2734,6 +2748,9 @@ async function executeNewsletter() {
 
     logger.info("===========Newsletter Job: Start Sending Newsletter for subscribers: " + users.length + " ================");
 
+    // get stats of blockchain
+    const stats = await client.stats.get();
+
     let mail = 0;
     let address = 0;
     let payed = 0;
@@ -2747,7 +2764,7 @@ async function executeNewsletter() {
             if (u.newsletter.email && u.newsletter.email.length > 0) {
                 mail++;
                 logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                const result = await sendNewsletterMail(u);
+                const result = await sendNewsletterMail(u, stats);
                 logger.info("============ Newsletter finished for user: " + u.key + " ================");
             }
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
