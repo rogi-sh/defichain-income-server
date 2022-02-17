@@ -1695,8 +1695,8 @@ const resolvers = {
 
 
                 //TEST NEWSLETTER
-                const stats = await client.stats.get();
-                const result = await sendNewsletterMail(saved, stats);
+                //const stats = await client.stats.get();
+               // const result = await sendNewsletterMail(saved, stats);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
