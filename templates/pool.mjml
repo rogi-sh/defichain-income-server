@@ -4,26 +4,21 @@
             <span><b>{{pool.name}}
             </b></span>
         </mj-text>
-        <mj-text font-size="14px">TVL {{pool.tvl}} $
-        </mj-text>
+        <mj-text font-size="14px"><strong>TVL ~ {{pool.tvl}} $</strong></mj-text>
     </mj-column>
     <mj-column>
-        <mj-text font-size="14px">APR {{pool.apr}} %
-        </mj-text>
-        <mj-text font-size="12px">~ APY {{pool.apy}} %
-        </mj-text>
-        <mj-text font-size="12px">{{pool.t1.name}} {{pool.t1.reserve}}
-        </mj-text>
-        <mj-text font-size="12px">{{pool.t2.name}} {{pool.t2.reserve}}
-        </mj-text>
+        <mj-text font-size="14px"><strong>APR {{pool.apr}} % </strong></mj-text>
+        <mj-text font-size="11px"> ~ APY {{pool.apy}} %</mj-text>
+        <mj-text font-size="11px">{{pool.t1.name}} {{pool.t1.reserve}}</mj-text>
+        <mj-text font-size="11px">{{pool.t2.name}} {{pool.t2.reserve}}</mj-text>
 
     </mj-column>
     <mj-column>
-        <mj-text font-size="14px">Premium ~ {{pool.premium}} %
+        <mj-text font-size="14px"><strong>Premium ~ {{pool.premium}} %</strong>
         </mj-text>
-        <mj-text font-size="12px">Dex {{pool.cex}} $
+        <mj-text font-size="11px">Dex ~ {{pool.cex}} $
         </mj-text>
-        <mj-text font-size="12px">Cex {{pool.dex}} $
+        <mj-text font-size="11px">Cex ~ {{pool.dex}} $
         </mj-text>
     </mj-column>
 </mj-section>

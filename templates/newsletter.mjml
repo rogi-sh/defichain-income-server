@@ -266,7 +266,9 @@
 
     {{pools}}
 
+    <mj-spacer>
 
+    </mj-spacer>
 
     <!-- Footer -->
     <mj-section background-color="#e7e7e7">
