@@ -272,6 +272,7 @@ const addressV2Definition = {
     masternode: Boolean,
     freezer: Number,
     name: String,
+    aktiv: Boolean
 };
 
 const userSchema = new mongoose.Schema({
@@ -705,6 +706,7 @@ const typeDefs = gql`
         masternode: Boolean
         freezer: Float
         name: String
+        aktiv: Boolean
     }
     
     type User {
@@ -1085,6 +1087,7 @@ const typeDefs = gql`
         masternode: Boolean
         freezer: Float
         name: String
+        aktiv: Boolean
     }
     
     input UserInput {
