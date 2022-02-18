@@ -1161,6 +1161,10 @@ function checkAuth(auth) {
 }
 
 
+function totalValuesGreaterZero(user) {
+    return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0;
+}
+
 const resolvers = {
     Query: {
         users: async (obj, {user}, {auth}) => {
@@ -1609,9 +1613,13 @@ const resolvers = {
                 userLoaded.adressesMasternodesFreezer10 = user.adressesMasternodesFreezer10;
                 userLoaded.addressesV2 = user.addressesV2 ? user.addressesV2 : userLoaded.addressesV2;
                 userLoaded.wallet = Object.assign({}, user.wallet);
-                userLoaded.totalValue = user.totalValue;
-                userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
-                userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
+
+                if (totalValuesGreaterZero(user)) {
+                    logger.info("Update User total values ");
+                    userLoaded.totalValue = user.totalValue;
+                    userLoaded.totalValueIncomeDfi = user.totalValueIncomeDfi;
+                    userLoaded.totalValueIncomeUsd = user.totalValueIncomeUsd;
+                }
 
                 const saved = await userLoaded.save();
 
@@ -2752,7 +2760,7 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
 
             try {
 
-                if (u.totalValue > 0 || u.totalValueIncomeDfi > 0 || u.totalValueIncomeUsd > 0) {
+                if (u.totalValue > 0 && u.totalValueIncomeDfi > 0 && u.totalValueIncomeUsd > 0) {
 
                     // Load User and History
                     const userHistoryLoaded = await findHistoryByKey(u.key);
@@ -2761,9 +2769,9 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
                     if (userHistoryLoaded && u) {
                         const item = {
                             date: new Date(),
-                            totalValue: u.totalValue ? u.totalValue : 0,
-                            totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
-                            totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
+                            totalValue: u.totalValue,
+                            totalValueIncomeDfi: u.totalValueIncomeDfi,
+                            totalValueIncomeUsd: u.totalValueIncomeUsd
                         };
                         userHistoryLoaded.values.push(item);
                         await userHistoryLoaded.save();
@@ -2776,9 +2784,9 @@ if (process.env.JOB_SCHEDULER_ON_HISTORY === "on") {
                         key: u.key,
                         values: [{
                             date: new Date(),
-                            totalValue: u.totalValue ? u.totalValue : 0,
-                            totalValueIncomeDfi: u.totalValueIncomeDfi ? u.totalValueIncomeDfi : 0,
-                            totalValueIncomeUsd: u.totalValueIncomeUsd ? u.totalValueIncomeUsd : 0
+                            totalValue: u.totalValue,
+                            totalValueIncomeDfi: u.totalValueIncomeDfi,
+                            totalValueIncomeUsd: u.totalValueIncomeUsd
                         }]
                     });
 
