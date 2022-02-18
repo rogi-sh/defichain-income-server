@@ -2832,7 +2832,7 @@ async function executeNewsletter() {
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
                 address++;
             }
-            if (u.newsletter.status && u.newsletter.status.length === "payed") {
+            if (u.newsletter.status && u.newsletter.status === "payed") {
                 payed++;
             }
 
