@@ -255,6 +255,42 @@
       </mj-column>
     </mj-section>
 
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px" font-family="Helvetica Neue">Staking
+        </mj-text>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="12px" font-family="Helvetica Neue">Masternode counts - Total: {{totalMN}} (Normal: {{normalMN}}, 5Y: {{5YMN}} & 10Y {{10YMN}} Freezer)
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#e7e7e7">
+      <mj-column width="25%" >
+        <mj-text   font-family="Roboto">
+          <span style="font-size:14px;">Masternode</span>
+        </mj-text>
+      </mj-column>
+      <mj-column width="75%">
+        <mj-text color="#ff00af" font-family="Roboto">
+          <span style="font-size:12px;"><strong>Normal {{aprMN}} % APR - {{apyMN}} % APY</strong></span><br></br>
+          <span style="font-size:12px;"><strong>5Y Freezer {{aprMN5}} % APR - {{apyMN5}} % APY</strong></span><br></br>
+          <span style="font-size:12px;"><strong>10Y Freezer {{aprMN10}} % APR - {{apyMN10}} % APY</strong></span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section >
+      <mj-column width="25%" >
+        <mj-text   font-family="Roboto">
+          <span style="font-size:14px;">Cake Defi</span>
+        </mj-text>
+      </mj-column>
+      <mj-column width="75%">
+        <mj-text color="#ff00af" font-family="Roboto">
+          <span style="font-size:12px;"><strong>No Freezer {{aprMNCake}} % APR - {{apyMNCake}} % APY</strong></span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
 
     <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
       <mj-column>
@@ -262,6 +298,7 @@
         </mj-text>
       </mj-column>
     </mj-section>
+
 
 
     {{pools}}

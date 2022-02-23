@@ -1710,7 +1710,8 @@ const resolvers = {
                 //const price = await client.prices.get("DFI", "USD");
                 //const pools = await client.poolpairs.list(100);
                 //const prices = await client.prices.list(1000);
-                //const result = await sendNewsletterMail(saved, stats, price, pools, prices);
+                //const cake = await getCakeApy();
+                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1787,6 +1788,10 @@ const resolvers = {
 
 function getPool(id) {
     return axios.get(process.env.POOL_API + id);
+}
+
+function getCakeApy() {
+    return axios.get(process.env.CAKE_API);
 }
 
 function getStats() {
@@ -1903,6 +1908,44 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 
     contentHtml = contentHtml.replace("{{pools}}", cryptoHtmlResult);
 
+
+    return contentHtml;
+}
+
+function statisticsForStaking(contentHtml, stats, cake) {
+
+    // staking
+    const masternodeCount5Freezer = stats.masternodes.locked.find(p => p.weeks === 260).count;
+    const masternodeCount10Freezer = stats.masternodes.locked.find(p => p.weeks === 520).count;
+    const masternodeCount0Freezer = stats.masternodes.locked.find(p => p.weeks === 0).count;
+    const masternodeCount = masternodeCount5Freezer + masternodeCount10Freezer + masternodeCount0Freezer;
+    const masternodeCountForAprCalc = masternodeCount5Freezer * 1.5 + masternodeCount10Freezer * 2
+        + masternodeCount0Freezer;
+    const stakingAprMN = 60 / 30 * stats.emission.masternode / masternodeCountForAprCalc * 525600 / 20000 * 100;
+    const stakingApyMn = 100 * (Math.pow(1 + (stakingAprMN / 100 / 52), 52) - 1);
+    const stakingApy5Mn = 100 * (Math.pow(1 + (stakingAprMN * 1.5 / 100 / 52), 52) - 1);
+    const stakingApy10Mn = 100 * (Math.pow(1 + (stakingAprMN * 2 / 100 / 52), 52) - 1);
+
+    const cakeApy = +cake.data.staking.find(s => s.id === 'DFI').apy * 100;
+    const cakeApr = 100 * 730 * (Math.pow(1 + cakeApy / 100, 1 / 730) - 1);
+
+    // numbers
+    contentHtml = contentHtml.replace("{{totalMN}}", masternodeCount);
+    contentHtml = contentHtml.replace("{{normalMN}}", masternodeCount0Freezer);
+    contentHtml = contentHtml.replace("{{5YMN}}", masternodeCount5Freezer);
+    contentHtml = contentHtml.replace("{{10YMN}}", masternodeCount10Freezer);
+
+    // staking masternode
+    contentHtml = contentHtml.replace("{{aprMN}}", round2(stakingAprMN));
+    contentHtml = contentHtml.replace("{{apyMN}}", round2(stakingApyMn));
+    contentHtml = contentHtml.replace("{{aprMN5}}", round2(stakingAprMN * 1.5));
+    contentHtml = contentHtml.replace("{{apyMN5}}", round2(stakingApy5Mn));
+    contentHtml = contentHtml.replace("{{aprMN10}}", round2(stakingAprMN * 2));
+    contentHtml = contentHtml.replace("{{apyMN10}}", round2(stakingApy10Mn));
+
+    // staking cake
+    contentHtml = contentHtml.replace("{{apyMNCake}}", round2(cakeApy));
+    contentHtml = contentHtml.replace("{{aprMNCake}}", round2(cakeApr));
 
     return contentHtml;
 }
@@ -2158,7 +2201,7 @@ async function vaults(user, contentHtml) {
     }
 }
 
-async function sendNewsletterMail(user, stats, price, pools, prices) {
+async function sendNewsletterMail(user, stats, price, pools, prices, cake) {
 
     try {
 
@@ -2200,6 +2243,9 @@ async function sendNewsletterMail(user, stats, price, pools, prices) {
             // Statistics
             contentHtml = statisticsForNewsletter(contentHtml, stats, pools, prices);
 
+            // staking
+            contentHtml = statisticsForStaking(contentHtml, stats, cake);
+
             const result = await sendMail(user.newsletter.email, "Newsletter - Daily Defichain Statistics", mjml2html(contentHtml).html);
 
         });
@@ -2222,7 +2268,7 @@ function round2(number) {
 
 function roundNeg(number) {
     const nf = Intl.NumberFormat();
-    return nf.format(Math.round(number * 1000) / 1000);
+    return nf.format(Math.round(number * 100) / 100);
 }
 
 
@@ -2823,6 +2869,7 @@ async function executeNewsletter() {
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(100);
     const prices = await client.prices.list(1000);
+    const cake = await getCakeApy();
 
     let mail = 0;
     let address = 0;
@@ -2837,7 +2884,7 @@ async function executeNewsletter() {
             if (u.newsletter.email && u.newsletter.email.length > 0) {
                 mail++;
                 logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                const result = await sendNewsletterMail(u, stats, price, pools, prices);
+                const result = await sendNewsletterMail(u, stats, price, pools, prices, cake);
                 logger.info("============ Newsletter finished for user: " + u.key + " ================");
             }
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
