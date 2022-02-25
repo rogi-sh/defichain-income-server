@@ -1165,6 +1165,59 @@ function totalValuesGreaterZero(user) {
     return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0;
 }
 
+async function loadExchangeInfos() {
+    let bittrexStatus;
+    let bittrexNotice;
+    let kucoinStatusDeposit;
+    let kucoinStatusWithdraw;
+    let dfxBuy;
+    let dfxSell;
+    let dfxStaking
+
+    await axios.all([
+        getStatusBittrex(), getStatusKucoin(), getStatusDfx()
+    ])
+        .then(axios.spread((response, response2, response3) => {
+
+            bittrexStatus = response.data.status;
+            bittrexNotice = response.data.notice;
+            kucoinStatusDeposit = response2.data.data.isDepositEnabled;
+            kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+            dfxBuy = response3.data.buy;
+            dfxSell = response3.data.sell;
+            dfxStaking = response3.data.staking;
+
+        }))
+        .catch(function (error) {
+            // handle error
+            if (error.response) {
+                // Request made and server responded
+                logger.error("==================== ERROR Exchange Status in Call to API BEGIN ====================");
+                logger.error("getExchangeStatus", error.response.data);
+                logger.error("getExchangeStatus", error.response.status);
+                logger.error("getExchangeStatus", error.response.statusText);
+                logger.error("==================== ERROR Exchange Status in Call to API END ====================");
+            } else if (error.request) {
+                // The request was made but no response was received
+                logger.error("getExchangeStatus", error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                logger.error('getExchangeStatus', error.message);
+            }
+        });
+
+    const exchangeStatus = {
+        bittrexStatus: bittrexStatus,
+        bittrexNotice: bittrexNotice,
+        kucoinStatusDeposit: kucoinStatusDeposit,
+        kucoinStatusWithdraw: kucoinStatusWithdraw,
+        dfxBuy: dfxBuy,
+        dfxSell: dfxSell,
+        dfxStaking: dfxStaking
+    };
+    return exchangeStatus;
+}
+
 const resolvers = {
     Query: {
         users: async (obj, {user}, {auth}) => {
@@ -1331,56 +1384,7 @@ const resolvers = {
             try {
 
                 const millisecondsBefore = new Date().getTime();
-
-                let bittrexStatus;
-                let bittrexNotice;
-                let kucoinStatusDeposit;
-                let kucoinStatusWithdraw;
-                let dfxBuy;
-                let dfxSell;
-                let dfxStaking
-
-                await axios.all([
-                    getStatusBittrex(), getStatusKucoin(), getStatusDfx()
-                ])
-                    .then(axios.spread((response, response2, response3) => {
-
-                        bittrexStatus = response.data.status;
-                        bittrexNotice = response.data.notice;
-                        kucoinStatusDeposit = response2.data.data.isDepositEnabled;
-                        kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
-                        dfxBuy = response3.data.buy;
-                        dfxSell = response3.data.sell;
-                        dfxStaking = response3.data.staking;
-
-                    }))
-                    .catch(function (error) {
-                        // handle error
-                        if (error.response) {
-                            // Request made and server responded
-                            logger.error("==================== ERROR Exchange Status in Call to API BEGIN ====================");
-                            logger.error("getExchangeStatus", error.response.data);
-                            logger.error("getExchangeStatus", error.response.status);
-                            logger.error("getExchangeStatus", error.response.statusText);
-                            logger.error("==================== ERROR Exchange Status in Call to API END ====================");
-                        } else if (error.request) {
-                            // The request was made but no response was received
-                            logger.error("getExchangeStatus", error.request);
-                        } else {
-                            // Something happened in setting up the request that triggered an Error
-                            logger.error('getExchangeStatus', error.message);
-                        }
-                    });
-
-                const exchangeStatus = {
-                    bittrexStatus: bittrexStatus,
-                    bittrexNotice: bittrexNotice,
-                    kucoinStatusDeposit: kucoinStatusDeposit,
-                    kucoinStatusWithdraw: kucoinStatusWithdraw,
-                    dfxBuy: dfxBuy,
-                    dfxSell: dfxSell,
-                    dfxStaking: dfxStaking
-                };
+                const exchangeStatus = await loadExchangeInfos();
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1706,12 +1710,13 @@ const resolvers = {
 
 
                 //TEST NEWSLETTER
-                //const stats = await client.stats.get();
-                //const price = await client.prices.get("DFI", "USD");
-                //const pools = await client.poolpairs.list(100);
-                //const prices = await client.prices.list(1000);
-                //const cake = await getCakeApy();
-                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake);
+                const stats = await client.stats.get();
+                const price = await client.prices.get("DFI", "USD");
+                const pools = await client.poolpairs.list(100);
+                const prices = await client.prices.list(1000);
+                const cake = await getCakeApy();
+                const exchanges = await loadExchangeInfos();
+                const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -1946,6 +1951,26 @@ function statisticsForStaking(contentHtml, stats, cake) {
     // staking cake
     contentHtml = contentHtml.replace("{{apyMNCake}}", round2(cakeApy));
     contentHtml = contentHtml.replace("{{aprMNCake}}", round2(cakeApr));
+
+    return contentHtml;
+}
+
+function statisticsForExchnges(contentHtml, exchanges) {
+
+    // dfx
+    contentHtml = contentHtml.replace("{{dfxDeposit}}", exchanges.dfxBuy);
+    contentHtml = contentHtml.replace("{{dfxWithdraw}}", exchanges.dfxSell);
+    contentHtml = contentHtml.replace("{{dfxStaking}}", exchanges.dfxStaking);
+    contentHtml = contentHtml.replace("{{dfxColor}}", exchanges.dfxBuy === 'ONLINE' ? '25e712': 'ff6666');
+
+    // kucoin
+    contentHtml = contentHtml.replace("{{kucoinDeposit}}", exchanges.kucoinStatusDeposit ? 'ONLINE' : 'OFFLINE');
+    contentHtml = contentHtml.replace("{{kucoinWithdraw}}", exchanges.kucoinStatusWithdraw ? 'ONLINE' : 'OFFLINE');
+    contentHtml = contentHtml.replace("{{kucoinColor}}", exchanges.kucoinStatusDeposit ? '25e712': 'ff6666');
+
+    // bittrex
+    contentHtml = contentHtml.replace("{{bittrexStatus}}", exchanges.bittrexStatus);
+    contentHtml = contentHtml.replace("{{bittrexColor}}", exchanges.bittrexStatus === 'ONLINE' ? '25e712': 'ff6666');
 
     return contentHtml;
 }
@@ -2201,7 +2226,7 @@ async function vaults(user, contentHtml) {
     }
 }
 
-async function sendNewsletterMail(user, stats, price, pools, prices, cake) {
+async function sendNewsletterMail(user, stats, price, pools, prices, cake, exchanges) {
 
     try {
 
@@ -2245,6 +2270,9 @@ async function sendNewsletterMail(user, stats, price, pools, prices, cake) {
 
             // staking
             contentHtml = statisticsForStaking(contentHtml, stats, cake);
+
+            // exchanges
+            contentHtml = statisticsForExchnges(contentHtml, exchanges);
 
             const result = await sendMail(user.newsletter.email, "Newsletter - Daily Defichain Statistics", mjml2html(contentHtml).html);
 

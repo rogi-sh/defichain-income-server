@@ -291,6 +291,53 @@
       </mj-column>
     </mj-section>
 
+    <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
+      <mj-column>
+        <mj-text font-family="Roboto" align="center" color="#fff" font-size="26px">Exchanges
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#{{dfxColor}}">
+      <mj-column width="25%" >
+        <mj-text   font-family="Roboto">
+          <span style="font-size:14px;">DFX</span>
+        </mj-text>
+      </mj-column>
+      <mj-column width="75%">
+        <mj-text font-family="Roboto">
+          <span  style="font-size:12px;"><strong>Deposit: {{dfxDeposit}} - Withdraw: {{dfxWithdraw}} - Staking {{dfxStaking}}</strong></span>
+
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#{{kucoinColor}}">
+      <mj-column width="25%" >
+        <mj-text   font-family="Roboto">
+          <span style="font-size:14px;">Kucoin</span>
+        </mj-text>
+      </mj-column>
+      <mj-column width="75%">
+        <mj-text font-family="Roboto">
+          <span style="font-size:12px;"><strong>Deposit: {{kucoinDeposit}} - Withdraw: {{kucoinWithdraw}} </strong></span>
+
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#{{bittrexColor}}">
+      <mj-column width="25%" >
+        <mj-text   font-family="Roboto">
+          <span style="font-size:14px;">Bittrex</span>
+        </mj-text>
+      </mj-column>
+      <mj-column width="75%">
+        <mj-text font-family="Roboto">
+          <span style="font-size:12px;"><strong>Status: {{bittrexStatus}} </strong></span>
+
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
 
     <mj-section background-size="cover" background-repeat="no-repeat" background-color="#ff00af">
       <mj-column>
