@@ -1710,13 +1710,13 @@ const resolvers = {
 
 
                 //TEST NEWSLETTER
-                const stats = await client.stats.get();
-                const price = await client.prices.get("DFI", "USD");
-                const pools = await client.poolpairs.list(100);
-                const prices = await client.prices.list(1000);
-                const cake = await getCakeApy();
-                const exchanges = await loadExchangeInfos();
-                const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+                //const stats = await client.stats.get();
+                //const price = await client.prices.get("DFI", "USD");
+                //const pools = await client.poolpairs.list(100);
+                //const prices = await client.prices.list(1000);
+                //const cake = await getCakeApy();
+                //const exchanges = await loadExchangeInfos();
+                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -2898,6 +2898,7 @@ async function executeNewsletter() {
     const pools = await client.poolpairs.list(100);
     const prices = await client.prices.list(1000);
     const cake = await getCakeApy();
+    const exchanges = await loadExchangeInfos();
 
     let mail = 0;
     let address = 0;
@@ -2912,7 +2913,7 @@ async function executeNewsletter() {
             if (u.newsletter.email && u.newsletter.email.length > 0) {
                 mail++;
                 logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                const result = await sendNewsletterMail(u, stats, price, pools, prices, cake);
+                const result = await sendNewsletterMail(u, stats, price, pools, prices, cake, exchanges);
                 logger.info("============ Newsletter finished for user: " + u.key + " ================");
             }
             if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
