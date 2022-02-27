@@ -344,7 +344,9 @@ const poolDefinition = {
     date: Date,
     totalLiquidity: Number,
     rewardPct: Number,
-    commission: Number
+    commission: Number,
+    volume24h: Number,
+    volume30d: Number
 }
 
 
@@ -686,6 +688,8 @@ const typeDefs = gql`
         totalLiquidity: Float
         rewardPct: Float
         commission: Float
+        volume24h: Float
+        volume30d: Float
     }
     
     type PoolList {
@@ -1807,6 +1811,10 @@ function getStatsOcean() {
     return axios.get(process.env.STATS_OCEAN_API);
 }
 
+function getOceanPoolPairs() {
+    return axios.get(process.env.POOL_PAIRS_OCEAN_API);
+}
+
 function getPoolPairs() {
     return axios.get(process.env.POOL_PAIRS_API);
 }
@@ -2450,7 +2458,7 @@ async function saveTSLAPool(data) {
     return createdTSLAPool;
 }
 
-async function saveFarmingPool(dataPairs) {
+async function saveFarmingPool(dataPairs, oceanPairs) {
     const pools = [];
 
     const poolPairs = Object.values(dataPairs);
@@ -2469,6 +2477,8 @@ async function saveFarmingPool(dataPairs) {
         pool.customRewards = poolFromPairs.customRewards;
         pool.totalLiquidityLpToken = poolFromPairs.totalLiquidity;
         pool.totalLiquidity = poolFromPairs.totalLiquidity;
+        pool.volume24h = oceanPairs.data.find(x => x.id === pool.poolId).volume.h24;
+        pool.volume30d = oceanPairs.data.find(x => x.id === pool.poolId).volume.d30;
 
         // Crypto Pool price
         if (+p.id < 17) {
@@ -2680,7 +2690,7 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
         const millisecondsBefore = new Date().getTime();
         logger.info("===============Pools Job started " + new Date() + " =================");
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolPairs()])
+        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolPairs(), getOceanPoolPairs()])
             .then(function (results) {
                 const btc = results[0];
                 saveBTCPool(btc.data)
@@ -2738,7 +2748,8 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
                         logger.error("saveTSLAPool", error);
                     });
                 const pairs = results[9];
-                saveFarmingPool(pairs.data).catch(function (error) {
+                const oceanPairs = results[10];
+                saveFarmingPool(pairs.data, oceanPairs.data).catch(function (error) {
                     // handle error
                     logger.error("saveFarmingPool", error);
                 });
