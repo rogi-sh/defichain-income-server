@@ -1526,12 +1526,12 @@ const resolvers = {
                 const diff = Math.abs(fromDate.getTime() - tillDate.getTime());
                 const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
                 if (diffDays > 3 && diffDays < 10) {
-                    farming = farming.filter(f => f.date.getMinutes() === 0);
+                    farming = farming.filter(f => f.date.getUTCMinutes() === 0);
                 } else if (diffDays >= 10 && diffDays < 30) {
-                    farming = farming.filter(f => f.date.getHours() === 0 || f.date.getHours() === 6 ||
-                        f.date.getHours() === 12 || f.date.getHours() === 18);
+                    farming = farming.filter(f => f.date.getUTCHours() === 0 || f.date.getUTCHours() === 6 ||
+                        f.date.getUTCHours() === 12 || f.date.getHours() === 18);
                 } else if (diffDays >= 30) {
-                    farming = farming.filter(f => f.date.getHours() === 3 || f.date.getHours() === 9);
+                    farming = farming.filter(f => (f.date.getUTCHours() === 3 || f.date.getUTCHours() === 15) && f.date.getUTCMinutes() === 0);
                 }
 
                 const millisecondsAfter = new Date().getTime();
@@ -1710,13 +1710,13 @@ const resolvers = {
 
 
                 //TEST NEWSLETTER
-                //const stats = await client.stats.get();
-                //const price = await client.prices.get("DFI", "USD");
-                //const pools = await client.poolpairs.list(100);
-                //const prices = await client.prices.list(1000);
-                //const cake = await getCakeApy();
-                //const exchanges = await loadExchangeInfos();
-                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+                const stats = await client.stats.get();
+                const price = await client.prices.get("DFI", "USD");
+                const pools = await client.poolpairs.list(100);
+                const prices = await client.prices.list(1000);
+                const cake = await getCakeApy();
+                const exchanges = await loadExchangeInfos();
+                const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
