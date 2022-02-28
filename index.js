@@ -1178,11 +1178,14 @@ async function loadExchangeInfos() {
     let dfxSell;
     let dfxStaking
 
+    logger.info("loadExchangeStatus: Start load exchange Status");
+
     await axios.all([
         getStatusBittrex(), getStatusKucoin(), getStatusDfx()
     ])
         .then(axios.spread((response, response2, response3) => {
 
+            logger.info("loadExchangeStatus: Responses arrived");
             bittrexStatus = response.data.status;
             bittrexNotice = response.data.notice;
             kucoinStatusDeposit = response2.data.data.isDepositEnabled;
@@ -1193,6 +1196,7 @@ async function loadExchangeInfos() {
 
         }))
         .catch(function (error) {
+            logger.error("loadExchangeStatus err = " + JSON.stringify(error));
             // handle error
             if (error.response) {
                 // Request made and server responded
@@ -1203,10 +1207,10 @@ async function loadExchangeInfos() {
                 logger.error("==================== ERROR Exchange Status in Call to API END ====================");
             } else if (error.request) {
                 // The request was made but no response was received
-                logger.error("getExchangeStatus", error.request);
+                logger.error("getExchangeStatus" + error.request);
             } else {
                 // Something happened in setting up the request that triggered an Error
-                logger.error('getExchangeStatus', error.message);
+                logger.error('getExchangeStatus' + error.message);
             }
         });
 
@@ -1714,13 +1718,13 @@ const resolvers = {
 
 
                 //TEST NEWSLETTER
-                const stats = await client.stats.get();
-                const price = await client.prices.get("DFI", "USD");
-                const pools = await client.poolpairs.list(100);
-                const prices = await client.prices.list(1000);
-                const cake = await getCakeApy();
-                const exchanges = await loadExchangeInfos();
-                const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+                //const stats = await client.stats.get();
+                //const price = await client.prices.get("DFI", "USD");
+                //const pools = await client.poolpairs.list(100);
+                //const prices = await client.prices.list(1000);
+                //const cake = await getCakeApy();
+                //const exchanges = await loadExchangeInfos();
+                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
