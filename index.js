@@ -1166,7 +1166,7 @@ function checkAuth(auth) {
 
 
 function totalValuesGreaterZero(user) {
-    return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0;
+    return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0 &&  user.totalValue < 100000000;
 }
 
 async function loadExchangeInfos() {
