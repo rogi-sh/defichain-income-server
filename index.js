@@ -121,6 +121,11 @@ const walletSchema = new mongoose.Schema({
     coinusd: Number,
     eemusd: Number,
 
+    msftusd: Number,
+    voousd: Number,
+    nflxusd: Number,
+    fbusd: Number,
+
     dfiInStaking: Number,
 
     // BTC Pool
@@ -256,7 +261,27 @@ const walletSchema = new mongoose.Schema({
     // EEM Pool
     eemInEemPool: Number,
     eem: Number,
-    usdInEemPool: Number
+    usdInEemPool: Number,
+
+    // MSFT Pool
+    msftInMsftPool: Number,
+    msft: Number,
+    usdInMsftPool: Number,
+
+    // VOO Pool
+    vooInVooPool: Number,
+    voo: Number,
+    usdInVooPool: Number,
+
+    // FB Pool
+    fbInFbPool: Number,
+    fb: Number,
+    usdInFbPool: Number,
+
+    // NFLX Pool
+    nflxInNflxPool: Number,
+    nflx: Number,
+    usdInNflxPool: Number
 });
 
 const newsletterSchema = new mongoose.Schema({
@@ -520,6 +545,10 @@ const typeDefs = gql`
         nvdausd: Float
         coinusd: Float
         eemusd: Float
+        msftusd: Float
+        voousd: Float
+        fbusd: Float
+        nflxusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -655,6 +684,26 @@ const typeDefs = gql`
         eemInEemPool: Float
         eem: Float
         usdInEemPool: Float
+        
+        # MSFT Pool
+        msftInMsftPool: Float
+        msft: Float
+        usdInMsftPool: Float
+
+        # VOO Pool
+        vooInVooPool: Float
+        voo: Float
+        usdInVooPool: Float
+
+        # FB Pool
+        fbInFbPool: Float
+        fb: Float
+        usdInFbPool: Float
+
+        # NFLX Pool
+        nflxInNflxPool: Float
+        nflx: Float
+        usdInNflxPool: Float
     }
     
     type Pool {
@@ -947,6 +996,10 @@ const typeDefs = gql`
         nvdausd: Float
         coinusd: Float
         eemusd: Float
+        msftusd: Float
+        voousd: Float
+        fbusd: Float
+        nflxusd: Float
         
         dfiInStaking: Float
 
@@ -1083,7 +1136,27 @@ const typeDefs = gql`
         # EEM Pool
         eemInEemPool: Float
         eem: Float
-        usdInEemPool: Float        
+        usdInEemPool: Float 
+        
+         # MSFT Pool
+        msftInMsftPool: Float
+        msft: Float
+        usdInMsftPool: Float
+
+        # VOO Pool
+        vooInVooPool: Float
+        voo: Float
+        usdInVooPool: Float
+
+        # FB Pool
+        fbInFbPool: Float
+        fb: Float
+        usdInFbPool: Float
+
+        # NFLX Pool
+        nflxInNflxPool: Float
+        nflx: Float
+        usdInNflxPool: Float       
     }
     
     input AddressV2Input {
@@ -1893,6 +1966,31 @@ async function sendReportNewsletterMail(mail, subscriber, addresses, payed) {
 
 }
 
+async function sendNewsletterReminderMail(mail) {
+
+    try {
+
+        fs.readFile(__dirname + '/templates/payReminder.mjml', 'utf8', async function read(err, data) {
+
+            if (err) {
+                logger.error("Read template reminder error");
+                logger.error(err.message);
+                return;
+            }
+
+            let contentHtml = mjml2html(data.toString('utf8')).html;
+            contentHtml = contentHtml.replace("{{payReminder}}", "If you would like to receive the Defichain-Income newsletter, please remember to send the 1 DFI fee for this month. ");
+
+            await sendMail(mail, "Defi-Income Newsletter Reminder", contentHtml);
+
+        });
+
+    } catch (err) {
+        logger.error("sendReminderNewsletterMail error for receiver: " + mail, err)
+    }
+
+}
+
 function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo) {
     contentHtml = contentHtml.replace("{{dfiWallet}}", round(wallet.dfi));
     contentHtml = contentHtml.replace("{{dfiStaking}}", round(wallet.dfiInStaking));
@@ -2176,6 +2274,25 @@ function stocks(contentHtml, wallet) {
         index ++;
     }
 
+    if (wallet.msftInMsftPool > 0 || wallet.usdInMsftPool > 0 || wallet.msft > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.msft, wallet.msftInMsftPool, wallet.usdInMsftPool, index, 'MSFT', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.vooInVooPool > 0 || wallet.usdInVooPool > 0 || wallet.voo > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.voo, wallet.vooInVooPool, wallet.usdInVooPool, index, 'VOO', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.fbInFbPool > 0 || wallet.usdInFbPool > 0 || wallet.fb > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.fb, wallet.fbInFbPool, wallet.usdInFbPool, index, 'FB', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.nflxInNflxPool > 0 || wallet.usdInNflxPool > 0 || wallet.nflx > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.nflx, wallet.nflxInNflxPool, wallet.usdInNflxPool, index, 'NFLX', 'DUSD');
+        index ++;
+    }
 
     contentHtml = contentHtml.replace("{{stocks}}", cryptoHtmlResult);
 
@@ -2925,19 +3042,41 @@ async function executeNewsletter() {
 
         try {
 
+            // kalkuliere Status
+            let status = "";
+
+            // 1. Subscribed
             if (u.newsletter.email && u.newsletter.email.length > 0) {
+                status = "subscribed";
                 mail++;
-                logger.info("===========Newsletter start for user:  " + u.key + " ================");
-                const result = await sendNewsletterMail(u, stats, price, pools, prices, cake, exchanges);
-                logger.info("============ Newsletter finished for user: " + u.key + " ================");
-            }
-            if (u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
-                address++;
-            }
-            if (u.newsletter.status && u.newsletter.status === "payed") {
-                payed++;
             }
 
+            // 2. Subscribed & Address
+            if (u.newsletter.email && u.newsletter.email.length > 0 && u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                status = "subscribedWithAddress";
+                address++;
+            }
+
+            // 3. Payed
+            if (u.newsletter.email && u.newsletter.email.length > 0 && u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+                const payedOk = await checkNewsletterPayed(u.newsletter.payingAddress);
+                if (payedOk) {
+                    status = "payed";
+                    payed++;
+                    logger.info("===========Newsletter start for user:  " + u.key + " ✅ ================");
+                    await sendNewsletterMail(u, stats, price, pools, prices, cake, exchanges);
+                    logger.info("============ Newsletter finished for user: " + u.key + " ✅ ================");
+                } else {
+                    logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
+                    await sendNewsletterReminderMail(u.newsletter.mail);
+                    logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+                }
+
+
+            }
+            u.new.status = status;
+
+            await u.save();
 
         } catch (e) {
             logger.error("============ Newsletter Job error for user with key " + u.key, e.message);
