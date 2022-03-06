@@ -1789,7 +1789,6 @@ const resolvers = {
                 logger.info("Start Mail sending for update Newsletter to " + user.email);
                 await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
 
-
                 //TEST NEWSLETTER
                 //const stats = await client.stats.get();
                 //const price = await client.prices.get("DFI", "USD");
@@ -1979,7 +1978,7 @@ async function sendNewsletterReminderMail(mail) {
             }
 
             let contentHtml = mjml2html(data.toString('utf8')).html;
-            contentHtml = contentHtml.replace("{{payReminder}}", "If you would like to receive the Defichain-Income newsletter, please remember to send the 1 DFI fee for this month. ");
+            contentHtml = contentHtml.replace("{{payReminder}}", "If you would like to receive the Defichain-Income newsletter, please add your paying address and send the 1 DFI fee to the payment address for this month. ");
 
             await sendMail(mail, "Defi-Income Newsletter Reminder", contentHtml);
 
@@ -3020,7 +3019,7 @@ async function executeNewsletter() {
     const millisecondsBefore = new Date().getTime();
     logger.info("===========Newsletter Job: started: " + new Date() + " ================");
 
-    const users = await User.find({newsletter: {$ne: null}}).lean();
+    const users = await User.find({newsletter: {$ne: null}});
 
     logger.info("===========Newsletter Job: Start Sending Newsletter for subscribers: " + users.length + " ================");
 
@@ -3046,19 +3045,29 @@ async function executeNewsletter() {
             let status = "";
 
             // 1. Subscribed
-            if (u.newsletter.email && u.newsletter.email.length > 0) {
+            const emailSet = u.newsletter.email && u.newsletter.email.length > 0;
+            const addressSet = u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0;
+            if (emailSet) {
                 status = "subscribed";
                 mail++;
             }
 
             // 2. Subscribed & Address
-            if (u.newsletter.email && u.newsletter.email.length > 0 && u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+            if (emailSet && addressSet) {
                 status = "subscribedWithAddress";
                 address++;
             }
 
+            // 2.1
+            if (emailSet && !addressSet) {
+                status = "subscribedWithoutAddress";
+                logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
+                await sendNewsletterReminderMail(u.newsletter.email);
+                logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+            }
+
             // 3. Payed
-            if (u.newsletter.email && u.newsletter.email.length > 0 && u.newsletter.payingAddress && u.newsletter.payingAddress.length > 0) {
+            if (emailSet && addressSet) {
                 const payedOk = await checkNewsletterPayed(u.newsletter.payingAddress);
                 if (payedOk) {
                     status = "payed";
@@ -3071,15 +3080,13 @@ async function executeNewsletter() {
                     await sendNewsletterReminderMail(u.newsletter.email);
                     logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
                 }
-
-
             }
-            u.new.status = status;
+            u.newsletter.status = status;
 
             await u.save();
 
         } catch (e) {
-            logger.error("============ Newsletter Job error for user with key " + u.key, e.message);
+            logger.error("============ Newsletter Job error for user with key " + u.key + e.message);
         }
     }
 
