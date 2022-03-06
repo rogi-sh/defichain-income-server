@@ -3068,7 +3068,7 @@ async function executeNewsletter() {
                     logger.info("============ Newsletter finished for user: " + u.key + " ✅ ================");
                 } else {
                     logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
-                    await sendNewsletterReminderMail(u.newsletter.mail);
+                    await sendNewsletterReminderMail(u.newsletter.email);
                     logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
                 }
 
