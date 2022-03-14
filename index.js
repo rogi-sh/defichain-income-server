@@ -3035,6 +3035,8 @@ async function executeNewsletter() {
     let address = 0;
     let payed = 0;
 
+    const date = new Date();
+
     for (let i = 0; i < users.length; i++) {
 
         const u = users[i];
@@ -3077,8 +3079,11 @@ async function executeNewsletter() {
                     logger.info("============ Newsletter finished for user: " + u.key + " ✅ ================");
                 } else {
                     logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
-                    await sendNewsletterReminderMail(u.newsletter.email);
-                    logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+
+                    if (date.getDay() === 2 || date.getDay() === 5) {
+                        logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+                        await sendNewsletterReminderMail(u.newsletter.email);
+                    }
                 }
             }
             u.newsletter.status = status;
