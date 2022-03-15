@@ -1759,7 +1759,7 @@ const resolvers = {
                 }
 
                 // 2. payed
-                const payed = await checkNewsletterPayed(user.payingAddress);
+                const payed = user.payingAddress ? await checkNewsletterPayed(user.payingAddress) : false;
                 if (payed) {
                     status = "payed";
                 }
@@ -1786,8 +1786,10 @@ const resolvers = {
                     newsletter: newsletter
                 });
 
-                logger.info("Start Mail sending for update Newsletter to " + user.email);
-                await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
+                if (user.email && user.mail.length > 0) {
+                    logger.info("Start Mail sending for update Newsletter to " + user.email);
+                    await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
+                }
 
                 //TEST NEWSLETTER
                 //const stats = await client.stats.get();
