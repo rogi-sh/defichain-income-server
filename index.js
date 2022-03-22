@@ -17,7 +17,7 @@ const mjml2html = require('mjml');
 
 const {SeqTransport} = require('@datalust/winston-seq');
 
-require('events').EventEmitter.prototype._maxListeners = 100;
+require('events').EventEmitter.setMaxListeners(300);
 
 const client = new WhaleApiClient({
     url: 'https://ocean.defichain.com',
@@ -1239,7 +1239,7 @@ function checkAuth(auth) {
 
 
 function totalValuesGreaterZero(user) {
-    return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0 &&  user.totalValue < 100000000;
+    return user.totalValue > 0 && user.totalValueIncomeDfi > 0 && user.totalValueIncomeUsd > 0 &&  user.totalValue < 30000000;
 }
 
 async function loadExchangeInfos() {
