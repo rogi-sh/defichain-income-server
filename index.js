@@ -2457,12 +2457,26 @@ async function sendMail(receiver, subject, content) {
 
 async function checkNewsletterPayed(address) {
     const dateNow = new Date();
-    const firstPage = await client.address.listTransaction(payingAddress, 100)
+    let transactions = [];
+
+    let response = await client.address.listTransaction(payingAddress, 200)
+
+    for (const item of response) {
+        transactions.push(item);
+    }
+
+    while (response.hasNext) {
+        response = await client.paginate(response)
+        for (const item of response) {
+            transactions.push(item);
+        }
+    }
+
     const network = MainNet.name
     let foundSource = false;
     let foundTarget = false;
     let foundTargetPayed = false;
-    for (const t of firstPage) {
+    for (const t of transactions) {
         const txId = t.txid;
         const date = new Date(t.block.time * 1000);
         if (dateNow.getUTCMonth() === date.getUTCMonth()) {
