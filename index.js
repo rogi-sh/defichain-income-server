@@ -1786,7 +1786,7 @@ const resolvers = {
                     newsletter: newsletter
                 });
 
-                if (user.email && user.mail.length > 0) {
+                if (user.email && user.email.length > 0) {
                     logger.info("Start Mail sending for update Newsletter to " + user.email);
                     await sendUpdateNewsletterMail(user.email, user.payingAddress, status)
                 }
