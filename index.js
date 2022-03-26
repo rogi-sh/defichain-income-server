@@ -332,7 +332,8 @@ const userHistoryItemSchema = new mongoose.Schema({
     date: Date,
     totalValue: Number,
     totalValueIncomeDfi: Number,
-    totalValueIncomeUsd: Number
+    totalValueIncomeUsd: Number,
+    _id: String
 });
 
 const userHistorySchema = new mongoose.Schema({
@@ -783,6 +784,7 @@ const typeDefs = gql`
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
+        _id: String
         
     }
 
@@ -1192,6 +1194,12 @@ const typeDefs = gql`
         totalValueIncomeUsd: Float
     }
     
+    input DeleteUserHistoryInput {
+        key: String!
+        items: [String]
+   
+    }
+    
     input UserUpdateNewsletterInput {
         key: String!
         email: String!
@@ -1218,6 +1226,7 @@ const typeDefs = gql`
         addUserAddress(user: UserAddressInput): User
         updateWallet(wallet: WalletInput): User
         updateUserNewsletter(user: UserUpdateNewsletterInput): User
+        deleteUserHistory(user: DeleteUserHistoryInput): UserHistory
     }
 `;
 
@@ -1850,7 +1859,40 @@ const resolvers = {
                 logger.error("updateWallet", e);
                 return [];
             }
-        }
+        },
+        deleteUserHistory: async (obj, {user}, {auth}) => {
+            try {
+
+                const millisecondsBefore = new Date().getTime();
+
+                const userHistory = await findHistoryByKey(user.key);
+                if (!userHistory) {
+                    return null;
+                }
+
+                // delete false items
+                for (const userHistoryElement of user.items) {
+                    const index = userHistory.values.map(function(e) { return e._id; }).indexOf(userHistoryElement);
+                    if (index > -1) {
+                        userHistory.values.splice(index, 1);
+
+                    }
+                }
+
+                const saved = await userHistory.save();
+
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+
+                logger.info("Delete User history called took " + msTime + " ms.");
+                return saved;
+
+            } catch (e) {
+                logger.error("Delete User history", e);
+                return [];
+            }
+        },
     },
 
     Date: new GraphQLScalarType({
