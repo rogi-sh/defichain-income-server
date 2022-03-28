@@ -332,8 +332,7 @@ const userHistoryItemSchema = new mongoose.Schema({
     date: Date,
     totalValue: Number,
     totalValueIncomeDfi: Number,
-    totalValueIncomeUsd: Number,
-    _id: String
+    totalValueIncomeUsd: Number
 });
 
 const userHistorySchema = new mongoose.Schema({
@@ -784,7 +783,7 @@ const typeDefs = gql`
         totalValue: Float
         totalValueIncomeDfi: Float
         totalValueIncomeUsd: Float
-        _id: String
+        _id: ID
         
     }
 
