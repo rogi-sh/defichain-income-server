@@ -1871,10 +1871,10 @@ const resolvers = {
 
                 // delete false items
                 for (const userHistoryElement of user.items) {
-                    const index = userHistory.values.map(function(e) { return e._id; }).indexOf(userHistoryElement);
+                    const ids = userHistory.values.map(function(e) { return e._id.toString() });
+                    const index = ids.indexOf(userHistoryElement);
                     if (index > -1) {
                         userHistory.values.splice(index, 1);
-
                     }
                 }
 
