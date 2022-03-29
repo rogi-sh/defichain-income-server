@@ -3088,6 +3088,8 @@ async function executeNewsletter() {
     const cake = await getCakeApy();
     const exchanges = await loadExchangeInfos();
 
+    logger.info("===========Newsletter all infos loaded ✅ ================");
+
     let mail = 0;
     let address = 0;
     let payed = 0;
@@ -3099,6 +3101,8 @@ async function executeNewsletter() {
         const u = users[i];
 
         try {
+
+            logger.info("===========Newsletter start for user:  " + u.key + " ✅ ================");
 
             // kalkuliere Status
             let status = "";
@@ -3131,9 +3135,9 @@ async function executeNewsletter() {
                 if (payedOk) {
                     status = "payed";
                     payed++;
-                    logger.info("===========Newsletter start for user:  " + u.key + " ✅ ================");
+                    logger.info("===========Newsletter start for payed user:  " + u.key + " ✅ ================");
                     await sendNewsletterMail(u, stats, price, pools, prices, cake, exchanges);
-                    logger.info("============ Newsletter finished for user: " + u.key + " ✅ ================");
+                    logger.info("============ Newsletter finished for payed user: " + u.key + " ✅ ================");
                 } else {
                     logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
 
@@ -3146,6 +3150,8 @@ async function executeNewsletter() {
             u.newsletter.status = status;
 
             await u.save();
+
+            logger.info("===========Newsletter ready for user:  " + u.key + " ✅ ================");
 
         } catch (e) {
             logger.error("============ Newsletter Job error for user with key " + u.key + e.message);
