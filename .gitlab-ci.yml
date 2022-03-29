@@ -54,7 +54,7 @@ deploy:
 deploy-next:
   stage: deploy
   dependencies:
-    - dockerize
+    - production_build
   image: ictu/sshpass:latest
   services:
     - docker:dind
