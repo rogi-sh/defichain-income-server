@@ -126,6 +126,11 @@ const walletSchema = new mongoose.Schema({
     nflxusd: Number,
     fbusd: Number,
 
+    disusd: Number,
+    mchiusd: Number,
+    mstrusd: Number,
+    intcusd: Number,
+
     dfiInStaking: Number,
 
     // BTC Pool
@@ -281,7 +286,27 @@ const walletSchema = new mongoose.Schema({
     // NFLX Pool
     nflxInNflxPool: Number,
     nflx: Number,
-    usdInNflxPool: Number
+    usdInNflxPool: Number,
+
+    // DIS Pool
+    disInDisPool: Number,
+    dis: Number,
+    usdInDisPool: Number,
+
+    // MCHI Pool
+    mchiInMchiPool: Number,
+    mchi: Number,
+    usdInMchiPool: Number,
+
+    // MSTR Pool
+    mstrInMstrPool: Number,
+    mstr: Number,
+    usdInMstrPool: Number,
+
+    // INTC Pool
+    intcInIntcPool: Number,
+    intc: Number,
+    usdInIntcPool: Number
 });
 
 const newsletterSchema = new mongoose.Schema({
@@ -549,6 +574,10 @@ const typeDefs = gql`
         voousd: Float
         fbusd: Float
         nflxusd: Float
+        disusd: Float
+        mchiusd: Float
+        mstrusd: Float
+        intcusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -704,6 +733,26 @@ const typeDefs = gql`
         nflxInNflxPool: Float
         nflx: Float
         usdInNflxPool: Float
+        
+        # DIS Pool
+        disInDisPool: Float
+        dis: Float
+        usdInDisPool: Float
+
+        # MCHI Pool
+        mchiInMchiPool: Float
+        mchi: Float
+        usdInMchiPool: Float
+
+        # MSTR Pool
+        mstrInMstrPool: Float
+        mstr: Float
+        usdInMstrPool: Float
+
+        # INTC Pool
+        intcInIntcPool: Float
+        intc: Float
+        usdInIntcPool: Float
     }
     
     type Pool {
@@ -1002,6 +1051,11 @@ const typeDefs = gql`
         fbusd: Float
         nflxusd: Float
         
+        disusd: Float
+        mchiusd: Float
+        mstrusd: Float
+        intcusd: Float
+        
         dfiInStaking: Float
 
         # BTC Pool
@@ -1157,7 +1211,27 @@ const typeDefs = gql`
         # NFLX Pool
         nflxInNflxPool: Float
         nflx: Float
-        usdInNflxPool: Float       
+        usdInNflxPool: Float   
+        
+        # DIS Pool
+        disInDisPool: Float
+        dis: Float
+        usdInDisPool: Float
+
+        # MCHI Pool
+        mchiInMchiPool: Float
+        mchi: Float
+        usdInMchiPool: Float
+
+        # MSTR Pool
+        mstrInMstrPool: Float
+        mstr: Float
+        usdInMstrPool: Float
+
+        # INTC Pool
+        intcInIntcPool: Float
+        intc: Float
+        usdInIntcPool: Float    
     }
     
     input AddressV2Input {
