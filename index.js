@@ -87,6 +87,7 @@ const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
 const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
 const fs = require("fs");
+const {PriceFeedTimeInterval} = require("@defichain/whale-api-client/dist/api/prices");
 
 const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
@@ -898,6 +899,11 @@ const typeDefs = gql`
         loan: Float,
         total: Float
     }
+    
+     type PriceHistory {
+        price: Float,
+        dateTime: Date
+    }
 
     type Burned  {
         address: Float,
@@ -1014,6 +1020,7 @@ const typeDefs = gql`
         getCorrelation(days: Int): Correlation
         getStatisticsIncome: Statistics
         getExchangeStatus: ExchangeStatus
+        getOracleHistory(token: String!): [PriceHistory]
     }
 
     input WalletInput {
@@ -1435,6 +1442,37 @@ const resolvers = {
                 return user;
             } catch (e) {
                 logger.error("userByKey", e);
+                return {};
+            }
+        },
+        getOracleHistory: async (obj, {token}, {auth}) => {
+            try {
+                const millisecondsBefore = new Date().getTime();
+
+                let prices = [];
+
+                let response = await client.prices.getFeedWithInterval(token, 'USD',PriceFeedTimeInterval.ONE_DAY, 500);
+
+                for (const item of response) {
+                    prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount });
+                }
+
+                while (response.hasNext) {
+                    response = await client.paginate(response)
+                    for (const item of response) {
+                        prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount });
+                    }
+                }
+
+                prices.sort((a, b) => a.dateTime - b.dateTime);
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                logger.info("getOracleHistory " + new Date() + " called took " + msTime + " ms.");
+
+                return prices;
+            } catch (e) {
+                logger.error("getOracleHistory", e);
                 return {};
             }
         },
