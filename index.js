@@ -1445,13 +1445,13 @@ const resolvers = {
                 return {};
             }
         },
-        getOracleHistory: async (obj, {token}, {auth}) => {
+        getOracleHistory: async (obj, {token, intervall}, {auth}) => {
             try {
                 const millisecondsBefore = new Date().getTime();
 
                 let prices = [];
 
-                let response = await client.prices.getFeedWithInterval(token, 'USD',PriceFeedTimeInterval.ONE_DAY, 500);
+                let response = await client.prices.getFeedWithInterval(token, 'USD', PriceFeedTimeInterval.ONE_HOUR, 1000);
 
                 for (const item of response) {
                     prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount });
