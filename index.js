@@ -1445,7 +1445,7 @@ const resolvers = {
                 return {};
             }
         },
-        getOracleHistory: async (obj, {token, intervall}, {auth}) => {
+        getOracleHistory: async (obj, {token}, {auth}) => {
             try {
                 const millisecondsBefore = new Date().getTime();
 
