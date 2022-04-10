@@ -1020,7 +1020,7 @@ const typeDefs = gql`
         getCorrelation(days: Int): Correlation
         getStatisticsIncome: Statistics
         getExchangeStatus: ExchangeStatus
-        getOracleHistory(token: String!): [PriceHistory]
+        getOracleHistory(token: String!, date: Date): [PriceHistory]
     }
 
     input WalletInput {
@@ -1445,7 +1445,7 @@ const resolvers = {
                 return {};
             }
         },
-        getOracleHistory: async (obj, {token}, {auth}) => {
+        getOracleHistory: async (obj, {token, date}, {auth}) => {
             try {
                 const millisecondsBefore = new Date().getTime();
 
@@ -1454,17 +1454,21 @@ const resolvers = {
                 let response = await client.prices.getFeedWithInterval(token, 'USD', PriceFeedTimeInterval.ONE_HOUR, 1000);
 
                 for (const item of response) {
-                    prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount });
+                    prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount});
                 }
 
                 while (response.hasNext) {
                     response = await client.paginate(response)
                     for (const item of response) {
-                        prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount });
+                        prices.push({dateTime: new Date(item.block.time * 1000), price: item.aggregated.amount});
                     }
                 }
-
-                prices.sort((a, b) => a.dateTime - b.dateTime);
+                if (date) {
+                    prices = prices.filter(a => {
+                        return (a.dateTime >= date);
+                    });
+                }
+                prices.reverse();
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
