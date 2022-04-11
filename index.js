@@ -366,6 +366,11 @@ const userHistorySchema = new mongoose.Schema({
     values: [userHistoryItemSchema]
 });
 
+const apiKeySchema = new mongoose.Schema({
+    name: String,
+    bearer: String
+});
+
 const poolDefinition = {
     symbol: String,
     poolId: String,
@@ -522,6 +527,7 @@ const poolFarmingSchema = new mongoose.Schema(poolFarming);
 const User = mongoose.model("User", userSchema);
 const UserTransaction = mongoose.model("UserTransaction", userTransactionsSchema);
 const UserHistory = mongoose.model("UserHistory", userHistorySchema);
+const ApiKey = mongoose.model("ApiKey", apiKeySchema);
 
 const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
 const PoolETH = mongoose.model("PoolETH", poolETHSchema);
@@ -1021,6 +1027,7 @@ const typeDefs = gql`
         getStatisticsIncome: Statistics
         getExchangeStatus: ExchangeStatus
         getOracleHistory(token: String!, date: Date): [PriceHistory]
+        getDfxStakingAmounts(addresses: [String]): [Float]
     }
 
     input WalletInput {
@@ -1314,6 +1321,10 @@ async function findUserByKey(key) {
     return User.findOne({key: key});
 }
 
+async function getApiKeyDfx() {
+    return ApiKey.findOne({name: "DFX"});
+}
+
 async function findHistoryByKey(key) {
     return UserHistory.findOne({key: key});
 }
@@ -1442,6 +1453,53 @@ const resolvers = {
                 return user;
             } catch (e) {
                 logger.error("userByKey", e);
+                return {};
+            }
+        },
+        getDfxStakingAmounts: async (obj, {addresses}, {auth}) => {
+            try {
+                const millisecondsBefore = new Date().getTime();
+
+                let amounts = [];
+
+                const key = await getApiKeyDfx();
+
+                for (const a of addresses) {
+                    await axios.all([
+                        getDfxStakingAmount(a, key.bearer),
+                    ])
+                        .then(axios.spread((response) => {
+
+                            const amount = response.data;
+                            amounts.push(amount);
+
+                        }))
+                        .catch(function (error) {
+                            // handle error
+                            if (error.response) {
+                                // Request made and server responded
+                                logger.error("==================== ERROR getDfxStakingAmount in Call to API BEGIN ====================");
+                                logger.error("getDfxStakingAmount", error.response.data);
+                                logger.error("getDfxStakingAmount", error.response.status);
+                                logger.error("getDfxStakingAmount", error.response.statusText);
+                                logger.error("==================== ERROR VisitsSummary in Call to API END ====================");
+                            } else if (error.request) {
+                                // The request was made but no response was received
+                                logger.error("getDfxStakingAmount", error.request);
+                            } else {
+                                // Something happened in setting up the request that triggered an Error
+                                logger.error('getDfxStakingAmount', error.message);
+                            }
+                        });
+                }
+
+                const millisecondsAfter = new Date().getTime();
+                const msTime = millisecondsAfter - millisecondsBefore;
+                logger.info("getDfxStakingAmount " + new Date() + " called took " + msTime + " ms.");
+
+                return amounts;
+            } catch (e) {
+                logger.error("getDfxStakingAmount", e);
                 return {};
             }
         },
@@ -2056,6 +2114,22 @@ function getPoolPairs() {
 
 function getVisitors() {
     return axios.get(process.env.VISITS_API);
+}
+
+function getDfxStakingAmount(address, key) {
+    const config = {
+        headers: { Authorization: "Bearer " + key }
+    };
+    return axios.get(process.env.DFX_API_STAKING_INCOME + address, config);
+}
+
+function authDfx() {
+    const bodyParameters = {
+        address: process.env.DFX_API_AUTH_USER,
+        signature: process.env.DFX_API_AUTH_SIGN
+
+    };
+    return axios.post(process.env.DFX_API_AUTH, bodyParameters);
 }
 
 function getStatusBittrex() {
@@ -3294,6 +3368,45 @@ if (process.env.JOB_SCHEDULER_ON_NEWSLETTER === "on") {
     });
 }
 
+async function authDfxAndSave() {
+    await axios.all([
+        authDfx(),
+    ])
+        .then(axios.spread(async (response) => {
+
+            const object = response.data;
+            const key = await getApiKeyDfx();
+            key.bearer = object.accessToken;
+            const saved = await key.save();
+
+        }))
+        .catch(function (error) {
+            // handle error
+            if (error.response) {
+                // Request made and server responded
+                logger.error("==================== ERROR authDfx in Call to API BEGIN ====================");
+                logger.error("authDfx", error.response.data);
+                logger.error("authDfx", error.response.status);
+                logger.error("authDfx", error.response.statusText);
+                logger.error("==================== ERROR authDfx in Call to API END ====================");
+            } else if (error.request) {
+                // The request was made but no response was received
+                logger.error("authDfx", error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                logger.error('authDfx', error.message);
+            }
+        });
+}
+
+if (process.env.JOB_SCHEDULER_ON_DFX_AUTH === "on") {
+    schedule.scheduleJob(process.env.JOB_SCHEDULER_ON_DFX_AUTH_TURNUS, async function () {
+
+        await authDfxAndSave();
+
+    });
+}
+
 const corsOptions = {
     origin: '*',
     credentials: true // <-- REQUIRED backend setting
@@ -3337,6 +3450,7 @@ app.listen({port: 4000}, () => {
         logger.info("JOB Stats " + process.env.JOB_SCHEDULER_ON_STATS + " Cron " + process.env.JOB_SCHEDULER_TURNUS_STATS)
         logger.info("JOB History " + process.env.JOB_SCHEDULER_ON_HISTORY + " Cron " + process.env.JOB_SCHEDULER_TURNUS_HISTORY)
         logger.info("JOB Newsletter " + process.env.JOB_SCHEDULER_ON_NEWSLETTER + " Cron " + process.env.JOB_SCHEDULER_TURNUS_NEWSLETTER)
+        logger.info("JOB DFX Auth " + process.env.JOB_SCHEDULER_ON_DFX_AUTH + " Cron " + process.env.JOB_SCHEDULER_ON_DFX_AUTH_TURNUS)
         logger.info("DEBUG " + process.env.DEBUG)
 
     }
