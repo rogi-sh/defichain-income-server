@@ -3401,9 +3401,13 @@ async function authDfxAndSave() {
 
 if (process.env.JOB_SCHEDULER_ON_DFX_AUTH === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_ON_DFX_AUTH_TURNUS, async function () {
-
+        const millisecondsBefore = new Date().getTime();
+        logger.info("===========AuthDfxAndSave Job: started: " + new Date() + " ================");
         await authDfxAndSave();
+        const millisecondsAfter = new Date().getTime();
+        const msTime = millisecondsAfter - millisecondsBefore;
 
+        logger.info("============AuthDfxAndSave Job executed time: " + new Date() + " in " + msTime + " ms.=============");
     });
 }
 
