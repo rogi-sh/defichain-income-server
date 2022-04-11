@@ -48,7 +48,6 @@ deploy:
     - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER "cd docker && cd Privat && cd defichain-income-server && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.gitlab.com && ./deploy.sh && exit"
   only:
     - tags
-    - master
 
 # deploy to next level server
 deploy-next:
