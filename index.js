@@ -1975,9 +1975,9 @@ const resolvers = {
                 //TEST NEWSLETTER
                 //const stats = await client.stats.get();
                 //const price = await client.prices.get("DFI", "USD");
-                //const pools = await client.poolpairs.list(100);
+                //const pools = await client.poolpairs.list(1000);
                 //const prices = await client.prices.list(1000);
-                //const cake = await getCakeApy();
+                //const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
                 //const exchanges = await loadExchangeInfos();
                 //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
 
@@ -2272,7 +2272,7 @@ function statisticsForStaking(contentHtml, stats, cake) {
     const stakingApy5Mn = 100 * (Math.pow(1 + (stakingAprMN * 1.5 / 100 / 52), 52) - 1);
     const stakingApy10Mn = 100 * (Math.pow(1 + (stakingAprMN * 2 / 100 / 52), 52) - 1);
 
-    const cakeApy = +cake.data.staking.find(s => s.id === 'DFI').apy * 100;
+    const cakeApy = cake.data ? +cake.data.staking.find(s => s.id === 'DFI').apy * 100 : 0;
     const cakeApr = 100 * 730 * (Math.pow(1 + cakeApy / 100, 1 / 730) - 1);
 
     // numbers
@@ -3272,9 +3272,9 @@ async function executeNewsletter() {
     // get stats of blockchain
     const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
-    const pools = await client.poolpairs.list(100);
+    const pools = await client.poolpairs.list(1000);
     const prices = await client.prices.list(1000);
-    const cake = await getCakeApy();
+    const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
     const exchanges = await loadExchangeInfos();
 
     logger.info("===========Newsletter all infos loaded ✅ ================");
