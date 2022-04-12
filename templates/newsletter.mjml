@@ -153,7 +153,7 @@
       </mj-column>
       <mj-column width="70%">
         <mj-text color="#ff00af" font-family="Roboto">
-          <span style="font-size:16px;"><strong>{{dfiStaking}}</strong></span>
+          <span style="font-size:16px;"><strong>{{dfiStaking}} Cake - {{dfiInDfxStaking}} Dfx</strong></span>
         </mj-text>
       </mj-column>
 

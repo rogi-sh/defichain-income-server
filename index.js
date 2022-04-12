@@ -133,6 +133,7 @@ const walletSchema = new mongoose.Schema({
     intcusd: Number,
 
     dfiInStaking: Number,
+    dfiInDfxStaking: Number,
 
     // BTC Pool
     btcInBtcPool: Number,
@@ -549,6 +550,7 @@ const typeDefs = gql`
         dfi: Float
 
         dfiInStaking: Float
+        dfiInDfxStaking: Float
        
         btcdfi : Float
         ethdfi: Float
@@ -1071,6 +1073,7 @@ const typeDefs = gql`
         intcusd: Float
         
         dfiInStaking: Float
+        dfiInDfxStaking: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -1592,7 +1595,7 @@ const resolvers = {
                     addresses += u.addresses ? u.addresses?.length: 0;
                     addressesMasternodes += u.addressesMasternodes ? u.addressesMasternodes?.length: 0;
                     usersCount += ((u.addresses && u.addresses.length > 0) || (u.addressesMasternodes && u.addressesMasternodes.length > 0)
-                    || u.dfiInStaking > 0) ? 1 : 0;
+                    || u.wallet.dfiInStaking > 0 || u.wallet.dfiInDfxStaking > 0) ? 1 : 0;
                 });
 
                 let visits = 0;
@@ -2225,9 +2228,10 @@ async function sendNewsletterReminderMail(mail) {
 function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, balanceMasternodeUtxo) {
     contentHtml = contentHtml.replace("{{dfiWallet}}", round(wallet.dfi));
     contentHtml = contentHtml.replace("{{dfiStaking}}", round(wallet.dfiInStaking));
+    contentHtml = contentHtml.replace("{{dfiInDfxStaking}}", round(wallet.dfiInDfxStaking ? wallet.dfiInDfxStaking : 0));
     contentHtml = contentHtml.replace("{{dfiLm}}", round(dfiInLm));
     contentHtml = contentHtml.replace("{{dfiMasternodes}}", round(balanceMasternodeToken + balanceMasternodeUtxo));
-    return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + balanceMasternodeToken + balanceMasternodeUtxo));
+    return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + wallet.dfiInDfxStaking ? wallet.dfiInDfxStaking : 0 + balanceMasternodeToken + balanceMasternodeUtxo));
 }
 
 function statisticsForNewsletter(contentHtml, stats, pools, prices) {
