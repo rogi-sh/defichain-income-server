@@ -1402,6 +1402,15 @@ async function loadExchangeInfos() {
     return exchangeStatus;
 }
 
+async function testNewsletter(saved) {
+    const stats = await client.stats.get();
+    const price = await client.prices.get("DFI", "USD");
+    const pools = await client.poolpairs.list(1000);
+    const prices = await client.prices.list(1000);
+    const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
+    await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+}
+
 const resolvers = {
     Query: {
         users: async (obj, {user}, {auth}) => {
@@ -1976,13 +1985,7 @@ const resolvers = {
                 }
 
                 //TEST NEWSLETTER
-                //const stats = await client.stats.get();
-                //const price = await client.prices.get("DFI", "USD");
-                //const pools = await client.poolpairs.list(1000);
-                //const prices = await client.prices.list(1000);
-                //const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
-                //const exchanges = await loadExchangeInfos();
-                //const result = await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+                //await testNewsletter(saved);
 
                 const millisecondsAfter = new Date().getTime();
                 const msTime = millisecondsAfter - millisecondsBefore;
@@ -2231,7 +2234,7 @@ function dfiForNewsletter(contentHtml, wallet, dfiInLm, balanceMasternodeToken, 
     contentHtml = contentHtml.replace("{{dfiInDfxStaking}}", round(wallet.dfiInDfxStaking ? wallet.dfiInDfxStaking : 0));
     contentHtml = contentHtml.replace("{{dfiLm}}", round(dfiInLm));
     contentHtml = contentHtml.replace("{{dfiMasternodes}}", round(balanceMasternodeToken + balanceMasternodeUtxo));
-    return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + wallet.dfiInDfxStaking ? wallet.dfiInDfxStaking : 0 + balanceMasternodeToken + balanceMasternodeUtxo));
+    return contentHtml.replace("{{dfiTotal}}", round(dfiInLm + wallet.dfi + wallet.dfiInStaking + wallet.dfiInDfxStaking + balanceMasternodeToken + balanceMasternodeUtxo));
 }
 
 function statisticsForNewsletter(contentHtml, stats, pools, prices) {
