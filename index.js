@@ -132,6 +132,11 @@ const walletSchema = new mongoose.Schema({
     mstrusd: Number,
     intcusd: Number,
 
+    pyplusd: Number,
+    brkbusd: Number,
+    kousd: Number,
+    pgusd: Number,
+
     dfiInStaking: Number,
     dfiInDfxStaking: Number,
 
@@ -308,7 +313,27 @@ const walletSchema = new mongoose.Schema({
     // INTC Pool
     intcInIntcPool: Number,
     intc: Number,
-    usdInIntcPool: Number
+    usdInIntcPool: Number,
+
+    // PYPL Pool
+    pyplInPyplPool: Number,
+    pypl: Number,
+    usdInPyplPool: Number,
+
+    // BRKB Pool
+    brkbInBrkbPool: Number,
+    brkb: Number,
+    usdInBrkbPool: Number,
+
+    // KO Pool
+    koInKoPool: Number,
+    ko: Number,
+    usdInKoPool: Number,
+
+    // PG Pool
+    pgInPgPool: Number,
+    pg: Number,
+    usdInPgPool: Number
 });
 
 const newsletterSchema = new mongoose.Schema({
@@ -587,6 +612,11 @@ const typeDefs = gql`
         mchiusd: Float
         mstrusd: Float
         intcusd: Float
+        
+        pyplusd: Float
+        brkbusd: Float
+        kousd: Float
+        pgusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -762,6 +792,26 @@ const typeDefs = gql`
         intcInIntcPool: Float
         intc: Float
         usdInIntcPool: Float
+        
+        # PYPL Pool
+        pyplInPyplPool: Float
+        pypl:  Float
+        usdInPyplPool: Float
+
+        # BRKB Pool
+        brkbInBrkbPool:  Float
+        brkb: Float
+        usdInBrkbPool: Float
+    
+        # KO Pool
+        koInKoPool:  Float
+        ko:  Float
+        usdInKoPool:  Float
+    
+        # PG Pool
+        pgInPgPool: Float
+        pg:  Float
+        usdInPgPool:  Float
     }
     
     type Pool {
@@ -1072,6 +1122,11 @@ const typeDefs = gql`
         mstrusd: Float
         intcusd: Float
         
+        pyplusd: Float
+        brkbusd: Float
+        kousd: Float
+        pgusd: Float
+        
         dfiInStaking: Float
         dfiInDfxStaking: Float
 
@@ -1248,7 +1303,27 @@ const typeDefs = gql`
         # INTC Pool
         intcInIntcPool: Float
         intc: Float
-        usdInIntcPool: Float    
+        usdInIntcPool: Float 
+        
+        # PYPL Pool
+        pyplInPyplPool: Float
+        pypl:  Float
+        usdInPyplPool: Float
+
+        # BRKB Pool
+        brkbInBrkbPool:  Float
+        brkb: Float
+        usdInBrkbPool: Float
+    
+        # KO Pool
+        koInKoPool:  Float
+        ko:  Float
+        usdInKoPool:  Float
+    
+        # PG Pool
+        pgInPgPool: Float
+        pg:  Float
+        usdInPgPool:  Float   
     }
     
     input AddressV2Input {
@@ -2529,6 +2604,46 @@ function stocks(contentHtml, wallet) {
 
     if (wallet.nflxInNflxPool > 0 || wallet.usdInNflxPool > 0 || wallet.nflx > 0) {
         cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.nflx, wallet.nflxInNflxPool, wallet.usdInNflxPool, index, 'NFLX', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.disInDisPool > 0 || wallet.usdInDisPool > 0 || wallet.dis > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.dis, wallet.disInDisPool, wallet.usdInDisPool, index, 'DIS', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.mchiInMchiPool > 0 || wallet.usdInMchiPool > 0 || wallet.mchi > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.mchi, wallet.mchiInMchiPool, wallet.usdInMchiPool, index, 'MCHI', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.mstrInMstrPool > 0 || wallet.usdInMstrPool > 0 || wallet.mstr > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.mstr, wallet.mstrInMstrPool, wallet.usdInMstrPool, index, 'MSTR', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.intcInIntcPool > 0 || wallet.usdInIntcPool > 0 || wallet.intc > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.intc, wallet.intcInIntcPool, wallet.usdInIntcPool, index, 'INTC', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.pyplInPyplPool > 0 || wallet.usdInPyplPool > 0 || wallet.pypl > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.pypl, wallet.pyplInPyplPool, wallet.usdInPyplPool, index, 'PYPL', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.brkbInBrkbPool > 0 || wallet.usdInBrkbPool > 0 || wallet.brkb > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.brkb, wallet.brkbInBrkbPool, wallet.usdInBrkbPool, index, 'BRK.B', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.koInKoPool > 0 || wallet.usdInKoPool > 0 || wallet.ko > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.ko, wallet.koInKoPool, wallet.usdInKoPool, index, 'KO', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.pgInPgPool > 0 || wallet.usdInPgPool > 0 || wallet.pg > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.pg, wallet.pgInPgPool, wallet.usdInPgPool, index, 'PG', 'DUSD');
         index ++;
     }
 
