@@ -3226,7 +3226,6 @@ app.get('/income/:address', async function (req, res) {
         } else {
             const priceToken = await client.prices.get(t.symbol, "USD");
             if (priceToken) {
-                logger.info(t.symbol + " price " + +priceToken.price.aggregated.amount)
                 totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
             }
         }
