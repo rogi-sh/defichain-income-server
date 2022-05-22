@@ -3172,6 +3172,203 @@ function assignDataValueStatsOcean(data, object) {
 
 const app = express();
 
+app.get('/income/:address', async function (req, res) {
+
+    const address = req.params.address
+    const balance = await client.address.getBalance(address);
+    const token = await client.address.listToken(address);
+    const price = await client.prices.get("DFI", "USD");
+    const pools = await client.poolpairs.list(1000);
+    const vaults = await client.address.listVault(address);
+    const stats = await client.stats.get();
+
+    let incomeYearUsd = 0;
+    let incomeYearDfi = 0;
+
+    for (const t of token) {
+        if (t.isLPS) {
+            // get pool
+            const  pool = pools.find(p => p.id === t.id);
+            // compute share
+            const share = +t.amount / pool.totalLiquidity.token;
+            // compute usd share
+            const usdShare = pool.totalLiquidity.usd * share;
+            // compute year usd income
+            const usdIncome = usdShare * pool.apr.total;
+            // compute year dfi income
+            const dfiIncome = usdIncome / price.price.aggregated.amount;
+            // add to income
+            incomeYearUsd += usdIncome;
+            incomeYearDfi += dfiIncome;
+        }
+    }
+    const poolUsd = pools.find(p => p.id === "17");
+    const poolBtc = pools.find(p => p.id === "5");
+    const dUsd = Math.round(price.price.aggregated.amount / poolUsd?.priceRatio.ab  * 1000) / 1000;
+
+    const rewards = {"year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
+                     "month": {"usd": incomeYearUsd / 12, "dfi": incomeYearDfi / 12},
+                     "week": {"usd": incomeYearUsd / 52.1429, "dfi": incomeYearDfi / 52.1429},
+                     "day": {"usd": incomeYearUsd / 365, "dfi": incomeYearDfi / 365},
+                     "hour": {"usd": incomeYearUsd / 8760, "dfi": incomeYearDfi / 8760},
+                     "min": {"usd": incomeYearUsd / 525600, "dfi": incomeYearDfi / 525600}};
+
+    const nextOracleInBlocks = 120 - (stats.count.blocks - 1528800) % 120;
+    const nextOracleTime = nextOracleInBlocks * 30 / 60;
+
+    let vaultResult = [];
+    const vaultsFiltered = vaults.filter(v => v.collateralValue > 0);
+    for (const v of vaultsFiltered) {
+       vaultResult.push(
+           { "id": v.vaultId,
+             "state": v.state,
+             "collateralValue": +v.collateralValue,
+             "loanValue": +v.loanValue,
+             "vaultRatio": +v.collateralRatio,
+             "nextVaultRation":   Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100
+           }
+       )
+    }
+
+    const response = {
+        "rewards": rewards,
+        "dfiPriceOracle": Math.round(+price.price.aggregated.amount * 1000) / 1000,
+        "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
+        "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
+        "dUSD": dUsd,
+        "nextOraclePriceBlocks": nextOracleInBlocks,
+        "nextOraclePriceTimeInMin": Math.round(nextOracleTime),
+        "vaults": vaultResult}
+
+    res.json(response);
+})
+
+function getNextCollateralFromVaultUsd(vault){
+
+    let dfiInVaults = 0;
+    let dfiNextPrice = 0;
+    let btcInVaults = 0;
+    let btcNextPrice = 0;
+    let ethInVaults = 0;
+    let ethNextPrice = 0;
+    let usdcInVaults = 0;
+    let usdcNextPrice = 0;
+    let usdtInVaults = 0;
+    let usdtNextPrice = 0;
+    let dusdInVaults = 0;
+    const dusdActualPrice = 0.99;
+
+    if (!vault) {
+        return 0;
+    }
+
+    vault?.collateralAmounts?.forEach(vaultCollaterral => {
+        if ('DFI' === vaultCollaterral.symbolKey) {
+            dfiInVaults += +vaultCollaterral.amount;
+            dfiNextPrice = +vaultCollaterral.activePrice?.next?.amount;
+        } else if ('BTC' === vaultCollaterral.symbolKey) {
+            btcInVaults += +vaultCollaterral.amount;
+            btcNextPrice = +vaultCollaterral.activePrice?.next?.amount;
+        } else if ('ETH' === vaultCollaterral.symbolKey) {
+            ethInVaults += +vaultCollaterral.amount;
+            ethNextPrice = +vaultCollaterral.activePrice?.next?.amount;
+        } else if ('USDC' === vaultCollaterral.symbolKey) {
+            usdcInVaults += +vaultCollaterral.amount;
+            usdcNextPrice = +vaultCollaterral.activePrice?.next?.amount;
+        } else if ('USDT' === vaultCollaterral.symbolKey) {
+            usdtInVaults += +vaultCollaterral.amount;
+            usdtNextPrice = +vaultCollaterral.activePrice?.next?.amount;
+        } else if ('DUSD' === vaultCollaterral.symbolKey) {
+            dusdInVaults += +vaultCollaterral.amount;
+        }
+
+    });
+
+    return dfiInVaults * dfiNextPrice + btcInVaults * btcNextPrice + ethInVaults * ethNextPrice
+        + usdcInVaults * usdcNextPrice + usdtInVaults * usdtNextPrice + dusdInVaults * dusdActualPrice;
+}
+
+function getNextLoanFromVaultUsd(vault) {
+
+    let usd = 0; let spy = 0; let tsla = 0; let qqq = 0; let pltr = 0; let slv = 0; let aapl = 0; let gld = 0;
+    let gme = 0; let google = 0; let arkk = 0; let baba = 0; let vnq = 0; let urth = 0; let tlt = 0;
+    let pdbc = 0; let amzn = 0; let nvda = 0; let coin = 0; let eem = 0;
+    let msft = 0; let nflx = 0; let fb = 0; let voo = 0;
+    let dis = 0; let mchi = 0; let mstr = 0; let intc = 0;
+    let pypl = 0; let brkb = 0; let ko = 0; let pg = 0;
+
+    vault?.loanAmounts?.forEach(loan => {
+        if ('DUSD' === loan.symbolKey) {
+            usd = +loan.amount;
+        } else if ('SPY' === loan.symbolKey) {
+            spy = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('TSLA' === loan.symbolKey) {
+            tsla = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('QQQ' === loan.symbolKey) {
+            qqq = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('PLTR' === loan.symbolKey) {
+            pltr = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('SLV' === loan.symbolKey) {
+            slv = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('AAPL' === loan.symbolKey) {
+            aapl = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('GLD' === loan.symbolKey) {
+            gld = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('GME' === loan.symbolKey) {
+            gme = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('GOOGL' === loan.symbolKey) {
+            google = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('ARKK' === loan.symbolKey) {
+            arkk = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('BABA' === loan.symbolKey) {
+            baba = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('VNQ' === loan.symbolKey) {
+            vnq = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('URTH' === loan.symbolKey) {
+            urth = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('TLT' === loan.symbolKey) {
+            tlt = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('PDBC' === loan.symbolKey) {
+            pdbc = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('AMZN' === loan.symbolKey) {
+            amzn = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('NVDA' === loan.symbolKey) {
+            nvda = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('COIN' === loan.symbolKey) {
+            coin = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('EEM' === loan.symbolKey) {
+            eem = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('MSFT' === loan.symbolKey) {
+            msft = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('NFLX' === loan.symbolKey) {
+            nflx = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('FB' === loan.symbolKey) {
+            fb = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('VOO' === loan.symbolKey) {
+            voo = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('DIS' === loan.symbolKey) {
+            dis = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('MCHI' === loan.symbolKey) {
+            mchi = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('MSTR' === loan.symbolKey) {
+            mstr = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('INTC' === loan.symbolKey) {
+            intc = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('PYPL' === loan.symbolKey) {
+            pypl = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('BRK.B' === loan.symbolKey) {
+            brkb = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('KO' === loan.symbolKey) {
+            ko = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('PG' === loan.symbolKey) {
+            pg = +loan.amount * +loan.activePrice.next.amount;
+        }
+    });
+
+    return usd + spy + tsla + qqq + pltr + slv + aapl + gld + gme + google + arkk
+        + baba + vnq + urth + tlt + pdbc + amzn + nvda + coin + eem + msft + nflx
+        + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg;
+}
 
 if (process.env.JOB_SCHEDULER_ON === "on") {
     schedule.scheduleJob(process.env.JOB_SCHEDULER_TURNUS, function () {
