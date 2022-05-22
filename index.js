@@ -3174,6 +3174,9 @@ const app = express();
 
 app.get('/income/:address', async function (req, res) {
 
+    const millisecondsBefore = new Date().getTime();
+    logger.info("===============Income address started " + new Date() + " =================");
+
     const address = req.params.address
     const balance = await client.address.getBalance(address);
     const token = await client.address.listToken(address);
@@ -3182,8 +3185,20 @@ app.get('/income/:address', async function (req, res) {
     const vaults = await client.address.listVault(address);
     const stats = await client.stats.get();
 
+    const poolUsd = pools.find(p => p.id === "17");
+    const poolBtc = pools.find(p => p.id === "5");
+    const dUsd = Math.round(price.price.aggregated.amount / poolUsd?.priceRatio.ab  * 1000) / 1000;
+
     let incomeYearUsd = 0;
     let incomeYearDfi = 0;
+
+    let aprs = 0;
+    let lmPoolsIn = 0;
+
+    let lmUsdValue = 0;
+    let collateralUsdValue = 0;
+    let loanUsdValue = 0;
+    let totalValueWallet = balance * +price.price.aggregated.amount;
 
     for (const t of token) {
         if (t.isLPS) {
@@ -3193,6 +3208,7 @@ app.get('/income/:address', async function (req, res) {
             const share = +t.amount / pool.totalLiquidity.token;
             // compute usd share
             const usdShare = pool.totalLiquidity.usd * share;
+            lmUsdValue += usdShare;
             // compute year usd income
             const usdIncome = usdShare * pool.apr.total;
             // compute year dfi income
@@ -3200,11 +3216,22 @@ app.get('/income/:address', async function (req, res) {
             // add to income
             incomeYearUsd += usdIncome;
             incomeYearDfi += dfiIncome;
+
+            aprs += pool.apr.total;
+            lmPoolsIn += 1;
+        } else if (t.symbol === "DFI"){
+            totalValueWallet += +t.amount * +price.price.aggregated.amount;
+        } else if (t.symbol === "DUSD") {
+            totalValueWallet += +t.amount * dUsd;
+        } else {
+            const priceToken = await client.prices.get(t.symbol, "USD");
+            if (priceToken) {
+                logger.info(t.symbol + " price " + +priceToken.price.aggregated.amount)
+                totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
+            }
         }
     }
-    const poolUsd = pools.find(p => p.id === "17");
-    const poolBtc = pools.find(p => p.id === "5");
-    const dUsd = Math.round(price.price.aggregated.amount / poolUsd?.priceRatio.ab  * 1000) / 1000;
+
 
     const rewards = {"year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
                      "month": {"usd": incomeYearUsd / 12, "dfi": incomeYearDfi / 12},
@@ -3219,6 +3246,8 @@ app.get('/income/:address', async function (req, res) {
     let vaultResult = [];
     const vaultsFiltered = vaults.filter(v => v.collateralValue > 0);
     for (const v of vaultsFiltered) {
+       collateralUsdValue += +v.collateralValue;
+       loanUsdValue += +v.loanValue;
        vaultResult.push(
            { "id": v.vaultId,
              "state": v.state,
@@ -3231,7 +3260,13 @@ app.get('/income/:address', async function (req, res) {
     }
 
     const response = {
+        "totalValueLM": lmUsdValue,
+        "totalValueCollateral": collateralUsdValue,
+        "totalValueWallet": totalValueWallet,
+        "totalValueLoan": loanUsdValue,
+        "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue,
         "rewards": rewards,
+        "avgApr":  Math.round(aprs / lmPoolsIn * 100 * 100) / 100,
         "dfiPriceOracle": Math.round(+price.price.aggregated.amount * 1000) / 1000,
         "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
         "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
@@ -3239,6 +3274,11 @@ app.get('/income/:address', async function (req, res) {
         "nextOraclePriceBlocks": nextOracleInBlocks,
         "nextOraclePriceTimeInMin": Math.round(nextOracleTime),
         "vaults": vaultResult}
+
+    const millisecondsAfter = new Date().getTime();
+    const msTime = millisecondsAfter - millisecondsBefore;
+
+    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
 
     res.json(response);
 })
