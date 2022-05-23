@@ -3179,10 +3179,10 @@ app.get('/income/:address', async function (req, res) {
 
     const address = req.params.address
     const balance = await client.address.getBalance(address);
-    const token = await client.address.listToken(address);
+    const token = await client.address.listToken(address, 1000);
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
-    const vaults = await client.address.listVault(address);
+    const vaults = await client.address.listVault(address, 1000);
     const stats = await client.stats.get();
 
     const poolUsd = pools.find(p => p.id === "17");
