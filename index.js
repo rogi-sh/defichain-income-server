@@ -137,6 +137,11 @@ const walletSchema = new mongoose.Schema({
     kousd: Number,
     pgusd: Number,
 
+    sapusd: Number,
+    urausd: Number,
+    csusd: Number,
+    gsgusd: Number,
+
     dfiInStaking: Number,
     dfiInDfxStaking: Number,
 
@@ -333,7 +338,27 @@ const walletSchema = new mongoose.Schema({
     // PG Pool
     pgInPgPool: Number,
     pg: Number,
-    usdInPgPool: Number
+    usdInPgPool: Number,
+
+    // SAP Pool
+    sapInSapPool: Number,
+    sap: Number,
+    usdInSapPool: Number,
+
+    // GSG Pool
+    gsgInGsgPool: Number,
+    gsg: Number,
+    usdInGsgPool: Number,
+
+    // CS Pool
+    csInCsPool: Number,
+    cs: Number,
+    usdInCsPool: Number,
+
+    // URA Pool
+    uraInUraPool: Number,
+    ura: Number,
+    usdInUraPool: Number
 });
 
 const newsletterSchema = new mongoose.Schema({
@@ -617,6 +642,11 @@ const typeDefs = gql`
         brkbusd: Float
         kousd: Float
         pgusd: Float
+        
+        sapusd: Float
+        urausd: Float
+        csusd: Float
+        gsgusd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -812,6 +842,26 @@ const typeDefs = gql`
         pgInPgPool: Float
         pg:  Float
         usdInPgPool:  Float
+        
+        # SAP Pool
+        sapInSapPool: Float
+        sap: Float
+        usdInSapPool: Float
+
+        # GSG Pool
+        gsgInGsgPool: Float
+        gsg: Float
+        usdInGsgPool: Float
+
+        # CS Pool
+        csInCsPool: Float
+        cs: Float
+        usdInCsPool: Float
+
+        # URA Pool
+        uraInUraPool: Float
+        ura: Float
+        usdInUraPool: Float
     }
     
     type Pool {
@@ -1127,6 +1177,11 @@ const typeDefs = gql`
         kousd: Float
         pgusd: Float
         
+        sapusd: Float
+        urausd: Float
+        csusd: Float
+        gsgusd: Float
+        
         dfiInStaking: Float
         dfiInDfxStaking: Float
 
@@ -1324,6 +1379,26 @@ const typeDefs = gql`
         pgInPgPool: Float
         pg:  Float
         usdInPgPool:  Float   
+        
+        # SAP Pool
+        sapInSapPool: Float
+        sap: Float
+        usdInSapPool: Float
+
+        # GSG Pool
+        gsgInGsgPool: Float
+        gsg: Float
+        usdInGsgPool: Float
+
+        # CS Pool
+        csInCsPool: Float
+        cs: Float
+        usdInCsPool: Float
+
+        # URA Pool
+        uraInUraPool: Float
+        ura: Float
+        usdInUraPool: Float
     }
     
     input AddressV2Input {
@@ -2647,6 +2722,26 @@ function stocks(contentHtml, wallet) {
         index ++;
     }
 
+    if (wallet.sapInSapPool > 0 || wallet.usdInSapPool > 0 || wallet.sap > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.sap, wallet.sapInSapPool, wallet.usdInSapPool, index, 'SAP', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.gsgInGsgPool > 0 || wallet.usdInGsgPool > 0 || wallet.gsg > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.gsg, wallet.gsgInGsgPool, wallet.usdInGsgPool, index, 'GSG', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.csInCsPool > 0 || wallet.usdInCsPool > 0 || wallet.cs > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.cs, wallet.csInCsPool, wallet.usdInCsPool, index, 'CS', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.uraInUraPool > 0 || wallet.usdInUraPool > 0 || wallet.ura > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.ura, wallet.uraInUraPool, wallet.usdInUraPool, index, 'URA', 'DUSD');
+        index ++;
+    }
+
     contentHtml = contentHtml.replace("{{stocks}}", cryptoHtmlResult);
 
     return contentHtml;
@@ -3335,6 +3430,7 @@ function getNextLoanFromVaultUsd(vault) {
     let msft = 0; let nflx = 0; let fb = 0; let voo = 0;
     let dis = 0; let mchi = 0; let mstr = 0; let intc = 0;
     let pypl = 0; let brkb = 0; let ko = 0; let pg = 0;
+    let gsg = 0; let sap = 0; let cs = 0; let ura = 0;
 
     vault?.loanAmounts?.forEach(loan => {
         if ('DUSD' === loan.symbolKey) {
@@ -3401,12 +3497,20 @@ function getNextLoanFromVaultUsd(vault) {
             ko = +loan.amount * +loan.activePrice.next.amount;
         } else if ('PG' === loan.symbolKey) {
             pg = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('SAP' === loan.symbolKey) {
+            sap = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('GSG' === loan.symbolKey) {
+            gsg = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('CS' === loan.symbolKey) {
+            cs = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('URA' === loan.symbolKey) {
+            ura = +loan.amount * +loan.activePrice.next.amount;
         }
     });
 
     return usd + spy + tsla + qqq + pltr + slv + aapl + gld + gme + google + arkk
         + baba + vnq + urth + tlt + pdbc + amzn + nvda + coin + eem + msft + nflx
-        + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg;
+        + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg + sap + ura + gsg + cs;
 }
 
 if (process.env.JOB_SCHEDULER_ON === "on") {
