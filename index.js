@@ -1078,6 +1078,8 @@ const typeDefs = gql`
         bittrexNotice: String,
         kucoinStatusDeposit: Boolean,
         kucoinStatusWithdraw: Boolean,
+        kucoinStatusDepositErc20: Boolean,
+        kucoinStatusWithdrawErc20: Boolean,
         dfxBuy: String,
         dfxSell: String,
         dfxStaking: String
@@ -1500,6 +1502,8 @@ async function loadExchangeInfos() {
     let bittrexNotice;
     let kucoinStatusDeposit;
     let kucoinStatusWithdraw;
+    let kucoinStatusDepositErc20;
+    let kucoinStatusWithdrawErc20;
     let dfxBuy;
     let dfxSell;
     let dfxStaking
@@ -1514,8 +1518,10 @@ async function loadExchangeInfos() {
             logger.info("loadExchangeStatus: Responses arrived");
             bittrexStatus = response.data.status;
             bittrexNotice = response.data.notice;
-            kucoinStatusDeposit = response2.data.data.isDepositEnabled;
-            kucoinStatusWithdraw = response2.data.data.isWithdrawEnabled;
+            kucoinStatusDeposit = response2.data.data.chains[0].isDepositEnabled;
+            kucoinStatusWithdraw = response2.data.data.chains[0].isWithdrawEnabled;
+            kucoinStatusDepositErc20 = response2.data.data.chains[1].isDepositEnabled;
+            kucoinStatusWithdrawErc20 = response2.data.data.chains[1].isWithdrawEnabled;
             dfxBuy = response3.data.buy;
             dfxSell = response3.data.sell;
             dfxStaking = response3.data.staking;
@@ -1545,6 +1551,8 @@ async function loadExchangeInfos() {
         bittrexNotice: bittrexNotice,
         kucoinStatusDeposit: kucoinStatusDeposit,
         kucoinStatusWithdraw: kucoinStatusWithdraw,
+        kucoinStatusDepositErc20: kucoinStatusDepositErc20,
+        kucoinStatusWithdrawErc20: kucoinStatusWithdrawErc20,
         dfxBuy: dfxBuy,
         dfxSell: dfxSell,
         dfxStaking: dfxStaking
