@@ -564,15 +564,6 @@ const StatsSchema = new mongoose.Schema({
 });
 
 
-const poolBTCSchema = new mongoose.Schema(poolDefinition);
-const poolETHSchema = new mongoose.Schema(poolDefinition);
-const poolUSDTSchema = new mongoose.Schema(poolDefinition);
-const poolUSDCSchema = new mongoose.Schema(poolDefinition);
-const poolLTCSchema = new mongoose.Schema(poolDefinition);
-const poolBCHSchema = new mongoose.Schema(poolDefinition);
-const poolDOGESchema = new mongoose.Schema(poolDefinition);
-const poolUSDSchema = new mongoose.Schema(poolDefinition);
-const poolTSLASchema = new mongoose.Schema(poolDefinition);
 const poolFarmingSchema = new mongoose.Schema(poolFarming);
 
 const User = mongoose.model("User", userSchema);
@@ -580,15 +571,6 @@ const UserTransaction = mongoose.model("UserTransaction", userTransactionsSchema
 const UserHistory = mongoose.model("UserHistory", userHistorySchema);
 const ApiKey = mongoose.model("ApiKey", apiKeySchema);
 
-const PoolBTC = mongoose.model("PoolBTC", poolBTCSchema);
-const PoolETH = mongoose.model("PoolETH", poolETHSchema);
-const PoolUSDT = mongoose.model("PoolUSDT", poolUSDTSchema);
-const PoolUSDC = mongoose.model("PoolUSDC", poolUSDCSchema);
-const PoolLTC = mongoose.model("PoolLTC", poolLTCSchema);
-const PoolBCH = mongoose.model("PoolBCH", poolBCHSchema);
-const PoolDOGE = mongoose.model("PoolDOGE", poolDOGESchema);
-const PoolUSD = mongoose.model("PoolUSD", poolUSDSchema);
-const PoolTSLA = mongoose.model("PoolTSLA", poolTSLASchema);
 const PoolFarming = mongoose.model("PoolFarming", poolFarmingSchema);
 const Stats = mongoose.model("Stats", StatsSchema);
 
@@ -1828,124 +1810,6 @@ const resolvers = {
                 return {};
             }
         },
-        getPoolbtcHistory: async (obj, {from, till}, {auth}) => {
-            try {
-
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolBTC.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolbtcHistory", e);
-                return [];
-            }
-        },
-        getPoolethHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolETH.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolethHistory", e);
-                return [];
-            }
-        },
-        getPoolltcHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolLTC.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolltcHistory", e);
-                return [];
-            }
-        },
-        getPoolusdtHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolUSDT.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolusdtHistory", e);
-                return [];
-            }
-        },
-        getPoolusdcHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolUSDC.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolusdcHistory", e);
-                return [];
-            }
-        },
-        getPoolbchHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolBCH.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolbchHistory", e);
-                return [];
-            }
-        },
-        getPoolusdHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolUSD.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPoolusdHistory", e);
-                return [];
-            }
-        },
-        getPooltslaHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolTSLA.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPooltslaHistory", e);
-                return [];
-            }
-        },
-        getPooldogeHistory: async (obj, {from, till}, {auth}) => {
-            try {
-                const fromDate = new Date(Date.UTC(from.year, from.month - 1, from.day, from.hour, from.min, from.s, 0));
-                const tillDate = new Date(Date.UTC(till.year, till.month - 1, till.day, till.hour, till.min, till.s, 0));
-
-                return await PoolDOGE.find({
-                    date: {'$gte': fromDate, '$lte': tillDate}
-                }).lean();
-            } catch (e) {
-                logger.error("getPooldogeHistory", e);
-                return [];
-            }
-        },
         getFarmingHistory: async (obj, {from, till}, {auth}) => {
             try {
                 const millisecondsBefore = new Date().getTime();
@@ -2251,10 +2115,6 @@ const resolvers = {
     })
 };
 
-function getPool(id) {
-    return axios.get(process.env.POOL_API + id);
-}
-
 function getCakeApy() {
     return axios.get(process.env.CAKE_API);
 }
@@ -2269,10 +2129,6 @@ function getStatsOcean() {
 
 function getOceanPoolPairs() {
     return axios.get(process.env.POOL_PAIRS_OCEAN_API);
-}
-
-function getPoolPairs() {
-    return axios.get(process.env.POOL_PAIRS_API);
 }
 
 function getVisitors() {
@@ -2963,129 +2819,60 @@ async function checkNewsletterPayed(address) {
     return foundSource && foundTarget && foundTargetPayed;
 }
 
-async function saveBTCPool(data) {
-
-    const createdBTCPOOL = await PoolBTC.create(assignDataValue(Object.values(data)[0], new PoolBTC(), "5"));
-    return createdBTCPOOL;
-}
-
-async function saveETHPool(data) {
-
-    const createdETHPOOL = await PoolETH.create(assignDataValue(Object.values(data)[0], new PoolETH(), "4"));
-    return createdETHPOOL;
-}
-
-async function saveLTCPool(data) {
-
-    const createdLTCPOOL = await PoolLTC.create(assignDataValue(Object.values(data)[0], new PoolLTC(), "10"));
-    return createdLTCPOOL;
-}
-
-async function saveUSDTPool(data) {
-
-    const createdUSDTPool = await PoolUSDT.create(assignDataValue(Object.values(data)[0], new PoolUSDT(), "6"));
-    return createdUSDTPool;
-}
-
-async function saveUSDCPool(data) {
-
-
-    const createdUSDCPool = await PoolUSDC.create(assignDataValue(Object.values(data)[0], new PoolUSDC(), "14"));
-    return createdUSDCPool;
-}
-
-async function saveBCHPool(data) {
-
-    const createdBCHPool = await PoolBCH.create(assignDataValue(Object.values(data)[0], new PoolBCH(), "12"));
-    return createdBCHPool;
-}
-
-async function saveDOGEPool(data) {
-
-    const createdDOGEPool = await PoolDOGE.create(assignDataValue(Object.values(data)[0], new PoolDOGE(), "8"));
-    return createdDOGEPool;
-}
-
-async function saveUSDPool(data) {
-
-    const poolData = Object.values(data)[0];
-    const pool = assignDataValue(poolData, new PoolUSD(), "17")
-
-    pool.totalLiquidityUsd = poolData.totalLiquidityUsd;
-    pool.rewardPct = poolData.rewardPct;
-    pool.symbol = poolData.symbol;
-    pool.reserveA = poolData.reserveA;
-    pool.reserveB = poolData.reserveB;
-    pool.commission = poolData.commission;
-    pool.customRewards = poolData.customRewards;
-    pool.totalLiquidityLpToken = poolData.totalLiquidity;
-    pool.totalLiquidity = poolData.totalLiquidity;
-
-    pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
-    pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
-
-    const createdUSDPool = await PoolUSD.create(pool);
-    return createdUSDPool;
-}
-
-async function saveTSLAPool(data) {
-    const poolData = Object.values(data)[0];
-    const pool = assignDataValue(poolData, new PoolTSLA(), "18")
-
-    pool.totalLiquidityUsd = poolData.totalLiquidityUsd;
-    pool.rewardPct = poolData.rewardPct;
-    pool.symbol = poolData.symbol;
-    pool.reserveA = poolData.reserveA;
-    pool.reserveB = poolData.reserveB;
-    pool.commission = poolData.commission;
-    pool.customRewards = poolData.customRewards;
-    pool.totalLiquidityLpToken = poolData.totalLiquidity;
-    pool.totalLiquidity = poolData.totalLiquidity;
-
-    pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
-    pool.priceB = 1;
-
-    const createdTSLAPool = await PoolTSLA.create(pool);
-    return createdTSLAPool;
-}
-
-async function saveFarmingPool(dataPairs, oceanPairs) {
+async function saveFarmingPool(oceanPairs) {
     const pools = [];
 
-    const poolPairs = Object.values(dataPairs);
-    const usdPool = poolPairs.find(x => x.id === '17');
-    const usdPrice = usdPool.totalLiquidityUsd / 2 / usdPool.reserveA
+    const usdPool = oceanPairs.data.find(x => x.id === '17');
+    const usdPrice = +usdPool.totalLiquidity.usd / 2 / +usdPool.tokenA.reserve;
 
-    poolPairs.forEach(p => {
-        const pool = assignDataValue(p, {}, p.id);
-        const poolFromPairs = p;
-        pool.totalLiquidityUsd = poolFromPairs.totalLiquidityUsd;
-        pool.rewardPct = poolFromPairs.rewardPct;
-        pool.symbol = poolFromPairs.symbol;
-        pool.reserveA = poolFromPairs.reserveA;
-        pool.reserveB = poolFromPairs.reserveB;
-        pool.commission = poolFromPairs.commission;
-        pool.customRewards = poolFromPairs.customRewards;
-        pool.totalLiquidityLpToken = poolFromPairs.totalLiquidity;
-        pool.totalLiquidity = poolFromPairs.totalLiquidity;
-        pool.volume24h = oceanPairs.data.find(x => x.id === pool.poolId).volume.h24;
-        pool.volume30d = oceanPairs.data.find(x => x.id === pool.poolId).volume.d30;
+    oceanPairs.data.forEach(p => {
+
+        if (p.id === "54") {
+            return;
+        }
+
+        let pool = {};
+        pool.date = new Date();
+        pool.poolId = p.id;
+        pool.poolPairId = p.id
+        pool.apr = p.apr ? p.apr.total: 0;
+        pool.name = p.symbol;
+        pool.pair = p.symbol;
+        pool.apy = p.apr ? p.apr.total: 0;
+        pool.idTokenA = p.tokenA.id;
+        pool.idTokenB = p.tokenB.id;
+        pool.totalStaked = +p.totalLiquidity.token;
+        pool.reserveA = p.tokenA.reserve;
+        pool.reserveB = p.tokenB.reserve;
+        pool.tokenASymbol = p.tokenA.symbol;
+        pool.tokenBSymbol = p.tokenB.symbol;
+        pool.priceA = +p.totalLiquidity.usd / 2 / +p.tokenA.reserve;
+        pool.priceB = +p.totalLiquidity.usd / 2 / +p.tokenB.reserve;
+        pool.totalLiquidityLpToken = +p.totalLiquidity.token;
+        pool.totalLiquidity = +p.totalLiquidity.token;
+        pool.rewardPct = p.rewardPct;
+        pool.commission = p.commission;
+        pool.symbol = p.symbol;
+        pool.totalLiquidityUsd = +p.totalLiquidity.usd;
+
+        pool.volume24h = p.volume.h24;
+        pool.volume30d = p.volume.d30;
 
         // Crypto Pool price
         if (+p.id < 17) {
-            pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
-            pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
+            pool.priceA = +p.totalLiquidity.usd / 2 / +p.tokenA.reserve;
+            pool.priceB = +p.totalLiquidity.usd / 2 / +p.tokenB.reserve;
         }
 
         // USD Pool price
         if (+p.id === 17) {
             pool.priceA = usdPrice;
-            pool.priceB = pool.totalLiquidityUsd / 2 / pool.reserveB;
+            pool.priceB = +p.totalLiquidity.usd / 2 / +p.tokenB.reserve;
         }
 
         // Other Stocks
         if (+p.id > 17) {
-            pool.priceA = pool.totalLiquidityUsd / 2 / pool.reserveA;
+            pool.priceA = +p.totalLiquidity.usd / 2 / +p.tokenA.reserve;
             pool.priceB = usdPrice;
         }
 
@@ -3526,66 +3313,10 @@ if (process.env.JOB_SCHEDULER_ON === "on") {
         const millisecondsBefore = new Date().getTime();
         logger.info("===============Pools Job started " + new Date() + " =================");
 
-        Promise.all([getPool("5"), getPool("4"), getPool("6"), getPool("10"), getPool("8"), getPool("12"), getPool("14"), getPool("17"), getPool("18"), getPoolPairs(), getOceanPoolPairs()])
+        Promise.all([getOceanPoolPairs()])
             .then(function (results) {
-                const btc = results[0];
-                saveBTCPool(btc.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveBTCPool", error);
-                    });
-
-                const eth = results[1];
-                saveETHPool(eth.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveETHPool", error);
-                    });
-                const usdt = results[2];
-                saveUSDTPool(usdt.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveUSDTPool", error);
-                    });
-                const ltc = results[3];
-                saveLTCPool(ltc.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveLTCPool", error);
-                    });
-                const doge = results[4];
-                saveDOGEPool(doge.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveDOGEPool", error);
-                    });
-                const bch = results[5];
-                saveBCHPool(bch.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveBCHPool", error);
-                    });
-                const usdc = results[6];
-                saveUSDCPool(usdc.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveUSDCPool", error);
-                    });
-                const usd = results[7];
-                saveUSDPool(usd.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveUSDPool", error);
-                    });
-                const tsla = results[8];
-                saveTSLAPool(tsla.data)
-                    .catch(function (error) {
-                        // handle error
-                        logger.error("saveTSLAPool", error);
-                    });
-                const pairs = results[9];
-                const oceanPairs = results[10];
-                saveFarmingPool(pairs.data, oceanPairs.data).catch(function (error) {
+                const oceanPairs = results[0];
+                saveFarmingPool(oceanPairs.data).catch(function (error) {
                     // handle error
                     logger.error("saveFarmingPool", error);
                 });
