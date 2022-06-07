@@ -2826,10 +2826,10 @@ async function saveFarmingPool(oceanPairs) {
         pool.date = new Date();
         pool.poolId = p.id;
         pool.poolPairId = p.id
-        pool.apr = p.apr ? p.apr.total: 0;
+        pool.apr = p.apr ? p.apr.total * 100: 0;
         pool.name = p.symbol;
         pool.pair = p.symbol;
-        pool.apy = p.apr ? p.apr.total: 0;
+        pool.apy = p.apr ? p.apr.total * 100: 0;
         pool.idTokenA = p.tokenA.id;
         pool.idTokenB = p.tokenB.id;
         pool.totalStaked = +p.totalLiquidity.token;
