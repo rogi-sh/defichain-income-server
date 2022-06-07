@@ -1098,15 +1098,6 @@ const typeDefs = gql`
         userTransactionsByKey(key: String): [UserTransaction]
         userTransactions: [UserTransaction]
         getAuthKey: String
-        getPoolbtcHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolethHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolltcHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolusdtHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolusdcHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPooldogeHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolbchHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPoolusdHistory(from: DateInput!, till: DateInput!): [Pool]
-        getPooltslaHistory(from: DateInput!, till: DateInput!): [Pool]
         getFarmingHistory(from: DateInput!, till: DateInput!): [PoolList]
         getStats: [Stats]
         getCorrelation(days: Int): Correlation
