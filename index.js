@@ -20,7 +20,7 @@ const {SeqTransport} = require('@datalust/winston-seq');
 require('events').EventEmitter.setMaxListeners(300);
 
 const client = new WhaleApiClient({
-    url: 'https://ocean.defichain.com',
+    url: 'https://ocean.defichain-income.com',
     timeout: 60000,
     version: 'v0',
     network: 'mainnet'
@@ -1538,8 +1538,9 @@ async function testNewsletter(saved) {
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
     const prices = await client.prices.list(1000);
-    const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
-    await sendNewsletterMail(saved, stats, price, pools, prices, cake, exchanges);
+    const dfx = await getDFXApy().catch(reason => logger.error("getDFXApy in newsletter" + reason.code + reason.message));
+    const exchanges = await loadExchangeInfos();
+    await sendNewsletterMail(saved, stats, price, pools, prices, dfx, exchanges);
 }
 
 const resolvers = {
@@ -2106,8 +2107,8 @@ const resolvers = {
     })
 };
 
-function getCakeApy() {
-    return axios.get(process.env.CAKE_API);
+function getDFXApy() {
+    return axios.get(process.env.DFX_API_STAKING);
 }
 
 function getStats() {
@@ -2258,7 +2259,13 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 
     pools = pools.sort((a, b) => b.totalLiquidity.usd - a.totalLiquidity.usd);
     for (let i = 0; i < pools.length; i++) {
+
         const pool = pools[i];
+
+        if (pool.id === "54") {
+            continue;
+        }
+
         const price = pool.id === "17" ? 1: prices.find(p => p.id === (pool.tokenA.symbol + "-USD")).price.aggregated.amount;
         cryptoHtmlResult = cryptoHtmlResult + replacePoolStatisticsItem(cryptoHtml, pool, index, price);
         index++;
@@ -2270,7 +2277,7 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
     return contentHtml;
 }
 
-function statisticsForStaking(contentHtml, stats, cake) {
+function statisticsForStaking(contentHtml, stats, dfx) {
 
     // staking
     const masternodeCount5Freezer = stats.masternodes.locked.find(p => p.weeks === 260).count;
@@ -2284,8 +2291,8 @@ function statisticsForStaking(contentHtml, stats, cake) {
     const stakingApy5Mn = 100 * (Math.pow(1 + (stakingAprMN * 1.5 / 100 / 52), 52) - 1);
     const stakingApy10Mn = 100 * (Math.pow(1 + (stakingAprMN * 2 / 100 / 52), 52) - 1);
 
-    const cakeApy = cake.data ? +cake.data.staking.find(s => s.id === 'DFI').apy * 100 : 0;
-    const cakeApr = 100 * 730 * (Math.pow(1 + cakeApy / 100, 1 / 730) - 1);
+    const dfxApy = dfx.data ? +dfx.data.staking.yield.apy * 100 : 0;
+    const dfxApr = dfx.data  ? +dfx.data.staking.yield.apr * 100 : 0;
 
     // numbers
     contentHtml = contentHtml.replace("{{totalMN}}", masternodeCount);
@@ -2302,8 +2309,8 @@ function statisticsForStaking(contentHtml, stats, cake) {
     contentHtml = contentHtml.replace("{{apyMN10}}", round2(stakingApy10Mn));
 
     // staking cake
-    contentHtml = contentHtml.replace("{{apyMNCake}}", round2(cakeApy));
-    contentHtml = contentHtml.replace("{{aprMNCake}}", round2(cakeApr));
+    contentHtml = contentHtml.replace("{{apyMNDFX}}", round2(dfxApy));
+    contentHtml = contentHtml.replace("{{aprMNDFX}}", round2(dfxApr));
 
     return contentHtml;
 }
@@ -2320,6 +2327,8 @@ function statisticsForExchnges(contentHtml, exchanges) {
     contentHtml = contentHtml.replace("{{kucoinDeposit}}", exchanges.kucoinStatusDeposit ? 'ONLINE' : 'OFFLINE');
     contentHtml = contentHtml.replace("{{kucoinWithdraw}}", exchanges.kucoinStatusWithdraw ? 'ONLINE' : 'OFFLINE');
     contentHtml = contentHtml.replace("{{kucoinColor}}", exchanges.kucoinStatusDeposit ? '25e712': 'ff6666');
+    contentHtml = contentHtml.replace("{{kucoinDepositErc20}}", exchanges.kucoinStatusDepositErc20 ? 'ONLINE' : 'OFFLINE');
+    contentHtml = contentHtml.replace("{{kucoinWithdrawErc20}}", exchanges.kucoinStatusWithdrawErc20 ? 'ONLINE' : 'OFFLINE');
 
     // bittrex
     contentHtml = contentHtml.replace("{{bittrexStatus}}", exchanges.bittrexStatus);
@@ -2658,7 +2667,7 @@ async function vaults(user, contentHtml) {
     }
 }
 
-async function sendNewsletterMail(user, stats, price, pools, prices, cake, exchanges) {
+async function sendNewsletterMail(user, stats, price, pools, prices, dfx, exchanges) {
 
     try {
 
@@ -2701,7 +2710,7 @@ async function sendNewsletterMail(user, stats, price, pools, prices, cake, excha
             contentHtml = statisticsForNewsletter(contentHtml, stats, pools, prices);
 
             // staking
-            contentHtml = statisticsForStaking(contentHtml, stats, cake);
+            contentHtml = statisticsForStaking(contentHtml, stats, dfx);
 
             // exchanges
             contentHtml = statisticsForExchnges(contentHtml, exchanges);
@@ -3466,10 +3475,10 @@ async function executeNewsletter() {
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
     const prices = await client.prices.list(1000);
-    const cake = await getCakeApy().catch(reason => logger.error("getCakeApy in newsletter", reason));
+    const dfx = await getDFXApy().catch(reason => logger.error("getDFXApy in newsletter", reason));
     const exchanges = await loadExchangeInfos();
 
-    logger.info("===========Newsletter all infos loaded ✅ ================");
+    logger.info("===========Newsletter Job: Newsletter all infos loaded ✅ ================");
 
     let mail = 0;
     let address = 0;
@@ -3483,7 +3492,7 @@ async function executeNewsletter() {
 
         try {
 
-            logger.info("===========Newsletter start for user:  " + u.key + " ✅ ================");
+            logger.info("===========Newsletter Job: start for user:  " + u.key + " ✅ ================");
 
             // kalkuliere Status
             let status = "";
@@ -3505,9 +3514,9 @@ async function executeNewsletter() {
             // 2.1
             if (emailSet && !addressSet) {
                 status = "subscribedWithoutAddress";
-                logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
+                logger.info("===========Newsletter Job: user not payed:  " + u.key + " ⚠️ ================");
                 await sendNewsletterReminderMail(u.newsletter.email);
-                logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+                logger.info("===========Newsletter Job:  user not payed Reminder sent:  " + u.key + " ⚠️ ================");
             }
 
             // 3. Payed
@@ -3516,14 +3525,14 @@ async function executeNewsletter() {
                 if (payedOk) {
                     status = "payed";
                     payed++;
-                    logger.info("===========Newsletter start for payed user:  " + u.key + " ✅ ================");
-                    await sendNewsletterMail(u, stats, price, pools, prices, cake, exchanges);
-                    logger.info("============ Newsletter finished for payed user: " + u.key + " ✅ ================");
+                    logger.info("===========Newsletter Job: start for payed user:  " + u.key + " ✅ ================");
+                    await sendNewsletterMail(u, stats, price, pools, prices, dfx, exchanges);
+                    logger.info("============ Newsletter Job: finished for payed user: " + u.key + " ✅ ================");
                 } else {
-                    logger.info("===========Newsletter user not payed:  " + u.key + " ⚠️ ================");
+                    logger.info("===========Newsletter Job: user not payed:  " + u.key + " ⚠️ ================");
 
                     if (date.getDay() === 2 || date.getDay() === 5) {
-                        logger.info("===========Newsletter user not payed Reminder sent:  " + u.key + " ⚠️ ================");
+                        logger.info("===========Newsletter Job: user not payed Reminder sent:  " + u.key + " ⚠️ ================");
                         await sendNewsletterReminderMail(u.newsletter.email);
                     }
                 }
@@ -3532,10 +3541,10 @@ async function executeNewsletter() {
 
             await u.save();
 
-            logger.info("===========Newsletter ready for user:  " + u.key + " ✅ ================");
+            logger.info("===========Newsletter Job: ready for user:  " + u.key + " ✅ ================");
 
         } catch (e) {
-            logger.error("============ Newsletter Job error for user with key " + u.key + e.message);
+            logger.error("============ Newsletter Job: error for user with key " + u.key + e.message);
         }
     }
 

@@ -281,12 +281,12 @@
     <mj-section >
       <mj-column width="25%" >
         <mj-text   font-family="Roboto">
-          <span style="font-size:14px;">Cake Defi</span>
+          <span style="font-size:14px;">DFX</span>
         </mj-text>
       </mj-column>
       <mj-column width="75%">
         <mj-text color="#ff00af" font-family="Roboto">
-          <span style="font-size:12px;"><strong>No Freezer {{aprMNCake}} % APR - {{apyMNCake}} % APY</strong></span>
+          <span style="font-size:12px;"><strong>{{aprMNDFX}} % APR - {{apyMNDFX}} % APY</strong></span>
         </mj-text>
       </mj-column>
     </mj-section>
@@ -320,6 +320,10 @@
       <mj-column width="75%">
         <mj-text font-family="Roboto">
           <span style="font-size:12px;"><strong>Deposit: {{kucoinDeposit}} - Withdraw: {{kucoinWithdraw}} </strong></span>
+
+        </mj-text>
+        <mj-text font-family="Roboto">
+          <span style="font-size:12px;"><strong>DepositErc20: {{kucoinDepositErc20}} - WithdrawErc20: {{kucoinWithdrawErc20}} </strong></span>
 
         </mj-text>
       </mj-column>
