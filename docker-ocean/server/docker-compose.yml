@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  defi-blockchain:
+    image: defi/defichain:2.8.1
+    container_name: pond-node
+    restart: always
+    volumes:
+      - ./data:/home/defi/.defi
+    command: >
+      defid
+      -printtoconsole
+      -rpcallowip=0.0.0.0/0
+      -rpcbind=0.0.0.0
+      -rpcuser=whale-rpcuser
+      -rpcpassword=whale-rpcpassword
+      -rpcworkqueue=512
+      -disablewallet=1
+      -txnotokens=0
+      -logtimemicros
+      -txindex=1
+      -acindex=1
+    networks:
+      - web
+
+  defi-whale:
+    image: ghcr.io/jellyfishsdk/whale-api:2.4.11
+    container_name: defi-whale
+    restart: always
+    volumes:
+      - ./leveldb:/tmp/db
+    ports:
+      - "4001:3000"
+    depends_on:
+      - defi-blockchain
+    environment:
+      WHALE_DEFID_URL: http://whale-rpcuser:whale-rpcpassword@defi-blockchain:8554
+      WHALE_NETWORK: mainnet
+      WHALE_DATABASE_PROVIDER: level
+      WHALE_DATABASE_LEVEL_LOCATION: /tmp/db
+      WHALE_VERSION: v0
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netdata.rule=Host(`ocean.defichain-income.com`)"
+      - "traefik.http.routers.netdata.entrypoints=websecure"
+      - "traefik.http.routers.netdata.tls=true"
+      - "traefik.http.routers.netdata.tls.certresolver=letsencrypt"
+
+networks:
+  web:
+    external: true
