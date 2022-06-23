@@ -3148,6 +3148,9 @@ app.get('/income/:address', async function (req, res) {
        )
     }
 
+    const avgApr = Math.round(aprs / lmPoolsIn * 100 * 100) / 100;
+    const apyDaily = Math.round((100 * (Math.pow(1 + (avgApr / 100 / 365), 365) - 1)) * 100) / 100;
+
     const response = {
         "totalValueLM": lmUsdValue,
         "totalValueCollateral": collateralUsdValue,
@@ -3155,7 +3158,8 @@ app.get('/income/:address', async function (req, res) {
         "totalValueLoan": loanUsdValue,
         "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue,
         "rewards": rewards,
-        "avgApr":  Math.round(aprs / lmPoolsIn * 100 * 100) / 100,
+        "avgApr":  avgApr,
+        "apyDaily": apyDaily,
         "dfiPriceOracle": Math.round(+price.price.aggregated.amount * 1000) / 1000,
         "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
         "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
