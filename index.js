@@ -2339,7 +2339,7 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 
         const pool = pools[i];
 
-        if (pool.id === "54") {
+        if (splittedPools(pool)) {
             continue;
         }
 
@@ -2352,6 +2352,10 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 
 
     return contentHtml;
+}
+
+function splittedPools(pool) {
+    return pool.id === "54" || pool.id === "32"
 }
 
 function statisticsForStaking(contentHtml, stats, dfx) {
@@ -2924,7 +2928,7 @@ async function saveFarmingPool(oceanPairs) {
 
     oceanPairs.data.forEach(p => {
 
-        if (p.id === "54") {
+        if (splittedPools(p)) {
             return;
         }
 
