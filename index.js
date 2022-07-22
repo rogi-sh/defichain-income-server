@@ -2355,7 +2355,7 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 }
 
 function splittedPools(pool) {
-    return pool.id === "54" || pool.id === "32"
+    return pool.id === "54" || pool.id === "32" || pool.id === "25";
 }
 
 function statisticsForStaking(contentHtml, stats, dfx) {
