@@ -100,6 +100,8 @@ const walletSchema = new mongoose.Schema({
     dogedfi: Number,
     usdtdfi: Number,
     usdcdfi: Number,
+    usdtdusd: Number,
+    usdcdusd: Number,
     bchdfi: Number,
     usddfi: Number,
     tslausd: Number,
@@ -165,10 +167,20 @@ const walletSchema = new mongoose.Schema({
     usdt: Number,
     dfiInUsdtPool: Number,
 
+    // USDT-DUSD Pool
+    usdtInUsdtDusdPool: Number,
+    usdtDusd: Number,
+    dusdInUsdtDusdPool: Number,
+
     // USDC Pool
     usdcInUsdcPool: Number,
     usdc: Number,
     dfiInUsdcPool: Number,
+
+    // USDC-DUSD Pool
+    usdcInUsdcDusdPool: Number,
+    usdcDusd: Number,
+    dusdInUsdcDusdPool: Number,
 
     // LTC Pool
     ltcInLtcPool: Number,
@@ -617,6 +629,8 @@ const typeDefs = gql`
         dogedfi: Float
         usdtdfi: Float
         usdcdfi: Float
+        usdtdusd: Float
+        usdcdusd: Float
         bchdfi: Float
         usddfi: Float
         tslausd: Float
@@ -676,11 +690,21 @@ const typeDefs = gql`
         usdtInUsdtPool: Float
         usdt: Float
         dfiInUsdtPool: Float
+        
+        # USDT-DUSD Pool
+        usdtInUsdtDusdPool: Float
+        usdtDusd: Float
+        dusdInUsdtDusdPool: Float
 
         # USDC Pool
         usdcInUsdcPool: Float
         usdc: Float
         dfiInUsdcPool: Float
+        
+        # USDC-DUSD Pool
+        usdcInUsdcDusdPool: Float
+        usdcDusd: Float
+        dusdInUsdcDusdPool: Float
 
         # LTC Pool
         ltcInLtcPool: Float
@@ -1168,6 +1192,8 @@ const typeDefs = gql`
         dogedfi: Float
         usdtdfi: Float
         usdcdfi: Float
+        usdtdusd: Float
+        usdcdusd: Float
         bchdfi: Float
         usddfi: Float
         tslausd: Float
@@ -1231,11 +1257,21 @@ const typeDefs = gql`
         usdtInUsdtPool: Float
         usdt: Float
         dfiInUsdtPool: Float
+        
+        # USDT-DUSD Pool
+        usdtInUsdtDusdPool: Float
+        usdtDusd: Float
+        dusdInUsdtDusdPool: Float
 
         # USDC Pool
         usdcInUsdcPool: Float
         usdc: Float
         dfiInUsdcPool: Float
+        
+        # USDC-DUSD Pool
+        usdcInUsdcDusdPool: Float
+        usdcDusd: Float
+        dusdInUsdcDusdPool: Float
 
         # LTC Pool
         ltcInLtcPool: Float
@@ -2477,8 +2513,18 @@ function crypto(contentHtml, wallet) {
         index ++;
     }
 
+    if (wallet.usdtInUsdtDusdPool > 0 || wallet.dusdInUsdtDusdPool > 0 || wallet.usdtDusd > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.usdtDusd, wallet.usdtInUsdtDusdPool, wallet.dusdInUsdtDusdPool, index, 'USDT', 'DUSD');
+        index ++;
+    }
+
     if (wallet.usdcInUsdcPool > 0 || wallet.dfiInUsdcPool > 0 || wallet.usdc > 0) {
         cryptoHtmlResult = cryptoHtmlResult +replacePoolItem(contentHtmlCrypto, wallet.usdc, wallet.usdcInUsdcPool, wallet.dfiInUsdcPool, index, 'USDC', 'DFI');
+        index ++;
+    }
+
+    if (wallet.usdcInUsdcDusdPool > 0 || wallet.dusdInUsdcDusdPool > 0 || wallet.usdcDusd > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.usdcDusd, wallet.usdcInUsdcDusdPool, wallet.dusdInUsdcDusdPool, index, 'USDC', 'DUSD');
         index ++;
     }
 
