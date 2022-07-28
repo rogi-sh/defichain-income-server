@@ -1140,7 +1140,8 @@ const typeDefs = gql`
         kucoinStatusWithdrawErc20: Boolean,
         dfxBuy: String,
         dfxSell: String,
-        dfxStaking: String
+        dfxStaking: String,
+        huobiStatus: String
     }
 
     type Correlation {
@@ -1593,13 +1594,14 @@ async function loadExchangeInfos() {
     let dfxBuy;
     let dfxSell;
     let dfxStaking
+    let huobiStatus;
 
     logger.info("loadExchangeStatus: Start load exchange Status");
 
     await axios.all([
-        getStatusBittrex(), getStatusKucoin(), getStatusDfx()
+        getStatusBittrex(), getStatusKucoin(), getStatusDfx(), getStatusHuobi()
     ])
-        .then(axios.spread((response, response2, response3) => {
+        .then(axios.spread((response, response2, response3, response4) => {
 
             logger.info("loadExchangeStatus: Responses arrived");
             bittrexStatus = response.data.status;
@@ -1611,6 +1613,7 @@ async function loadExchangeInfos() {
             dfxBuy = response3.data.buy;
             dfxSell = response3.data.sell;
             dfxStaking = response3.data.staking;
+            huobiStatus = response4.data.status;
 
         }))
         .catch(function (error) {
@@ -1641,7 +1644,8 @@ async function loadExchangeInfos() {
         kucoinStatusWithdrawErc20: kucoinStatusWithdrawErc20,
         dfxBuy: dfxBuy,
         dfxSell: dfxSell,
-        dfxStaking: dfxStaking
+        dfxStaking: dfxStaking,
+        huobiStatus: huobiStatus
     };
     return exchangeStatus;
 }
@@ -2266,6 +2270,10 @@ function getStatusKucoin() {
 
 function getStatusDfx() {
     return axios.get(process.env.DFX_API);
+}
+
+function getStatusHuobi() {
+    return axios.get(process.env.HUOBI_API);
 }
 
 async function sendUpdateNewsletterMail(mail, address, status) {
