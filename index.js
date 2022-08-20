@@ -3386,6 +3386,7 @@ function getNextLoanFromVaultUsd(vault) {
     let pypl = 0; let brkb = 0; let ko = 0; let pg = 0;
     let gsg = 0; let sap = 0; let cs = 0; let ura = 0;
     let xom = 0; let govt = 0; let tan = 0; let pplt = 0;
+    let jnj = 0; let addyy = 0; let gs = 0; let dax = 0;
 
     vault?.loanAmounts?.forEach(loan => {
         if ('DUSD' === loan.symbolKey) {
@@ -3468,13 +3469,21 @@ function getNextLoanFromVaultUsd(vault) {
             tan = +loan.amount * +loan.activePrice.next.amount;
         } else if ('XOM' === loan.symbolKey) {
             xom = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('JNJ' === loan.symbolKey) {
+            jnj = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('ADDYY' === loan.symbolKey) {
+            addyy = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('GS' === loan.symbolKey) {
+            gs = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('DAX' === loan.symbolKey) {
+            dax = +loan.amount * +loan.activePrice.next.amount;
         }
     });
 
     return usd + spy + tsla + qqq + pltr + slv + aapl + gld + gme + google + arkk
         + baba + vnq + urth + tlt + pdbc + amzn + nvda + coin + eem + msft + nflx
         + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg + sap + ura + gsg + cs
-        + pplt + xom + govt + tan;
+        + pplt + xom + govt + tan + jnj + gs + addyy + dax;
 }
 
 if (process.env.JOB_SCHEDULER_ON === "on") {
