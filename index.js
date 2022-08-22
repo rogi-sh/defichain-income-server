@@ -397,6 +397,26 @@ const walletSchema = new mongoose.Schema({
     xom: Number,
     usdInXomPool: Number,
 
+    // JNJ Pool
+    jnjInJnjPool: Number,
+    jnj: Number,
+    usdInJnjPool: Number,
+
+    // ADDYY Pool
+    addyyInAddyyPool: Number,
+    addyy: Number,
+    usdInAddyyPool: Number,
+
+    // GS Pool
+    gsInGsPool: Number,
+    gs: Number,
+    usdInGsPool: Number,
+
+    // DAX Pool
+    daxInDaxPool: Number,
+    dax: Number,
+    usdInDaxPool: Number,
+
 
 });
 
@@ -920,6 +940,26 @@ const typeDefs = gql`
         xomInXomPool: Float
         xom: Float
         usdInXomPool: Float
+        
+        # JNJ Pool
+        jnjInJnjPool: Float
+        jnj: Float
+        usdInJnjPool: Float
+
+        # ADDYY Pool
+        addyyInAddyyPool: Float
+        addyy: Float
+        usdInAddyyPool: Float
+
+        # GS Pool
+        gsInGsPool: Float
+        gs: Float
+        usdInGsPool: Float
+
+        # DAX Pool
+        daxInDaxPool: Float
+        dax: Float
+        usdInDaxPool: Float
     }
     
     type Pool {
@@ -1488,6 +1528,26 @@ const typeDefs = gql`
         xomInXomPool: Float
         xom: Float
         usdInXomPool: Float
+        
+        # JNJ Pool
+        jnjInJnjPool: Float
+        jnj: Float
+        usdInJnjPool: Float
+
+        # ADDYY Pool
+        addyyInAddyyPool: Float
+        addyy: Float
+        usdInAddyyPool: Float
+
+        # GS Pool
+        gsInGsPool: Float
+        gs: Float
+        usdInGsPool: Float
+
+        # DAX Pool
+        daxInDaxPool: Float
+        dax: Float
+        usdInDaxPool: Float
     }
     
     input AddressV2Input {
@@ -2758,6 +2818,26 @@ function stocks(contentHtml, wallet) {
 
     if (wallet.xomInXomPool > 0 || wallet.usdInXomPool > 0 || wallet.xom > 0) {
         cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.xom, wallet.xomInXomPool, wallet.usdInXomPool, index, 'XOM', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.jnjInJnjPool > 0 || wallet.usdInJnjPool > 0 || wallet.jnj > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.jnj, wallet.jnjInJnjPool, wallet.usdInJnjPool, index, 'JNJ', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.addyyInAddyyPool > 0 || wallet.usdInAddyyPool > 0 || wallet.addyy > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.addyy, wallet.addyyInAddyyPool, wallet.usdInAddyyPool, index, 'ADDYY', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.gsInGsPool > 0 || wallet.usdInGsPool > 0 || wallet.gs > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.gs, wallet.gsInGsPool, wallet.usdInGsPool, index, 'GS', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.daxInDaxPool > 0 || wallet.usdInDaxPool > 0 || wallet.dax > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.dax, wallet.daxInDaxPool, wallet.usdInDaxPool, index, 'GS', 'DUSD');
         index ++;
     }
 
