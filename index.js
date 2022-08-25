@@ -2459,7 +2459,7 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 }
 
 function splittedPools(pool) {
-    return pool.id === "54" || pool.id === "32" || pool.id === "25";
+    return pool.symbol.includes("v1");
 }
 
 function statisticsForStaking(contentHtml, stats, dfx) {
