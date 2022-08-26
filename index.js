@@ -3387,6 +3387,16 @@ app.get('/income/:address', async function (req, res) {
     const apyDaily = Math.round((100 * (Math.pow(1 + (avgApr / 100 / 365), 365) - 1)) * 100) / 100;
     const apyWeekly = Math.round((100 * (Math.pow(1 + (avgApr / 100 / 52), 52) - 1)) * 100) / 100;
 
+    let poolsCalculated = 0;
+    let aprOfAllPools = 0;
+    pools.forEach(p => {
+        if (!p.symbol.includes("v1") && !p.symbol.includes("DOGE")) {
+            poolsCalculated += 1;
+            aprOfAllPools += p.apr.total;
+        }
+    })
+    const aprAvgOfAllPools = Math.round(aprOfAllPools / poolsCalculated * 100 * 100) / 100;
+
     const response = {
         "totalValueLM": lmUsdValue,
         "totalValueCollateral": collateralUsdValue,
@@ -3397,6 +3407,7 @@ app.get('/income/:address', async function (req, res) {
         "avgApr":  avgApr,
         "apyDaily": apyDaily,
         "apyWeekly": apyWeekly,
+        "aprAvgOfAllPools":aprAvgOfAllPools,
         "dfiPriceOracle": Math.round(+price.price.aggregated.amount * 1000) / 1000,
         "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
         "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
