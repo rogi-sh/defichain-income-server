@@ -67,20 +67,20 @@ const logger = winston.createLogger({
         })
     ]
 });
-
-mongoose.connect(process.env.DB_CONN,
-    {useNewUrlParser: true, useUnifiedTopology: true, keepAlive: true, dbName: "defichain"}).then(
-    () => {
-        /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
-        logger.info("Connected to Database")
-    },
-    err => {
-        /** handle initial connection error */
-        logger.error("Error Connection DB", err)
-    }
-);
-
-const db = mongoose.connection;
+const connectWithRetry = function () {
+    return mongoose.connect(process.env.DB_CONN, {dbName: "defichain"}).then(
+        () => {
+            /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
+            logger.info("Connected to Database")
+        },
+        err => {
+            /** handle initial connection error */
+            logger.error("Error Connection DB retry in 3s ", err)
+            setTimeout(connectWithRetry, 3000);
+        }
+    );
+}
+connectWithRetry();
 
 const axios = require('axios').default;
 const schedule = require('node-schedule');
