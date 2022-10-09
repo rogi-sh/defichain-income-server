@@ -2548,7 +2548,9 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 }
 
 function splittedPools(pool) {
-    return pool.symbol.includes("v1");
+    // v1 = splitted pools
+    // id 123 is dusd burn pool
+    return pool.symbol.includes("v1") || pool.id === "123";
 }
 
 function statisticsForStaking(contentHtml, stats, dfx) {
