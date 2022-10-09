@@ -16,25 +16,25 @@
   "license": "ISC",
   "dependencies": {
     "@datalust/winston-seq": "^1.0.2",
-    "@defichain/jellyfish-address": "^2.45.11",
-    "@defichain/whale-api-client": "^2.45.11",
+    "@defichain/jellyfish-address": "^2.65.0",
+    "@defichain/whale-api-client": "^2.65.0",
     "@supercharge/strings": "^1.28.0",
-    "apollo-server": "^3.8.2",
-    "apollo-server-express": "^3.8.2",
-    "axios": "^0.27.2",
+    "apollo-server": "^3.10.3",
+    "apollo-server-express": "^3.10.3",
+    "axios": "^1.1.2",
     "calculate-correlation": "^1.2.3",
-    "defichain": "^2.45.11",
+    "defichain": "^2.65.0",
     "dotenv": "^16.0.1",
-    "express": "^4.18.1",
-    "graphql": "^16.5.0",
-    "mjml": "^4.12.0",
-    "mongoose": "^6.5.5",
+    "express": "^4.18.2",
+    "graphql": "^16.6.0",
+    "mjml": "^4.13.0",
+    "mongoose": "^6.6.5",
     "node-schedule": "^2.1.0",
-    "nodemailer": "^6.7.5",
-    "winston": "^3.7.2"
+    "nodemailer": "^6.8.0",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
-    "apollo-server-express": "^3.8.2",
+    "apollo-server-express": "^3.10.3",
     "cors": "^2.8.5"
   }
 }
