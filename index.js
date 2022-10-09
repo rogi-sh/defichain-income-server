@@ -3901,6 +3901,10 @@ async function executeNewsletter() {
                 status = "subscribedWithAddress";
                 address++;
             }
+            if (!emailSet && !addressSet) {
+                logger.info("===========Newsletter Job: user without mail and addres:  " + u.key + " ⚠️ ================");
+            }
+
 
             // 2.1
             if (emailSet && !addressSet) {
