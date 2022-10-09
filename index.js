@@ -82,7 +82,8 @@ const connectWithRetry = function () {
 }
 connectWithRetry();
 
-const axios = require('axios').default;
+const axios = require('axios');
+
 const schedule = require('node-schedule');
 const {GraphQLError} = require("graphql");
 const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
