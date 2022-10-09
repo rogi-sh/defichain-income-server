@@ -149,6 +149,16 @@ const walletSchema = new mongoose.Schema({
     tanusd: Number,
     xomusd: Number,
 
+    jnjusd: Number,
+    addyyusd: Number,
+    gsusd: Number,
+    daxusd: Number,
+
+    wmtusd: Number,
+    ulusd: Number,
+    ungusd: Number,
+    usousd: Number,
+
     dfiInStaking: Number,
     dfiInDfxStaking: Number,
 
@@ -417,6 +427,25 @@ const walletSchema = new mongoose.Schema({
     dax: Number,
     usdInDaxPool: Number,
 
+    // WMT Pool
+    wmtInWmtPool: Number,
+    wmt: Number,
+    usdInWmtPool: Number,
+
+    // UL Pool
+    ulInUlPool: Number,
+    ul: Number,
+    usdInUlPool: Number,
+
+    // UNG Pool
+    ungInUngPool: Number,
+    ung: Number,
+    usdInUngPool: Number,
+
+    // USO Pool
+    usoInUsoPool: Number,
+    uso: Number,
+    usdInUsoPool: Number,
 
 });
 
@@ -695,6 +724,16 @@ const typeDefs = gql`
         govtusd: Float
         tanusd: Float
         xomusd: Float
+        
+        jnjusd: Float
+        addyyusd: Float
+        gsusd: Float
+        daxusd: Float
+
+        wmtusd: Float
+        ulusd: Float
+        ungusd: Float
+        usousd: Float
 
         # BTC Pool
         btcInBtcPool: Float
@@ -960,6 +999,26 @@ const typeDefs = gql`
         daxInDaxPool: Float
         dax: Float
         usdInDaxPool: Float
+        
+        #  WMT Pool
+        wmtInWmtPool: Float
+        wmt: Float
+        usdInWmtPool: Float
+
+        #  UL Pool
+        ulInUlPool: Float
+        ul: Float
+        usdInUlPool: Float
+
+        #  UNG Pool
+        ungInUngPool: Float
+        ung: Float
+        usdInUngPool: Float
+
+        #  USO Pool
+        usoInUsoPool: Float
+        uso: Float
+        usdInUsoPool: Float
     }
     
     type Pool {
@@ -1281,6 +1340,16 @@ const typeDefs = gql`
         tanusd: Float
         xomusd: Float
         
+        jnjusd: Float
+        addyyusd: Float
+        gsusd: Float
+        daxusd: Float
+
+        wmtusd: Float
+        ulusd: Float
+        ungusd: Float
+        usousd: Float
+        
         dfiInStaking: Float
         dfiInDfxStaking: Float
 
@@ -1548,6 +1617,26 @@ const typeDefs = gql`
         daxInDaxPool: Float
         dax: Float
         usdInDaxPool: Float
+        
+        #  WMT Pool
+        wmtInWmtPool: Float
+        wmt: Float
+        usdInWmtPool: Float
+
+        #  UL Pool
+        ulInUlPool: Float
+        ul: Float
+        usdInUlPool: Float
+
+        #  UNG Pool
+        ungInUngPool: Float
+        ung: Float
+        usdInUngPool: Float
+
+        #  USO Pool
+        usoInUsoPool: Float
+        uso: Float
+        usdInUsoPool: Float
     }
     
     input AddressV2Input {
@@ -2837,7 +2926,27 @@ function stocks(contentHtml, wallet) {
     }
 
     if (wallet.daxInDaxPool > 0 || wallet.usdInDaxPool > 0 || wallet.dax > 0) {
-        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.dax, wallet.daxInDaxPool, wallet.usdInDaxPool, index, 'GS', 'DUSD');
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.dax, wallet.daxInDaxPool, wallet.usdInDaxPool, index, 'DAX', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.wmtInWmtPool > 0 || wallet.usdInWmtPool > 0 || wallet.wmt > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.wmt, wallet.wmtInWmtPool, wallet.usdInWmtPool, index, 'WMT', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.ulInUlPool > 0 || wallet.usdInUlPool > 0 || wallet.ul > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.ul, wallet.ulInUlPool, wallet.usdInUlPool, index, 'UL', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.ungInUngPool > 0 || wallet.usdInUngPool > 0 || wallet.ung > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.ung, wallet.ungInUngPool, wallet.usdInUngPool, index, 'UNG', 'DUSD');
+        index ++;
+    }
+
+    if (wallet.usoInUsoPool > 0 || wallet.usdInUsoPool > 0 || wallet.uso > 0) {
+        cryptoHtmlResult = cryptoHtmlResult + replacePoolItem(contentHtmlCrypto, wallet.uso, wallet.usoInUsoPool, wallet.usdInUsoPool, index, 'USO', 'DUSD');
         index ++;
     }
 
@@ -3480,6 +3589,7 @@ function getNextLoanFromVaultUsd(vault) {
     let gsg = 0; let sap = 0; let cs = 0; let ura = 0;
     let xom = 0; let govt = 0; let tan = 0; let pplt = 0;
     let jnj = 0; let addyy = 0; let gs = 0; let dax = 0;
+    let wmt = 0; let ul = 0; let ung = 0; let uso = 0;
 
     vault?.loanAmounts?.forEach(loan => {
         if ('DUSD' === loan.symbolKey) {
@@ -3570,13 +3680,21 @@ function getNextLoanFromVaultUsd(vault) {
             gs = +loan.amount * +loan.activePrice.next.amount;
         } else if ('DAX' === loan.symbolKey) {
             dax = +loan.amount * +loan.activePrice.next.amount;
+        }  else if ('WMT' === loan.symbolKey) {
+            wmt = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('UL' === loan.symbolKey) {
+            ul = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('UNG' === loan.symbolKey) {
+            ung = +loan.amount * +loan.activePrice.next.amount;
+        } else if ('USO' === loan.symbolKey) {
+            uso = +loan.amount * +loan.activePrice.next.amount;
         }
     });
 
     return usd + spy + tsla + qqq + pltr + slv + aapl + gld + gme + google + arkk
         + baba + vnq + urth + tlt + pdbc + amzn + nvda + coin + eem + msft + nflx
         + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg + sap + ura + gsg + cs
-        + pplt + xom + govt + tan + jnj + gs + addyy + dax;
+        + pplt + xom + govt + tan + jnj + gs + addyy + dax + wmt + ul + ung + uso;
 }
 
 if (process.env.JOB_SCHEDULER_ON === "on") {
