@@ -2551,7 +2551,8 @@ function statisticsForNewsletter(contentHtml, stats, pools, prices) {
 function splittedPools(pool) {
     // v1 = splitted pools
     // id 123 is dusd burn pool
-    return pool.symbol.includes("v1") || pool.id === "123";
+    // cs is cakes pool
+    return pool.symbol.includes("v1") || pool.id === "123" || pool.symbol.startsWith("cs");
 }
 
 function statisticsForStaking(contentHtml, stats, dfx) {
@@ -3502,7 +3503,7 @@ app.get('/income/:address', async function (req, res) {
     let poolsCalculated = 0;
     let aprOfAllPools = 0;
     pools.forEach(p => {
-        if (!p.symbol.includes("v1") && !p.symbol.includes("DOGE")) {
+        if (!p.symbol.includes("v1") && !p.symbol.includes("DOGE") && !p.symbol.startsWith("cs")) {
             poolsCalculated += 1;
             aprOfAllPools += p.apr.total;
         }
