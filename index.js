@@ -3537,18 +3537,26 @@ async function computeIncomeForAddresses(addressesToCheck) {
 
             if (poolIncome.includes(h => h.id === t.id)) {
                 const pool = poolIncome.find(h => h.id === t.id)
-                pool.amountTokens = pool.amountTokens + +t.amount;
-                pool.amountInUsd = pool.amountTokens * priceOfToken
+                pool.tokensAmount = pool.tokensAmount + +t.amount;
+                pool.amountInUsd = pool.tokensAmount * priceOfToken
                 pool.usdIncomeYear = pool.usdIncomeYear + usdIncome;
                 pool.dfiIncomeYear = pool.dfiIncomeYear + dfiIncome;
+                pool.share =  pool.share + share;
+                pool.token_A_Amount = pool.token_A_Amount + +pool.tokenA.reserve * share;
+                pool.token_B_Amount = pool.token_B_Amount + +pool.tokenB.reserve * share;
                 continue;
             }
 
             poolIncome.push({
                 "name": t.symbol,
-                "amountTokens": +t.amount,
+                "share": share,
+                "token_A_Amount": +pool.tokenA.reserve * share,
+                "token_B_Amount": +pool.tokenB.reserve * share,
+                "tokensAmount": +t.amount,
                 "amountInUsd": +usdShare,
                 "apr": pool.apr.total,
+                "aprReward": pool.apr.reward,
+                "aprCommission": pool.apr.commission,
                 "usdIncomeYear": usdIncome,
                 "dfiIncomeYear": dfiIncome
             })
