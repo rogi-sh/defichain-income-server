@@ -89,6 +89,7 @@ const {GraphQLError} = require("graphql");
 const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
 const fs = require("fs");
 const {PriceFeedTimeInterval} = require("@defichain/whale-api-client/dist/api/prices");
+const bodyParser = require("body-parser");
 
 const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
@@ -3409,26 +3410,80 @@ function assignDataValueStatsOcean(data, object) {
 }
 
 const app = express();
+app.use(bodyParser.json());
 
-app.get('/income/:address', async function (req, res) {
+app.get('/income/:address', async function (req,  res) {
+    const millisecondsBefore = new Date().getTime();
+    logger.info("===============Income address started " + new Date() + " =================");
+
+    const address = req.params.address
+
+    // create address balances and vaults
+    let addressesToCheck = [];
+
+    if (address && address.length > 0) {
+        addressesToCheck.push(address);
+    }
+
+    const response = await computeIncomeForAddresses(addressesToCheck);
+
+    const millisecondsAfter = new Date().getTime();
+    const msTime = millisecondsAfter - millisecondsBefore;
+
+    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
+
+    res.json(response);
+});
+
+
+app.post('/income/:address?', async function (req,  res) {
 
     const millisecondsBefore = new Date().getTime();
     logger.info("===============Income address started " + new Date() + " =================");
 
     const address = req.params.address
-    const balance = await client.address.getBalance(address);
+    const addressesFromBody = req.body.addresses;
 
-    const token = await client.address.listToken(address, 1000);
+    // create address balances and vaults
+    let addressesToCheck = [];
+
+    if (address && address.length > 0) {
+        addressesToCheck.push(address);
+    }
+
+    if (addressesFromBody && addressesFromBody.length > 0) {
+        addressesToCheck.push(... addressesFromBody);
+    }
+    const response = await computeIncomeForAddresses(addressesToCheck);
+
+    const millisecondsAfter = new Date().getTime();
+    const msTime = millisecondsAfter - millisecondsBefore;
+
+    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
+
+    res.json(response);
+});
+
+async function computeIncomeForAddresses(addressesToCheck) {
+    // compute meta infos
+    const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
-    const vaults = await client.address.listVault(address, 1000);
-    const stats = await client.stats.get();
-
     const poolUsd = pools.find(p => p.id === "17");
     const poolBtc = pools.find(p => p.id === "5");
     const priceRateA = +poolUsd.tokenB.reserve / +poolUsd.tokenA.reserve;
     const dUsd = priceRateA * +price.price.aggregated.amount;
     const dfiPrice = +price.price.aggregated.amount;
+
+
+    let balance = 0;
+    let token = [];
+    let vaults = [];
+    for (const address of addressesToCheck) {
+        balance += +(await client.address.getBalance(address));
+        token.push(...await client.address.listToken(address, 1000));
+        vaults.push(...await client.address.listVault(address, 1000));
+    }
 
     let holdings = [];
     holdings.push({
@@ -3461,7 +3516,7 @@ app.get('/income/:address', async function (req, res) {
     for (const t of token) {
         if (t.isLPS) {
             // get pool
-            const  pool = pools.find(p => p.id === t.id);
+            const pool = pools.find(p => p.id === t.id);
             // compute share
             const share = +t.amount / pool.totalLiquidity.token;
             // compute usd share
@@ -3480,6 +3535,15 @@ app.get('/income/:address', async function (req, res) {
 
             priceOfToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
 
+            if (poolIncome.includes(h => h.id === t.id)) {
+                const pool = poolIncome.find(h => h.id === t.id)
+                pool.amountTokens = pool.amountTokens + +t.amount;
+                pool.amountInUsd = pool.amountTokens * priceOfToken
+                pool.usdIncomeYear = pool.usdIncomeYear + usdIncome;
+                pool.dfiIncomeYear = pool.dfiIncomeYear + dfiIncome;
+                continue;
+            }
+
             poolIncome.push({
                 "name": t.symbol,
                 "amountTokens": +t.amount,
@@ -3490,7 +3554,7 @@ app.get('/income/:address', async function (req, res) {
             })
 
 
-        } else if (t.symbol === "DFI"){
+        } else if (t.symbol === "DFI") {
             totalValueWallet += +t.amount * +price.price.aggregated.amount;
         } else if (t.symbol === "DUSD") {
             priceOfToken = dUsd;
@@ -3503,10 +3567,15 @@ app.get('/income/:address', async function (req, res) {
             }
         }
 
-       if (t.id === "0") {
+        if (t.id === "0") {
             const poolDfi = holdings.find(h => h.id === "0")
             poolDfi.amount = poolDfi.amount + +t.amount;
             poolDfi.usd = poolDfi.amount * dfiPrice
+            continue;
+        } else if (holdings.includes(h => h.id === t.id)) {
+            const pool = holdings.find(h => h.id === t.id)
+            pool.amount = pool.amount + +t.amount;
+            pool.usd = pool.amount * priceOfToken
             continue;
         }
 
@@ -3524,12 +3593,14 @@ app.get('/income/:address', async function (req, res) {
 
     }
 
-    const rewards = {"year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
-                     "month": {"usd": incomeYearUsd / 12, "dfi": incomeYearDfi / 12},
-                     "week": {"usd": incomeYearUsd / 52.1429, "dfi": incomeYearDfi / 52.1429},
-                     "day": {"usd": incomeYearUsd / 365, "dfi": incomeYearDfi / 365},
-                     "hour": {"usd": incomeYearUsd / 8760, "dfi": incomeYearDfi / 8760},
-                     "min": {"usd": incomeYearUsd / 525600, "dfi": incomeYearDfi / 525600}};
+    const rewards = {
+        "year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
+        "month": {"usd": incomeYearUsd / 12, "dfi": incomeYearDfi / 12},
+        "week": {"usd": incomeYearUsd / 52.1429, "dfi": incomeYearDfi / 52.1429},
+        "day": {"usd": incomeYearUsd / 365, "dfi": incomeYearDfi / 365},
+        "hour": {"usd": incomeYearUsd / 8760, "dfi": incomeYearDfi / 8760},
+        "min": {"usd": incomeYearUsd / 525600, "dfi": incomeYearDfi / 525600}
+    };
 
     const nextOracleInBlocks = 120 - (stats.count.blocks - 1528800) % 120;
     const nextOracleTime = nextOracleInBlocks * 30 / 60;
@@ -3537,19 +3608,20 @@ app.get('/income/:address', async function (req, res) {
     let vaultResult = [];
     const vaultsFiltered = vaults.filter(v => v.collateralValue > 0);
     for (const v of vaultsFiltered) {
-       collateralUsdValue += +v.collateralValue;
-       loanUsdValue += +v.loanValue;
-       interestUsdValue += +v.interestValue;
-       vaultResult.push(
-           { "id": v.vaultId,
-             "state": v.state,
-             "collateralValue": +v.collateralValue,
-             "interestUsdValue": +v.interestValue,
-             "loanValue": +v.loanValue,
-             "vaultRatio": +v.collateralRatio,
-             "nextVaultRation":   Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100
-           }
-       )
+        collateralUsdValue += +v.collateralValue;
+        loanUsdValue += +v.loanValue;
+        interestUsdValue += +v.interestValue;
+        vaultResult.push(
+            {
+                "id": v.vaultId,
+                "state": v.state,
+                "collateralValue": +v.collateralValue,
+                "interestUsdValue": +v.interestValue,
+                "loanValue": +v.loanValue,
+                "vaultRatio": +v.collateralRatio,
+                "nextVaultRation": Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100
+            }
+        )
     }
 
     const avgApr = Math.round(aprs / lmPoolsIn * 100 * 100) / 100;
@@ -3576,25 +3648,20 @@ app.get('/income/:address', async function (req, res) {
         "holdings": holdings,
         "poolIncome": poolIncome,
         "rewards": rewards,
-        "avgApr":  avgApr,
+        "avgApr": avgApr,
         "apyDaily": apyDaily,
         "apyWeekly": apyWeekly,
-        "aprAvgOfAllPools":aprAvgOfAllPools,
+        "aprAvgOfAllPools": aprAvgOfAllPools,
         "dfiPriceOracle": Math.round(dfiPrice * 1000) / 1000,
         "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
         "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
         "dUSD": Math.round(dUsd * 1000) / 1000,
         "nextOraclePriceBlocks": nextOracleInBlocks,
         "nextOraclePriceTimeInMin": Math.round(nextOracleTime),
-        "vaults": vaultResult}
-
-    const millisecondsAfter = new Date().getTime();
-    const msTime = millisecondsAfter - millisecondsBefore;
-
-    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
-
-    res.json(response);
-})
+        "vaults": vaultResult
+    }
+    return response;
+}
 
 function getNextCollateralFromVaultUsd(vault){
 
@@ -3992,6 +4059,7 @@ async function startServer() {
             };
         }
     });
+
 
     await server.start();
 
