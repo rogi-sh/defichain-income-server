@@ -3417,6 +3417,17 @@ app.get('/income/:address', async function (req, res) {
 
     const address = req.params.address
     const balance = await client.address.getBalance(address);
+    logger.info("Balance" + balance)
+    let holdings = [];
+    holdings.push({
+        "amount": balance,
+        "symbolKey": "DFI",
+        "symbol": "DFI",
+        "id": "0",
+        "isLps": false,
+        "isDat": true,
+        "isLoanToken": false
+    })
     const token = await client.address.listToken(address, 1000);
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
@@ -3437,6 +3448,8 @@ app.get('/income/:address', async function (req, res) {
     let collateralUsdValue = 0;
     let loanUsdValue = 0;
     let totalValueWallet = balance * +price.price.aggregated.amount;
+
+
 
     for (const t of token) {
         if (t.isLPS) {
@@ -3467,7 +3480,26 @@ app.get('/income/:address', async function (req, res) {
                 totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
             }
         }
+
+        if (t.id === "0") {
+            const poolDfi = holdings.find(h => h.id === "0")
+            poolDfi.amount = +poolDfi.amount + +t.amount + "";
+            continue;
+        }
+        holdings.push({
+            "amount": t.amount,
+            "symbolKey": t.symbolKey,
+            "symbol": t.symbol,
+            "id": t.id,
+            "isLps": t.isLPS,
+            "isDat": t.isDAT,
+            "isLoanToken": t.isLoanToken
+        })
+
     }
+
+    const dfiHolding = holdings.find(h => h.symbol === "DFI");
+
 
 
     const rewards = {"year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
@@ -3516,6 +3548,7 @@ app.get('/income/:address', async function (req, res) {
         "totalValueWallet": totalValueWallet,
         "totalValueLoan": loanUsdValue,
         "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue,
+        "holdings": holdings,
         "rewards": rewards,
         "avgApr":  avgApr,
         "apyDaily": apyDaily,
