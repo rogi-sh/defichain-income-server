@@ -3446,6 +3446,7 @@ app.get('/income/:address', async function (req, res) {
     let lmUsdValue = 0;
     let collateralUsdValue = 0;
     let loanUsdValue = 0;
+    let interestUsdValue = 0;
     let totalValueWallet = balance * +price.price.aggregated.amount;
 
     let poolIncome = [];
@@ -3527,10 +3528,12 @@ app.get('/income/:address', async function (req, res) {
     for (const v of vaultsFiltered) {
        collateralUsdValue += +v.collateralValue;
        loanUsdValue += +v.loanValue;
+       interestUsdValue += +v.interestValue;
        vaultResult.push(
            { "id": v.vaultId,
              "state": v.state,
              "collateralValue": +v.collateralValue,
+             "interestUsdValue": +v.interestValue,
              "loanValue": +v.loanValue,
              "vaultRatio": +v.collateralRatio,
              "nextVaultRation":   Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100
@@ -3557,7 +3560,7 @@ app.get('/income/:address', async function (req, res) {
         "totalValueCollateral": collateralUsdValue,
         "totalValueWallet": totalValueWallet,
         "totalValueLoan": loanUsdValue,
-        "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue,
+        "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue - interestUsdValue,
         "holdings": holdings,
         "poolIncome": poolIncome,
         "rewards": rewards,
@@ -3628,131 +3631,18 @@ function getNextCollateralFromVaultUsd(vault){
 
 function getNextLoanFromVaultUsd(vault) {
 
-    let usd = 0; let spy = 0; let tsla = 0; let qqq = 0; let pltr = 0; let slv = 0; let aapl = 0; let gld = 0;
-    let gme = 0; let google = 0; let arkk = 0; let baba = 0; let vnq = 0; let urth = 0; let tlt = 0;
-    let pdbc = 0; let amzn = 0; let nvda = 0; let coin = 0; let eem = 0;
-    let msft = 0; let nflx = 0; let fb = 0; let voo = 0;
-    let dis = 0; let mchi = 0; let mstr = 0; let intc = 0;
-    let pypl = 0; let brkb = 0; let ko = 0; let pg = 0;
-    let gsg = 0; let sap = 0; let cs = 0; let ura = 0;
-    let xom = 0; let govt = 0; let tan = 0; let pplt = 0;
-    let jnj = 0; let addyy = 0; let gs = 0; let dax = 0;
-    let wmt = 0; let ul = 0; let ung = 0; let uso = 0;
-    let arkx = 0; let vbk = 0; let xle = 0; let xlre = 0;
+    let usd = 0;
+    let total = 0;
 
     vault?.loanAmounts?.forEach(loan => {
         if ('DUSD' === loan.symbolKey) {
             usd = +loan.amount;
-        } else if ('SPY' === loan.symbolKey) {
-            spy = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('TSLA' === loan.symbolKey) {
-            tsla = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('QQQ' === loan.symbolKey) {
-            qqq = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('PLTR' === loan.symbolKey) {
-            pltr = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('SLV' === loan.symbolKey) {
-            slv = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('AAPL' === loan.symbolKey) {
-            aapl = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GLD' === loan.symbolKey) {
-            gld = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GME' === loan.symbolKey) {
-            gme = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GOOGL' === loan.symbolKey) {
-            google = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('ARKK' === loan.symbolKey) {
-            arkk = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('BABA' === loan.symbolKey) {
-            baba = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('VNQ' === loan.symbolKey) {
-            vnq = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('URTH' === loan.symbolKey) {
-            urth = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('TLT' === loan.symbolKey) {
-            tlt = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('PDBC' === loan.symbolKey) {
-            pdbc = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('AMZN' === loan.symbolKey) {
-            amzn = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('NVDA' === loan.symbolKey) {
-            nvda = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('COIN' === loan.symbolKey) {
-            coin = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('EEM' === loan.symbolKey) {
-            eem = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('MSFT' === loan.symbolKey) {
-            msft = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('NFLX' === loan.symbolKey) {
-            nflx = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('FB' === loan.symbolKey) {
-            fb = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('VOO' === loan.symbolKey) {
-            voo = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('DIS' === loan.symbolKey) {
-            dis = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('MCHI' === loan.symbolKey) {
-            mchi = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('MSTR' === loan.symbolKey) {
-            mstr = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('INTC' === loan.symbolKey) {
-            intc = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('PYPL' === loan.symbolKey) {
-            pypl = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('BRK.B' === loan.symbolKey) {
-            brkb = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('KO' === loan.symbolKey) {
-            ko = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('PG' === loan.symbolKey) {
-            pg = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('SAP' === loan.symbolKey) {
-            sap = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GSG' === loan.symbolKey) {
-            gsg = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('CS' === loan.symbolKey) {
-            cs = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('URA' === loan.symbolKey) {
-            ura = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('PPLT' === loan.symbolKey) {
-            pplt = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GOVT' === loan.symbolKey) {
-            govt = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('TAN' === loan.symbolKey) {
-            tan = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('XOM' === loan.symbolKey) {
-            xom = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('JNJ' === loan.symbolKey) {
-            jnj = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('ADDYY' === loan.symbolKey) {
-            addyy = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('GS' === loan.symbolKey) {
-            gs = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('DAX' === loan.symbolKey) {
-            dax = +loan.amount * +loan.activePrice.next.amount;
-        }  else if ('WMT' === loan.symbolKey) {
-            wmt = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('UL' === loan.symbolKey) {
-            ul = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('UNG' === loan.symbolKey) {
-            ung = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('USO' === loan.symbolKey) {
-            uso = +loan.amount * +loan.activePrice.next.amount;
-        }  else if ('ARKX' === loan.symbolKey) {
-            arkx = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('VBK' === loan.symbolKey) {
-            vbk = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('XLE' === loan.symbolKey) {
-            xle = +loan.amount * +loan.activePrice.next.amount;
-        } else if ('XLRE' === loan.symbolKey) {
-            xlre = +loan.amount * +loan.activePrice.next.amount;
+        } else {
+            total = +loan.amount * +loan.activePrice.next.amount;
         }
     });
 
-    return usd + spy + tsla + qqq + pltr + slv + aapl + gld + gme + google + arkk
-        + baba + vnq + urth + tlt + pdbc + amzn + nvda + coin + eem + msft + nflx
-        + fb + voo + dis + mchi + mstr + intc + pypl + brkb + ko + pg + sap + ura + gsg + cs
-        + pplt + xom + govt + tan + jnj + gs + addyy + dax + wmt + ul + ung + uso
-        + arkx + vbk + xle + xlre;
+    return usd + total;
 }
 
 if (process.env.JOB_SCHEDULER_ON === "on") {
