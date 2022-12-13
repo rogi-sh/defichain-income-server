@@ -3417,16 +3417,7 @@ app.get('/income/:address', async function (req, res) {
 
     const address = req.params.address
     const balance = await client.address.getBalance(address);
-    let holdings = [];
-    holdings.push({
-        "amount": balance,
-        "symbolKey": "DFI",
-        "symbol": "DFI",
-        "id": "0",
-        "isLps": false,
-        "isDat": true,
-        "isLoanToken": false
-    })
+
     const token = await client.address.listToken(address, 1000);
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
@@ -3435,7 +3426,22 @@ app.get('/income/:address', async function (req, res) {
 
     const poolUsd = pools.find(p => p.id === "17");
     const poolBtc = pools.find(p => p.id === "5");
-    const dUsd = Math.round(price.price.aggregated.amount / poolUsd?.priceRatio.ab  * 1000) / 1000;
+    const priceRateA = +poolUsd.tokenB.reserve / +poolUsd.tokenA.reserve;
+    const dUsd = priceRateA * +price.price.aggregated.amount;
+    const dfiPrice = +price.price.aggregated.amount;
+
+    let holdings = [];
+    holdings.push({
+        "amount": +balance,
+        "usd": +balance * dfiPrice,
+        "price": dfiPrice,
+        "symbolKey": "DFI",
+        "symbol": "DFI",
+        "id": "0",
+        "isLps": false,
+        "isDat": true,
+        "isLoanToken": false
+    })
 
     let incomeYearUsd = 0;
     let incomeYearDfi = 0;
@@ -3450,6 +3456,7 @@ app.get('/income/:address', async function (req, res) {
     let totalValueWallet = balance * +price.price.aggregated.amount;
 
     let poolIncome = [];
+    let priceOfToken = 0;
 
     for (const t of token) {
         if (t.isLPS) {
@@ -3471,10 +3478,12 @@ app.get('/income/:address', async function (req, res) {
             aprs += pool.apr.total;
             lmPoolsIn += 1;
 
+            priceOfToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
+
             poolIncome.push({
                 "name": t.symbol,
                 "amountTokens": +t.amount,
-                "amountInUsd": usdShare,
+                "amountInUsd": +usdShare,
                 "apr": pool.apr.total,
                 "usdIncomeYear": usdIncome,
                 "dfiIncomeYear": dfiIncome
@@ -3484,34 +3493,36 @@ app.get('/income/:address', async function (req, res) {
         } else if (t.symbol === "DFI"){
             totalValueWallet += +t.amount * +price.price.aggregated.amount;
         } else if (t.symbol === "DUSD") {
+            priceOfToken = dUsd;
             totalValueWallet += +t.amount * dUsd;
         } else {
             const priceToken = await client.prices.get(t.symbol, "USD");
             if (priceToken) {
+                priceOfToken = +priceToken.price.aggregated.amount;
                 totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
             }
         }
 
-        if (t.id === "0") {
+       if (t.id === "0") {
             const poolDfi = holdings.find(h => h.id === "0")
-            poolDfi.amount = +poolDfi.amount + +t.amount + "";
+            poolDfi.amount = poolDfi.amount + +t.amount;
+            poolDfi.usd = poolDfi.amount * dfiPrice
             continue;
         }
+
         holdings.push({
-            "amount": t.amount,
+            "amount": +t.amount,
+            "price": +priceOfToken,
+            "usd": +t.amount * +priceOfToken,
             "symbolKey": t.symbolKey,
             "symbol": t.symbol,
             "id": t.id,
             "isLps": t.isLPS,
             "isDat": t.isDAT,
             "isLoanToken": t.isLoanToken
-        })
+        });
 
     }
-
-    const dfiHolding = holdings.find(h => h.symbol === "DFI");
-
-
 
     const rewards = {"year": {"usd": incomeYearUsd, "dfi": incomeYearDfi},
                      "month": {"usd": incomeYearUsd / 12, "dfi": incomeYearDfi / 12},
@@ -3560,6 +3571,7 @@ app.get('/income/:address', async function (req, res) {
         "totalValueCollateral": collateralUsdValue,
         "totalValueWallet": totalValueWallet,
         "totalValueLoan": loanUsdValue,
+        "totalValueInterest": interestUsdValue,
         "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue - interestUsdValue,
         "holdings": holdings,
         "poolIncome": poolIncome,
@@ -3568,10 +3580,10 @@ app.get('/income/:address', async function (req, res) {
         "apyDaily": apyDaily,
         "apyWeekly": apyWeekly,
         "aprAvgOfAllPools":aprAvgOfAllPools,
-        "dfiPriceOracle": Math.round(+price.price.aggregated.amount * 1000) / 1000,
+        "dfiPriceOracle": Math.round(dfiPrice * 1000) / 1000,
         "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
         "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
-        "dUSD": dUsd,
+        "dUSD": Math.round(dUsd * 1000) / 1000,
         "nextOraclePriceBlocks": nextOracleInBlocks,
         "nextOraclePriceTimeInMin": Math.round(nextOracleTime),
         "vaults": vaultResult}
