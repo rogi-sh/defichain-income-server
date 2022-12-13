@@ -3417,7 +3417,6 @@ app.get('/income/:address', async function (req, res) {
 
     const address = req.params.address
     const balance = await client.address.getBalance(address);
-    logger.info("Balance" + balance)
     let holdings = [];
     holdings.push({
         "amount": balance,
@@ -3449,7 +3448,7 @@ app.get('/income/:address', async function (req, res) {
     let loanUsdValue = 0;
     let totalValueWallet = balance * +price.price.aggregated.amount;
 
-
+    let poolIncome = [];
 
     for (const t of token) {
         if (t.isLPS) {
@@ -3470,6 +3469,17 @@ app.get('/income/:address', async function (req, res) {
 
             aprs += pool.apr.total;
             lmPoolsIn += 1;
+
+            poolIncome.push({
+                "name": t.symbol,
+                "amountTokens": +t.amount,
+                "amountInUsd": usdShare,
+                "apr": pool.apr.total,
+                "usdIncomeYear": usdIncome,
+                "dfiIncomeYear": dfiIncome
+            })
+
+
         } else if (t.symbol === "DFI"){
             totalValueWallet += +t.amount * +price.price.aggregated.amount;
         } else if (t.symbol === "DUSD") {
@@ -3549,6 +3559,7 @@ app.get('/income/:address', async function (req, res) {
         "totalValueLoan": loanUsdValue,
         "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue,
         "holdings": holdings,
+        "poolIncome": poolIncome,
         "rewards": rewards,
         "avgApr":  avgApr,
         "apyDaily": apyDaily,
