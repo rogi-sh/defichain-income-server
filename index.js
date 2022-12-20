@@ -3486,7 +3486,20 @@ async function computeIncomeForAddresses(addressesToCheck) {
     }
 
     let holdings = [];
+    let holdingsSplitted = [];
     holdings.push({
+        "amount": +balance,
+        "usd": +balance * dfiPrice,
+        "price": dfiPrice,
+        "symbolKey": "DFI",
+        "symbol": "DFI",
+        "id": "0",
+        "isLps": false,
+        "isDat": true,
+        "isLoanToken": false
+    })
+
+    holdingsSplitted.push({
         "amount": +balance,
         "usd": +balance * dfiPrice,
         "price": dfiPrice,
@@ -3544,61 +3557,201 @@ async function computeIncomeForAddresses(addressesToCheck) {
                 pool.share =  pool.share + share;
                 pool.token_A_Amount = pool.token_A_Amount + +pool.tokenA.reserve * share;
                 pool.token_B_Amount = pool.token_B_Amount + +pool.tokenB.reserve * share;
-                continue;
+
+            } else {
+                poolIncome.push({
+                    "name": t.symbol,
+                    "share": share,
+                    "token_A_Amount": +pool.tokenA.reserve * share,
+                    "token_B_Amount": +pool.tokenB.reserve * share,
+                    "tokensAmount": +t.amount,
+                    "amountInUsd": +usdShare,
+                    "apr": pool.apr.total,
+                    "aprReward": pool.apr.reward,
+                    "aprCommission": pool.apr.commission,
+                    "usdIncomeYear": usdIncome,
+                    "dfiIncomeYear": dfiIncome
+                })
             }
 
-            poolIncome.push({
-                "name": t.symbol,
-                "share": share,
-                "token_A_Amount": +pool.tokenA.reserve * share,
-                "token_B_Amount": +pool.tokenB.reserve * share,
-                "tokensAmount": +t.amount,
-                "amountInUsd": +usdShare,
-                "apr": pool.apr.total,
-                "aprReward": pool.apr.reward,
-                "aprCommission": pool.apr.commission,
-                "usdIncomeYear": usdIncome,
-                "dfiIncomeYear": dfiIncome
-            })
+            // add or update lp tokens to holdings
+            if (holdings.find(h => h.symbol === t.symbol)) {
+                const pool = holdings.find(h => h.id === t.id)
+                pool.amount = pool.amount + +t.amount;
+                pool.usd = pool.amount * priceOfToken
 
+            } else {
+                holdings.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
 
-        } else if (t.symbol === "DFI") {
+            }
+
+            // add or update lp token A to holdings splitted
+            if (holdingsSplitted.find(h => h.id === pool.tokenA.id)) {
+                const poolSplitted = holdingsSplitted.find(h => h.id === pool.tokenA.id)
+                poolSplitted.amount = poolSplitted.amount + +pool.tokenA.reserve * share;
+                poolSplitted.usd = poolSplitted.amount * poolSplitted.price
+
+            } else {
+                holdingsSplitted.push({
+                    "amount": +pool.tokenA.reserve * share,
+                    "price": pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
+                    "usd": +pool.tokenA.reserve * share * pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
+                    "symbolKey": pool.tokenA.symbol,
+                    "symbol": pool.tokenA.symbol,
+                    "id": pool.tokenA.id,
+                    "isLps": false,
+                    "isDat": t.isDAT,
+                });
+            }
+
+            // add or update lp token B to holdings splitted
+            if (holdingsSplitted.find(h => h.id === pool.tokenB.id)) {
+                const poolSplitted = holdingsSplitted.find(h => h.id === pool.tokenB.id)
+                poolSplitted.amount = poolSplitted.amount + +pool.tokenB.reserve * share;
+                poolSplitted.usd = poolSplitted.amount * poolSplitted.price
+
+            } else {
+                holdingsSplitted.push({
+                    "amount": +pool.tokenB.reserve * share,
+                    "price":  pool.totalLiquidity.usd / 2 / +pool.tokenB.reserve,
+                    "usd": +pool.tokenB.reserve * share * pool.totalLiquidity.usd / 2 / +pool.tokenB.reserve,
+                    "symbolKey": pool.tokenB.symbol,
+                    "symbol": pool.tokenB.symbol,
+                    "id": pool.tokenB.id,
+                    "isLps": false,
+                    "isDat": t.isDAT,
+                });
+            }
+
+        } else if (t.id === "0") {
             totalValueWallet += +t.amount * +price.price.aggregated.amount;
+
+            if (holdings.find(h => h.id === "0") || holdingsSplitted.find(h => h.id === "0")) {
+                const poolDfi = holdings.find(h => h.id === "0")
+                poolDfi.amount = poolDfi.amount + +t.amount;
+                poolDfi.usd = poolDfi.amount * dfiPrice;
+
+                const poolDfiSplitted = holdingsSplitted.find(h => h.id === "0")
+                poolDfiSplitted.amount = poolDfiSplitted.amount + +t.amount;
+                poolDfiSplitted.usd = poolDfiSplitted.amount * dfiPrice;
+
+            } else {
+                holdings.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+
+                holdingsSplitted.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+            }
+
         } else if (t.symbol === "DUSD") {
             priceOfToken = dUsd;
             totalValueWallet += +t.amount * dUsd;
+
+            if (holdings.find(h => h.symbol === t.symbol) || holdingsSplitted.find((h => h.symbol === t.symbol))) {
+                const pool = holdings.find(h => h.id === t.id)
+                pool.amount = pool.amount + +t.amount;
+                pool.usd = pool.amount * priceOfToken
+
+                const poolSplitted = holdings.find(h => h.id === t.id)
+                poolSplitted.amount = poolSplitted.amount + +t.amount;
+                poolSplitted.usd = poolSplitted.amount * priceOfToken
+            } else {
+                holdings.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+
+                holdingsSplitted.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+            }
+
+
         } else {
             const priceToken = await client.prices.get(t.symbol, "USD");
             if (priceToken) {
                 priceOfToken = +priceToken.price.aggregated.amount;
                 totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
             }
+
+            if (holdings.includes(h => h.id === t.id) || holdingsSplitted.includes(h => h.id === t.id)) {
+                const pool = holdings.find(h => h.id === t.id)
+                pool.amount = pool.amount + +t.amount;
+                pool.usd = pool.amount * priceOfToken
+
+                const poolSplitted = holdingsSplitted.find(h => h.id === t.id)
+                poolSplitted.amount = poolSplitted.amount + +t.amount;
+                poolSplitted.usd = poolSplitted.amount * priceOfToken
+            } else {
+                holdings.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+
+                holdingsSplitted.push({
+                    "amount": +t.amount,
+                    "price": +priceOfToken,
+                    "usd": +t.amount * +priceOfToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                    "isLps": t.isLPS,
+                    "isDat": t.isDAT,
+                    "isLoanToken": t.isLoanToken
+                });
+            }
+
         }
-
-        if (t.id === "0") {
-            const poolDfi = holdings.find(h => h.id === "0")
-            poolDfi.amount = poolDfi.amount + +t.amount;
-            poolDfi.usd = poolDfi.amount * dfiPrice
-            continue;
-        } else if (holdings.includes(h => h.id === t.id)) {
-            const pool = holdings.find(h => h.id === t.id)
-            pool.amount = pool.amount + +t.amount;
-            pool.usd = pool.amount * priceOfToken
-            continue;
-        }
-
-        holdings.push({
-            "amount": +t.amount,
-            "price": +priceOfToken,
-            "usd": +t.amount * +priceOfToken,
-            "symbolKey": t.symbolKey,
-            "symbol": t.symbol,
-            "id": t.id,
-            "isLps": t.isLPS,
-            "isDat": t.isDAT,
-            "isLoanToken": t.isLoanToken
-        });
-
     }
 
     const rewards = {
@@ -3627,7 +3780,10 @@ async function computeIncomeForAddresses(addressesToCheck) {
                 "interestUsdValue": +v.interestValue,
                 "loanValue": +v.loanValue,
                 "vaultRatio": +v.collateralRatio,
-                "nextVaultRation": Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100
+                "nextVaultRation": Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100,
+                "collaterals": v.collateralAmounts,
+                "loans": v.loanAmounts,
+                "interests": v.interestAmounts
             }
         )
     }
@@ -3654,6 +3810,7 @@ async function computeIncomeForAddresses(addressesToCheck) {
         "totalValueInterest": interestUsdValue,
         "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue - interestUsdValue,
         "holdings": holdings,
+        "holdingsSplitted": holdingsSplitted,
         "poolIncome": poolIncome,
         "rewards": rewards,
         "avgApr": avgApr,
