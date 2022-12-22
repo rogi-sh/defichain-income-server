@@ -3464,6 +3464,32 @@ app.post('/income/:address?', async function (req,  res) {
     res.json(response);
 });
 
+function addDexPrices(poolUsd, price, poolBtc, dexPrices, pools) {
+    const priceRateA = +poolUsd.tokenB.reserve / +poolUsd.tokenA.reserve;
+    const dUsd = Math.round(priceRateA * +price.price.aggregated.amount * 100) / 100;
+    const dfiPrice = +price.price.aggregated.amount;
+    const dfiPriceDex = Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000
+
+    dexPrices.push({"asset": "DUSD", "price": dUsd});
+    const dfiPriceOracle = Math.round(dfiPrice * 100) / 100;
+    const dfiPriceDUSDPool = Math.round(+poolUsd?.priceRatio.ab * 100) / 100;
+    dexPrices.push({
+        "asset": "DFI",
+        "price": dfiPriceDex,
+        "priceOracle": dfiPriceOracle,
+        "DFI_DUSDPool": dfiPriceDUSDPool
+    });
+
+    for (const pool of pools) {
+        if (pool.symbol.includes("v1")) {
+            continue;
+        }
+        const price = Math.round(+pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve * 100) / 100;
+        dexPrices.push({"asset": pool.tokenA.symbol, "price": price});
+    }
+    return {dUsd, dfiPrice};
+}
+
 async function computeIncomeForAddresses(addressesToCheck) {
     // compute meta infos
     const stats = await client.stats.get();
@@ -3471,10 +3497,9 @@ async function computeIncomeForAddresses(addressesToCheck) {
     const pools = await client.poolpairs.list(1000);
     const poolUsd = pools.find(p => p.id === "17");
     const poolBtc = pools.find(p => p.id === "5");
-    const priceRateA = +poolUsd.tokenB.reserve / +poolUsd.tokenA.reserve;
-    const dUsd = priceRateA * +price.price.aggregated.amount;
-    const dfiPrice = +price.price.aggregated.amount;
+    let dexPrices = [];
 
+    const {dUsd, dfiPrice} = addDexPrices(poolUsd, price, poolBtc, dexPrices, pools);
 
     let balance = 0;
     let token = [];
@@ -3817,13 +3842,10 @@ async function computeIncomeForAddresses(addressesToCheck) {
         "apyDaily": apyDaily,
         "apyWeekly": apyWeekly,
         "aprAvgOfAllPools": aprAvgOfAllPools,
-        "dfiPriceOracle": Math.round(dfiPrice * 1000) / 1000,
-        "dfiPriceDUSDPool": Math.round(+poolUsd?.priceRatio.ab * 1000) / 1000,
-        "dfiPriceBTCPool": Math.round(+poolBtc?.totalLiquidity.usd / 2 / +poolBtc?.tokenB.reserve * 1000) / 1000,
-        "dUSD": Math.round(dUsd * 1000) / 1000,
         "nextOraclePriceBlocks": nextOracleInBlocks,
         "nextOraclePriceTimeInMin": Math.round(nextOracleTime),
-        "vaults": vaultResult
+        "vaults": vaultResult,
+        dexPrices
     }
     return response;
 }
