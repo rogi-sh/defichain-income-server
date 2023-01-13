@@ -3412,6 +3412,10 @@ function assignDataValueStatsOcean(data, object) {
 const app = express();
 app.use(bodyParser.json());
 
+app.use(cors({
+    origin: '*'
+}));
+
 app.get('/income/:address', async function (req,  res) {
     const millisecondsBefore = new Date().getTime();
     logger.info("===============Income address started " + new Date() + " =================");
