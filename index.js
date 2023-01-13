@@ -20,7 +20,7 @@ const {SeqTransport} = require('@datalust/winston-seq');
 require('events').EventEmitter.setMaxListeners(300);
 
 const client = new WhaleApiClient({
-    url: 'https://ocean.defichain-income.com',
+    url: process.env.OCEAN,
     timeout: 60000,
     version: 'v0',
     network: 'mainnet'
@@ -3434,7 +3434,6 @@ app.get('/income/:address', async function (req,  res) {
 
     res.json(response);
 });
-
 
 app.post('/income/:address?', async function (req,  res) {
 
