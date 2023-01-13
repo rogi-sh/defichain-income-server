@@ -90,6 +90,7 @@ const {MainNet} = require("@defichain/jellyfish-network/dist/Network");
 const fs = require("fs");
 const {PriceFeedTimeInterval} = require("@defichain/whale-api-client/dist/api/prices");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const payingAddress = 'df1qdc79xa70as0a5d0pdtgdww7tu65c2ncu9v7k2k';
 
