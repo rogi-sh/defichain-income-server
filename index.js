@@ -3586,6 +3586,7 @@ async function computeIncomeForAddresses(addressesToCheck) {
                 poolIncome.push({
                     "name": t.symbol,
                     "share": share,
+                    "id": +pool.id,
                     "token_A_Amount": +pool.tokenA.reserve * share,
                     "token_A_Id": +pool.tokenA.id,
                     "token_B_Amount": +pool.tokenB.reserve * share,
