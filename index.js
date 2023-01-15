@@ -3577,21 +3577,21 @@ async function computeIncomeForAddresses(addressesToCheck) {
 
             priceOfToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
 
-            if (poolIncome.includes(h => h.id === t.id)) {
-                const pool = poolIncome.find(h => h.id === t.id)
-                pool.tokensAmount = pool.tokensAmount + +t.amount;
-                pool.amountInUsd = pool.tokensAmount * priceOfToken
-                pool.usdIncomeYear = pool.usdIncomeYear + usdIncome;
-                pool.dfiIncomeYear = pool.dfiIncomeYear + dfiIncome;
-                pool.share =  pool.share + share;
-                pool.token_A_Amount = pool.token_A_Amount + +pool.tokenA.reserve * share;
-                pool.token_B_Amount = pool.token_B_Amount + +pool.tokenB.reserve * share;
+            if (poolIncome.find(h => h.id === t.id)) {
+                const poolInc = poolIncome.find(h => h.id === t.id)
+                poolInc.tokensAmount = poolInc.tokensAmount + +t.amount;
+                poolInc.amountInUsd = poolInc.tokensAmount * priceOfToken
+                poolInc.usdIncomeYear = poolInc.usdIncomeYear + usdIncome;
+                poolInc.dfiIncomeYear = poolInc.dfiIncomeYear + dfiIncome;
+                poolInc.share =  poolInc.share + share;
+                poolInc.token_A_Amount = poolInc.token_A_Amount + +pool.tokenA.reserve * share;
+                poolInc.token_B_Amount = poolInc.token_B_Amount + +pool.tokenB.reserve * share;
 
             } else {
                 poolIncome.push({
                     "name": t.symbol,
                     "share": share,
-                    "id": +pool.id,
+                    "id": pool.id,
                     "token_A_Amount": +pool.tokenA.reserve * share,
                     "token_A_Id": +pool.tokenA.id,
                     "token_A_Symbol": pool.tokenA.symbol,
@@ -3609,7 +3609,7 @@ async function computeIncomeForAddresses(addressesToCheck) {
             }
 
             // add or update lp tokens to holdings
-            if (holdings.find(h => h.symbol === t.symbol)) {
+            if (holdings.find(h => h.id === t.id)) {
                 const pool = holdings.find(h => h.id === t.id)
                 pool.amount = pool.amount + +t.amount;
                 pool.usd = pool.amount * priceOfToken
@@ -3751,7 +3751,7 @@ async function computeIncomeForAddresses(addressesToCheck) {
                 totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
             }
 
-            if (holdings.includes(h => h.id === t.id) || holdingsSplitted.includes(h => h.id === t.id)) {
+            if (holdings.find(h => h.id === t.id) || holdingsSplitted.find(h => h.id === t.id)) {
                 const pool = holdings.find(h => h.id === t.id)
                 pool.amount = pool.amount + +t.amount;
                 pool.usd = pool.amount * priceOfToken
