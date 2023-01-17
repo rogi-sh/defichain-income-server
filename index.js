@@ -3845,6 +3845,10 @@ async function computeIncomeForAddresses(addressesToCheck) {
     })
     const aprAvgOfAllPools = Math.round(aprOfAllPools / poolsCalculated * 100 * 100) / 100;
 
+    // filter really small amounts
+    holdings = holdings.filter(h => h.usd > 0.02);
+    holdingsSplitted = holdingsSplitted.filter(h => h.usd > 0.02);
+
     const response = {
         "totalValueLM": lmUsdValue,
         "totalValueCollateral": collateralUsdValue,
