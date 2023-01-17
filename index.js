@@ -3508,10 +3508,15 @@ async function computeIncomeForAddresses(addressesToCheck) {
     let balance = 0;
     let token = [];
     let vaults = [];
-    for (const address of addressesToCheck) {
-        balance += +(await client.address.getBalance(address));
-        token.push(...await client.address.listToken(address, 1000));
-        vaults.push(...await client.address.listVault(address, 1000));
+
+    try {
+        for (const address of addressesToCheck) {
+            balance += +(await client.address.getBalance(address));
+            token.push(...await client.address.listToken(address, 1000));
+            vaults.push(...await client.address.listVault(address, 1000));
+        }
+    } catch (e) {
+        logger.error(e);
     }
 
     let holdings = [];
