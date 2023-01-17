@@ -3815,9 +3815,13 @@ async function computeIncomeForAddresses(addressesToCheck) {
                 "loanValue": +v.loanValue,
                 "vaultRatio": +v.collateralRatio,
                 "nextVaultRation": Math.round(getNextCollateralFromVaultUsd(v) / getNextLoanFromVaultUsd(v) * 100 * 100) / 100,
+                "nextCollateralValue": getNextCollateralFromVaultUsd(v),
+                "nextLoanValue": getNextLoanFromVaultUsd(v),
                 "collaterals": v.collateralAmounts,
                 "loans": v.loanAmounts,
-                "interests": v.interestAmounts
+                "interests": v.interestAmounts,
+                "loanScheme": v.loanScheme,
+                "ownerAddress": v.ownerAddress
             }
         )
     }
