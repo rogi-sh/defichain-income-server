@@ -3926,7 +3926,7 @@ function getNextLoanFromVaultUsd(vault) {
         if ('DUSD' === loan.symbolKey) {
             usd = +loan.amount;
         } else {
-            total = +loan.amount * +loan.activePrice.next.amount;
+            total += +loan.amount * +loan.activePrice.next.amount;
         }
     });
 
