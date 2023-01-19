@@ -3419,8 +3419,8 @@ app.use(cors({
 
 app.get('/income/:address', async function (req,  res) {
     const millisecondsBefore = new Date().getTime();
-    const id = Math.random().toString(36).slice(2, 7)
-    logger.info("===============Income address started " + id + " " + new Date() + " =================");
+    const randomId = Math.random().toString(36).slice(2, 7)
+    logger.info("===============Income address started " + randomId + " " + new Date() + " =================");
     const address = req.params.address
 
     // create address balances and vaults
@@ -3430,12 +3430,12 @@ app.get('/income/:address', async function (req,  res) {
         addressesToCheck.push(address);
     }
 
-    const response = await computeIncomeForAddresses(addressesToCheck, id);
+    const response = await computeIncomeForAddresses(addressesToCheck, randomId);
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
 
-    logger.info("=============Income address executed time: "  + id + " " + new Date() + " in " + msTime + " ms.============");
+    logger.info("=============Income address executed time: "  + randomId + " " + new Date() + " in " + msTime + " ms.============");
 
     res.json(response);
 });
@@ -3443,8 +3443,8 @@ app.get('/income/:address', async function (req,  res) {
 app.post('/income/:address?', async function (req,  res) {
 
     const millisecondsBefore = new Date().getTime();
-    const id = Math.random().toString(36).slice(2, 7)
-    logger.info("===============Income address started " + id + " " + new Date() + " =================");
+    const randomId = Math.random().toString(36).slice(2, 7)
+    logger.info("===============Income address started " + randomId + " " + new Date() + " =================");
 
     const address = req.params.address
     const addressesFromBody = req.body.addresses;
@@ -3459,12 +3459,12 @@ app.post('/income/:address?', async function (req,  res) {
     if (addressesFromBody && addressesFromBody.length > 0) {
         addressesToCheck.push(... addressesFromBody);
     }
-    const response = await computeIncomeForAddresses(addressesToCheck);
+    const response = await computeIncomeForAddresses(addressesToCheck, randomId);
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
 
-    logger.info("=============Income address executed time: "+ id + " " + new Date() + " in " + msTime + " ms.============");
+    logger.info("=============Income address executed time: "+ randomId + " " + new Date() + " in " + msTime + " ms.============");
 
     res.json(response);
 });
@@ -3495,10 +3495,10 @@ function addDexPrices(poolUsd, price, poolBtc, dexPrices, pools) {
     return {dUsd, dfiPrice};
 }
 
-async function computeIncomeForAddresses(addressesToCheck, id: string) {
+async function computeIncomeForAddresses(addressesToCheck, id) {
     // compute meta infos
 
-    logger.info("===============Income address collect meta data " + + id + " " + "=================");
+    logger.info("===============Income address collect meta data " + id + " " + "=================");
     const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
@@ -3526,7 +3526,7 @@ async function computeIncomeForAddresses(addressesToCheck, id: string) {
         }
     }
 
-    logger.info("===============Income address collect address data finished " + + id + " " + " =================");
+    logger.info("===============Income address collect address data finished " + id + " " + " =================");
 
 
     logger.info("===============Income address create response " + id + " " + " =================");
