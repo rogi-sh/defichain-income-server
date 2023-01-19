@@ -3419,8 +3419,8 @@ app.use(cors({
 
 app.get('/income/:address', async function (req,  res) {
     const millisecondsBefore = new Date().getTime();
-    logger.info("===============Income address started " + new Date() + " =================");
-
+    const id = Math.random().toString(36).slice(2, 7)
+    logger.info("===============Income address started " + id + " " + new Date() + " =================");
     const address = req.params.address
 
     // create address balances and vaults
@@ -3430,12 +3430,12 @@ app.get('/income/:address', async function (req,  res) {
         addressesToCheck.push(address);
     }
 
-    const response = await computeIncomeForAddresses(addressesToCheck);
+    const response = await computeIncomeForAddresses(addressesToCheck, id);
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
 
-    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
+    logger.info("=============Income address executed time: "  + id + " " + new Date() + " in " + msTime + " ms.============");
 
     res.json(response);
 });
@@ -3443,7 +3443,8 @@ app.get('/income/:address', async function (req,  res) {
 app.post('/income/:address?', async function (req,  res) {
 
     const millisecondsBefore = new Date().getTime();
-    logger.info("===============Income address started " + new Date() + " =================");
+    const id = Math.random().toString(36).slice(2, 7)
+    logger.info("===============Income address started " + id + " " + new Date() + " =================");
 
     const address = req.params.address
     const addressesFromBody = req.body.addresses;
@@ -3463,7 +3464,7 @@ app.post('/income/:address?', async function (req,  res) {
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
 
-    logger.info("=============Income address executed time: " + new Date() + " in " + msTime + " ms.============");
+    logger.info("=============Income address executed time: "+ id + " " + new Date() + " in " + msTime + " ms.============");
 
     res.json(response);
 });
@@ -3494,8 +3495,10 @@ function addDexPrices(poolUsd, price, poolBtc, dexPrices, pools) {
     return {dUsd, dfiPrice};
 }
 
-async function computeIncomeForAddresses(addressesToCheck) {
+async function computeIncomeForAddresses(addressesToCheck, id: string) {
     // compute meta infos
+
+    logger.info("===============Income address collect meta data " + + id + " " + "=================");
     const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
@@ -3503,22 +3506,30 @@ async function computeIncomeForAddresses(addressesToCheck) {
     const poolBtc = pools.find(p => p.id === "5");
     let dexPrices = [];
 
+    logger.info("===============Income address collect meta data finished " + id + " " + "=================");
+
     const {dUsd, dfiPrice} = addDexPrices(poolUsd, price, poolBtc, dexPrices, pools);
 
     let balance = 0;
     let token = [];
     let vaults = [];
 
-    try {
-        for (const address of addressesToCheck) {
+    logger.info("===============Income address collect address data " + id + " " + " =================");
+
+    for (const address of addressesToCheck) {
+        try {
             balance += +(await client.address.getBalance(address));
             token.push(...await client.address.listToken(address, 1000));
             vaults.push(...await client.address.listVault(address, 1000));
+        } catch (e) {
+            logger.error(e);
         }
-    } catch (e) {
-        logger.error(e);
     }
 
+    logger.info("===============Income address collect address data finished " + + id + " " + " =================");
+
+
+    logger.info("===============Income address create response " + id + " " + " =================");
     let holdings = [];
     let holdingsSplitted = [];
     holdings.push({
@@ -3848,6 +3859,8 @@ async function computeIncomeForAddresses(addressesToCheck) {
     // filter really small amounts
     holdings = holdings.filter(h => h.usd > 0.02);
     holdingsSplitted = holdingsSplitted.filter(h => h.usd > 0.02);
+
+    logger.info("===============Income address create response finished " + id + " " + " =================");
 
     const response = {
         "totalValueLM": lmUsdValue,
