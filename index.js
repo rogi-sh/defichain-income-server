@@ -3868,7 +3868,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
         "totalValueWallet": totalValueWallet,
         "totalValueLoan": loanUsdValue,
         "totalValueInterest": interestUsdValue,
-        "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue + interestUsdValue,
+        "totalValue": totalValueWallet + lmUsdValue + collateralUsdValue - loanUsdValue - interestUsdValue,
         "holdings": holdings,
         "holdingsSplitted": holdingsSplitted,
         "poolIncome": poolIncome,
