@@ -3581,14 +3581,15 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             const usdShare = pool.totalLiquidity.usd * share;
             lmUsdValue += usdShare;
             // compute year usd income
-            const usdIncome = usdShare * pool.apr.total;
+            const apr = pool.apr.total !== null ? pool.apr.total : pool.apr.reward;
+            const usdIncome = usdShare * apr;
             // compute year dfi income
             const dfiIncome = usdIncome / price.price.aggregated.amount;
             // add to income
             incomeYearUsd += usdIncome;
             incomeYearDfi += dfiIncome;
 
-            aprs += pool.apr.total;
+            aprs += apr;
             lmPoolsIn += 1;
 
             priceOfLPToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
@@ -3616,7 +3617,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
                     "token_B_Symbol": pool.tokenB.symbol,
                     "tokensAmount": +t.amount,
                     "amountInUsd": +usdShare,
-                    "apr": pool.apr.total,
+                    "apr": apr,
                     "aprReward": pool.apr.reward,
                     "aprCommission": pool.apr.commission,
                     "usdIncomeYear": usdIncome,
