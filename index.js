@@ -3569,7 +3569,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
     let totalValueWallet = balance * +price.price.aggregated.amount;
 
     let poolIncome = [];
-    let priceOfToken = 0;
+    let priceOfLPToken = 0;
 
     for (const t of token) {
         if (t.isLPS) {
@@ -3591,12 +3591,12 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             aprs += pool.apr.total;
             lmPoolsIn += 1;
 
-            priceOfToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
+            priceOfLPToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
 
             if (poolIncome.find(h => h.id === t.id)) {
                 const poolInc = poolIncome.find(h => h.id === t.id)
                 poolInc.tokensAmount = poolInc.tokensAmount + +t.amount;
-                poolInc.amountInUsd = poolInc.tokensAmount * priceOfToken
+                poolInc.amountInUsd = poolInc.tokensAmount * priceOfLPToken
                 poolInc.usdIncomeYear = poolInc.usdIncomeYear + usdIncome;
                 poolInc.dfiIncomeYear = poolInc.dfiIncomeYear + dfiIncome;
                 poolInc.share =  poolInc.share + share;
@@ -3628,13 +3628,13 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             if (holdings.find(h => h.id === t.id)) {
                 const pool = holdings.find(h => h.id === t.id)
                 pool.amount = pool.amount + +t.amount;
-                pool.usd = pool.amount * priceOfToken
+                pool.usd = pool.amount * priceOfLPToken
 
             } else {
                 holdings.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceOfLPToken,
+                    "usd": +t.amount * +priceOfLPToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3698,8 +3698,8 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             } else {
                 holdings.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceOfLPToken,
+                    "usd": +t.amount * +priceOfLPToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3710,8 +3710,8 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
                 holdingsSplitted.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceOfLPToken,
+                    "usd": +t.amount * +priceOfLPToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3722,22 +3722,22 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             }
 
         } else if (t.symbol === "DUSD") {
-            priceOfToken = dUsd;
+            priceOfLPToken = dUsd;
             totalValueWallet += +t.amount * dUsd;
 
             if (holdings.find(h => h.symbol === t.symbol) || holdingsSplitted.find((h => h.symbol === t.symbol))) {
                 const pool = holdings.find(h => h.id === t.id)
                 pool.amount = pool.amount + +t.amount;
-                pool.usd = pool.amount * priceOfToken
+                pool.usd = pool.amount * priceOfLPToken
 
                 const poolSplitted = holdings.find(h => h.id === t.id)
                 poolSplitted.amount = poolSplitted.amount + +t.amount;
-                poolSplitted.usd = poolSplitted.amount * priceOfToken
+                poolSplitted.usd = poolSplitted.amount * priceOfLPToken
             } else {
                 holdings.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceOfLPToken,
+                    "usd": +t.amount * +priceOfLPToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3748,8 +3748,8 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
                 holdingsSplitted.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceOfLPToken,
+                    "usd": +t.amount * +priceOfLPToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3761,25 +3761,27 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
 
         } else {
-            const priceToken = await client.prices.get(t.symbol, "USD");
+            // get dex prices of dTokens
+            const pool = pools.find(p => p.tokenA.symbol === t.symbol);
+            const priceToken = pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
+
             if (priceToken) {
-                priceOfToken = +priceToken.price.aggregated.amount;
-                totalValueWallet += +t.amount * +priceToken.price.aggregated.amount;
+                totalValueWallet += +t.amount * priceToken;
             }
 
             if (holdings.find(h => h.id === t.id) || holdingsSplitted.find(h => h.id === t.id)) {
                 const pool = holdings.find(h => h.id === t.id)
                 pool.amount = pool.amount + +t.amount;
-                pool.usd = pool.amount * priceOfToken
+                pool.usd = pool.amount * priceToken
 
                 const poolSplitted = holdingsSplitted.find(h => h.id === t.id)
                 poolSplitted.amount = poolSplitted.amount + +t.amount;
-                poolSplitted.usd = poolSplitted.amount * priceOfToken
+                poolSplitted.usd = poolSplitted.amount * priceToken
             } else {
                 holdings.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceToken,
+                    "usd": +t.amount * +priceToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
@@ -3790,8 +3792,8 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
                 holdingsSplitted.push({
                     "amount": +t.amount,
-                    "price": +priceOfToken,
-                    "usd": +t.amount * +priceOfToken,
+                    "price": +priceToken,
+                    "usd": +t.amount * +priceToken,
                     "symbolKey": t.symbolKey,
                     "symbol": t.symbol,
                     "id": t.id,
