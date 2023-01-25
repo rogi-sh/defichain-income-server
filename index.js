@@ -3520,15 +3520,20 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
     logger.info("===============Income address check token with id " + id + " " + " =================");
 
     for (const t of token) {
+
+        if (t.symbol === "GOLD" || t.symbol === "SINGA" ) {
+            continue;
+        }
+
         logger.info("===============Income address check token " + t.symbol + " " + " =================");
 
         if (t.isLPS) {
             // get pool
             const pool = pools.find(p => p.id === t.id);
             // compute share
-            const share = +t.amount / pool.totalLiquidity.token;
+            const share = +t.amount / +pool.totalLiquidity.token;
             // compute usd share
-            const usdShare = pool.totalLiquidity.usd * share;
+            const usdShare = +pool.totalLiquidity.usd * share;
             lmUsdValue += usdShare;
             // compute year usd income
             const apr = pool.apr.total !== null ? pool.apr.total : pool.apr.reward;
@@ -3542,7 +3547,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             aprs += apr;
             lmPoolsIn += 1;
 
-            priceOfLPToken = pool.totalLiquidity.usd / pool.totalLiquidity.token;
+            priceOfLPToken = +pool.totalLiquidity.usd / +pool.totalLiquidity.token;
 
             if (poolIncome.find(h => h.id === t.id)) {
                 const poolInc = poolIncome.find(h => h.id === t.id)
@@ -3605,8 +3610,8 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             } else {
                 holdingsSplitted.push({
                     "amount": +pool.tokenA.reserve * share,
-                    "price": pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
-                    "usd": +pool.tokenA.reserve * share * pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
+                    "price": +pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
+                    "usd": +pool.tokenA.reserve * share * +pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve,
                     "symbolKey": pool.tokenA.symbol,
                     "symbol": pool.tokenA.symbol,
                     "id": pool.tokenA.id,
@@ -3714,7 +3719,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
         } else {
             // get dex prices of dTokens
             const pool = pools.find(p => p.tokenA.symbol === t.symbol && !p.symbol.includes("v1"));
-            const priceToken = pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
+            const priceToken = +pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
 
             if (priceToken) {
                 totalValueWallet += +t.amount * priceToken;
