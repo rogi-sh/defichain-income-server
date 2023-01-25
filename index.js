@@ -3521,7 +3521,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
     for (const t of token) {
 
-        if (t.symbol === "GOLD" || t.symbol === "SINGA" ) {
+        if (t.symbol === "GOLD" || t.symbol === "SINGA" || t.symbol === "DFIS" || t.symbol === "PCT") {
             continue;
         }
 
@@ -3682,13 +3682,17 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             totalValueWallet += +t.amount * dUsd;
 
             if (holdings.find(h => h.symbol === t.symbol) || holdingsSplitted.find((h => h.symbol === t.symbol))) {
-                const pool = holdings.find(h => h.id === t.id)
-                pool.amount = pool.amount + +t.amount;
-                pool.usd = pool.amount * priceOfLPToken
+                const poolHolding = holdings.find(h => h.id === t.id)
+                if (poolHolding) {
+                    poolHolding.amount = poolHolding.amount + +t.amount;
+                    poolHolding.usd = poolHolding.amount * priceOfLPToken;
+                }
 
                 const poolSplitted = holdings.find(h => h.id === t.id)
-                poolSplitted.amount = poolSplitted.amount + +t.amount;
-                poolSplitted.usd = poolSplitted.amount * priceOfLPToken
+                if (poolSplitted) {
+                    poolSplitted.amount = poolSplitted.amount + +t.amount;
+                    poolSplitted.usd = poolSplitted.amount * priceOfLPToken;
+                }
             } else {
                 holdings.push({
                     "amount": +t.amount,
