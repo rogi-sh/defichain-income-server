@@ -16,9 +16,9 @@
   "license": "ISC",
   "dependencies": {
     "@datalust/winston-seq": "^1.0.2",
-    "@defichain/jellyfish-address": "^3.23.0",
-    "@defichain/whale-api-client": "^3.23.0",
-    "defichain": "^3.23.0",
+    "@defichain/jellyfish-address": "^3.23.2",
+    "@defichain/whale-api-client": "^3.23.2",
+    "defichain": "^3.23.2",
     "@supercharge/strings": "^1.28.0",
     "apollo-server": "^3.11.1",
     "apollo-server-express": "^3.11.1",

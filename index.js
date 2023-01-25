@@ -3571,7 +3571,11 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
     let poolIncome = [];
     let priceOfLPToken = 0;
 
+    logger.info("===============Income address check token with id " + id + " " + " =================");
+
     for (const t of token) {
+        logger.info("===============Income address check token " + t.symbol + " " + " =================");
+
         if (t.isLPS) {
             // get pool
             const pool = pools.find(p => p.id === t.id);
@@ -3763,7 +3767,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
         } else {
             // get dex prices of dTokens
-            const pool = pools.find(p => p.tokenA.symbol === t.symbol);
+            const pool = pools.find(p => p.tokenA.symbol === t.symbol && !p.symbol.includes("v1"));
             const priceToken = pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
 
             if (priceToken) {
@@ -3771,13 +3775,18 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
             }
 
             if (holdings.find(h => h.id === t.id) || holdingsSplitted.find(h => h.id === t.id)) {
-                const pool = holdings.find(h => h.id === t.id)
-                pool.amount = pool.amount + +t.amount;
-                pool.usd = pool.amount * priceToken
+                const poolHolding = holdings.find(h => h.id === t.id)
+                if (poolHolding){
+                    poolHolding.amount = poolHolding.amount + +t.amount;
+                    poolHolding.usd = poolHolding.amount * priceToken
+                }
 
-                const poolSplitted = holdingsSplitted.find(h => h.id === t.id)
-                poolSplitted.amount = poolSplitted.amount + +t.amount;
-                poolSplitted.usd = poolSplitted.amount * priceToken
+                const poolSplitted = holdingsSplitted.find(h => h.id === t.id);
+                if (poolSplitted) {
+                    poolSplitted.amount = poolSplitted.amount + +t.amount;
+                    poolSplitted.usd = poolSplitted.amount * priceToken
+                }
+
             } else {
                 holdings.push({
                     "amount": +t.amount,
@@ -3822,8 +3831,13 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
     let vaultResult = [];
     const vaultsFiltered = vaults.filter(v => v.collateralValue > 0);
     for (const v of vaultsFiltered) {
+
+        // Take DEX Price
+
         collateralUsdValue += +v.collateralValue;
         loanUsdValue += +v.loanValue;
+
+
         interestUsdValue += +v.interestValue;
         vaultResult.push(
             {
