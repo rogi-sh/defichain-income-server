@@ -1283,7 +1283,6 @@ const typeDefs = gql`
         getStatisticsIncome: Statistics
         getExchangeStatus: ExchangeStatus
         getOracleHistory(token: String!, date: Date): [PriceHistory]
-        getDfxStakingAmounts(addresses: [String]): Float
     }
 
     input WalletInput {
@@ -1869,52 +1868,6 @@ const resolvers = {
                 return {};
             }
         },
-        getDfxStakingAmounts: async (obj, {addresses}, {auth}) => {
-            try {
-                const millisecondsBefore = new Date().getTime();
-
-                let result = 0;
-
-                const key = await getApiKeyDfx();
-
-                await axios.all([
-                    getDfxStakingAmount(addresses, key.bearer),
-                ])
-                    .then(axios.spread((response) => {
-
-                        const amount = response.data;
-                        result = amount.totalAmount;
-
-                    }))
-                    .catch(function (error) {
-                        // handle error
-                        if (error.response) {
-                            // Request made and server responded
-                            logger.error("==================== ERROR getDfxStakingAmount in Call to API BEGIN ====================");
-                            logger.error("getDfxStakingAmount", error.response.data);
-                            logger.error("getDfxStakingAmount", error.response.status);
-                            logger.error("getDfxStakingAmount", error.response.statusText);
-                            logger.error("==================== ERROR VisitsSummary in Call to API END ====================");
-                        } else if (error.request) {
-                            // The request was made but no response was received
-                            logger.error("getDfxStakingAmount", error.request);
-                        } else {
-                            // Something happened in setting up the request that triggered an Error
-                            logger.error('getDfxStakingAmount', error.message);
-                        }
-                    });
-
-
-                const millisecondsAfter = new Date().getTime();
-                const msTime = millisecondsAfter - millisecondsBefore;
-                logger.info("getDfxStakingAmount " + new Date() + " called took " + msTime + " ms.");
-
-                return result;
-            } catch (e) {
-                logger.error("getDfxStakingAmount", e);
-                return {};
-            }
-        },
         getOracleHistory: async (obj, {token, date}, {auth}) => {
             try {
                 const millisecondsBefore = new Date().getTime();
@@ -2394,13 +2347,6 @@ function getOceanPoolPairs() {
 
 function getVisitors() {
     return axios.get(process.env.VISITS_API);
-}
-
-function getDfxStakingAmount(addresses, key) {
-    const config = {
-        headers: { Authorization: "Bearer " + key }
-    };
-    return axios.get(process.env.DFX_API_STAKING_INCOME + addresses.toString(), config);
 }
 
 function authDfx() {
