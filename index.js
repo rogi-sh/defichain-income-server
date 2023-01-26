@@ -3376,7 +3376,13 @@ app.get('/income/:address', async function (req,  res) {
         addressesToCheck.push(address);
     }
 
-    const response = await computeIncomeForAddresses(addressesToCheck, randomId);
+    // compute meta infos
+    logger.info("===============Income address collect meta data " + id + " " + "=================");
+    const stats = await client.stats.get();
+    const price = await client.prices.get("DFI", "USD");
+    const pools = await client.poolpairs.list(1000);
+
+    const response = await computeIncomeForAddresses(addressesToCheck, randomId, stats, price, pools);
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
@@ -3405,7 +3411,14 @@ app.post('/income/:address?', async function (req,  res) {
     if (addressesFromBody && addressesFromBody.length > 0) {
         addressesToCheck.push(... addressesFromBody);
     }
-    const response = await computeIncomeForAddresses(addressesToCheck, randomId);
+
+    // compute meta infos
+    logger.info("===============Income address collect meta data " + id + " " + "=================");
+    const stats = await client.stats.get();
+    const price = await client.prices.get("DFI", "USD");
+    const pools = await client.poolpairs.list(1000);
+
+    const response = await computeIncomeForAddresses(addressesToCheck, randomId, stats, price, pools);
 
     const millisecondsAfter = new Date().getTime();
     const msTime = millisecondsAfter - millisecondsBefore;
@@ -3441,13 +3454,8 @@ function addDexPrices(poolUsd, price, poolBtc, dexPrices, pools) {
     return {dUsd, dfiPrice};
 }
 
-async function computeIncomeForAddresses(addressesToCheck, id) {
-    // compute meta infos
+async function computeIncomeForAddresses(addressesToCheck, id, stats, price, pools) {
 
-    logger.info("===============Income address collect meta data " + id + " " + "=================");
-    const stats = await client.stats.get();
-    const price = await client.prices.get("DFI", "USD");
-    const pools = await client.poolpairs.list(1000);
     const poolUsd = pools.find(p => p.id === "17");
     const poolBtc = pools.find(p => p.id === "5");
     let dexPrices = [];
