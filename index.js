@@ -3377,10 +3377,11 @@ app.get('/income/:address', async function (req,  res) {
     }
 
     // compute meta infos
-    logger.info("===============Income address collect meta data " + id + " " + "=================");
+    logger.info("===============Income address collect meta data " + randomId + " " + "=================");
     const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
+    logger.info("===============Income address collect meta data finished " + randomId + " " + "=================");
 
     const response = await computeIncomeForAddresses(addressesToCheck, randomId, stats, price, pools);
 
@@ -3413,10 +3414,11 @@ app.post('/income/:address?', async function (req,  res) {
     }
 
     // compute meta infos
-    logger.info("===============Income address collect meta data " + id + " " + "=================");
+    logger.info("===============Income address collect meta data " + randomId + " " + "=================");
     const stats = await client.stats.get();
     const price = await client.prices.get("DFI", "USD");
     const pools = await client.poolpairs.list(1000);
+    logger.info("===============Income address collect meta data finished " + randomId + " " + "=================");
 
     const response = await computeIncomeForAddresses(addressesToCheck, randomId, stats, price, pools);
 
@@ -3474,8 +3476,6 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
         }
     });
 
-    logger.info("===============Income address collect meta data finished " + id + " " + "=================");
-
     const {dUsd, dfiPrice} = addDexPrices(poolUsd, price, poolBtc, dexPrices, pools);
 
     let balance = 0;
@@ -3485,6 +3485,7 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
     logger.info("===============Income address collect address data " + id + " " + " =================");
 
     for (const address of addressesToCheck) {
+        logger.info("===============Income address collect address data " + id + " for address " + address + " =================");
         try {
             balance += +(await client.address.getBalance(address));
             token.push(...await client.address.listToken(address, 1000));
