@@ -3452,6 +3452,20 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
     const poolBtc = pools.find(p => p.id === "5");
     let dexPrices = [];
 
+    // check which official tokens for filter in income calculation
+    let availableTokens = [];
+    pools.forEach(p => {
+        if (!availableTokens.includes(p.tokenA.symbol) && !p.tokenA.symbol.includes("v1")) {
+            availableTokens.push(p.tokenA.symbol)
+        }
+        if (!availableTokens.includes(p.tokenB.symbol) && !p.tokenB.symbol.includes("v1")) {
+            availableTokens.push(p.tokenB.symbol)
+        }
+        if (!availableTokens.includes(p.symbol) && !p.symbol.includes("v1") ) {
+            availableTokens.push(p.symbol)
+        }
+    });
+
     logger.info("===============Income address collect meta data finished " + id + " " + "=================");
 
     const {dUsd, dfiPrice} = addDexPrices(poolUsd, price, poolBtc, dexPrices, pools);
@@ -3521,7 +3535,7 @@ async function computeIncomeForAddresses(addressesToCheck, id) {
 
     for (const t of token) {
 
-        if (t.symbol === "GOLD" || t.symbol === "SINGA" || t.symbol === "DFIS" || t.symbol === "PCT") {
+        if (!availableTokens.includes(t.symbol)) {
             continue;
         }
 
