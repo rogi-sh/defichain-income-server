@@ -68,7 +68,8 @@ const logger = winston.createLogger({
     ]
 });
 const connectWithRetry = function () {
-    return mongoose.connect(process.env.DB_CONN, {dbName: "defichain"}).then(
+    return mongoose.connect(process.env.DB_CONN, {
+        dbName: "defichain", keepAlive: true}).then(
         () => {
             /** ready to use. The `mongoose.connect()` promise resolves to mongoose instance. */
             logger.info("Connected to Database")
@@ -80,6 +81,7 @@ const connectWithRetry = function () {
         }
     );
 }
+
 connectWithRetry();
 
 const axios = require('axios');
