@@ -3485,6 +3485,11 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
     logger.info("===============Income address collect address data " + id + " " + " =================");
 
     for (const address of addressesToCheck) {
+
+        if (!address || address.length === 0) {
+            continue
+        }
+
         logger.info("===============Income address collect address data " + id + " for address " + address + " =================");
         try {
             balance += +(await client.address.getBalance(address));
