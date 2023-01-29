@@ -3815,13 +3815,14 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
 
     let vaultResult = [];
     const vaultsFiltered = vaults.filter(v => v.collateralValue > 0);
+
+    logger.info("===============Income address check vaults =================");
+
     for (const v of vaultsFiltered) {
 
         // Take DEX Price
-
         collateralUsdValue += +v.collateralValue;
         loanUsdValue += +v.loanValue;
-
 
         interestUsdValue += +v.interestValue;
         vaultResult.push(
@@ -3842,6 +3843,39 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
                 "ownerAddress": v.ownerAddress
             }
         )
+
+        v.collateralAmounts.forEach( t => {
+            // Add Collateral to splitted holdings
+            let priceToken = 0;
+            if (t.id === "0") {
+                const pool = pools.find(p => p.tokenA.symbol === "BTC");
+                priceToken = +pool.totalLiquidity.usd / 2 / +pool.tokenB.reserve;
+            } else if (t.id === "15") {
+                priceToken = dUsd;
+            } else {
+                const pool = pools.find(p => p.tokenA.symbol === t.symbol && !p.symbol.includes("v1"));
+                priceToken = +pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
+            }
+
+            if (holdingsSplitted.find(h => h.id === t.id)) {
+                const poolSplitted = holdingsSplitted.find(h => h.id === t.id);
+                if (poolSplitted) {
+                    poolSplitted.amount = poolSplitted.amount + +t.amount;
+                    poolSplitted.usd = poolSplitted.amount * priceToken
+                }
+
+            } else {
+                holdingsSplitted.push({
+                    "amount": +t.amount,
+                    "price": +priceToken,
+                    "usd": +t.amount * +priceToken,
+                    "symbolKey": t.symbolKey,
+                    "symbol": t.symbol,
+                    "id": t.id,
+                });
+            }
+        });
+
     }
 
     const avgApr = Math.round(aprs / lmPoolsIn * 100 * 100) / 100;
