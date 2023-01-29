@@ -3820,8 +3820,7 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
 
     for (const v of vaultsFiltered) {
 
-        // Take DEX Price
-        collateralUsdValue += +v.collateralValue;
+        // Loan value from oracle
         loanUsdValue += +v.loanValue;
 
         interestUsdValue += +v.interestValue;
@@ -3845,6 +3844,7 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
         )
 
         v.collateralAmounts.forEach( t => {
+
             // Add Collateral to splitted holdings
             let priceToken = 0;
             if (t.id === "0") {
@@ -3856,6 +3856,9 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
                 const pool = pools.find(p => p.tokenA.symbol === t.symbol && !p.symbol.includes("v1"));
                 priceToken = +pool.totalLiquidity.usd / 2 / +pool.tokenA.reserve;
             }
+
+            // Collateral value from dex
+            collateralUsdValue += +t.amount * priceToken;
 
             if (holdingsSplitted.find(h => h.id === t.id)) {
                 const poolSplitted = holdingsSplitted.find(h => h.id === t.id);
