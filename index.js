@@ -3555,8 +3555,6 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
             continue;
         }
 
-        logger.info("===============Income address check token " + t.symbol + " " + " =================");
-
         if (t.isLPS) {
             // get pool
             const pool = pools.find(p => p.id === t.id);
