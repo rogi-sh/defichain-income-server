@@ -65,7 +65,7 @@ deploy-next:
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -H $PROD_SERVER_NEXT >> ~/.ssh/known_hosts
   script:
-    - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER_NEXT "cd docker/Defichain/Backend && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.gitlab.com && ./deploy.sh && exit"
+    - sshpass -p $LOGIN_KEY ssh igor@$PROD_SERVER_NEXT "cd defichan-income/Backend && docker login -u $REGISTRY_LOGIN -p $REGISTRY_KEY registry.gitlab.com && ./deploy.sh && exit"
   only:
     - tags
     - master
