@@ -21,7 +21,7 @@ require('events').EventEmitter.setMaxListeners(300);
 
 const client = new WhaleApiClient({
     url: process.env.OCEAN,
-    timeout: 60000,
+    timeout: 600000,
     version: 'v0',
     network: 'mainnet'
 })
@@ -2331,6 +2331,7 @@ const resolvers = {
     })
 };
 
+
 function getDFXApy() {
     return axios.get(process.env.DFX_API_STAKING);
 }
@@ -3936,6 +3937,8 @@ function getNextCollateralFromVaultUsd(vault){
     let usdtNextPrice = 0;
     let dusdInVaults = 0;
     const dusdActualPrice = 1.2;
+    let eurocInVaults = 0;
+    let eurocNextPrice = 0;
 
     if (!vault) {
         return 0;
@@ -3959,12 +3962,16 @@ function getNextCollateralFromVaultUsd(vault){
             usdtNextPrice = +vaultCollaterral.activePrice?.next?.amount;
         } else if ('DUSD' === vaultCollaterral.symbolKey) {
             dusdInVaults += +vaultCollaterral.amount;
+        } else if ('EUROC' === vaultCollaterral.symbolKey) {
+            eurocInVaults += +vaultCollaterral.amount;
+            eurocNextPrice = +vaultCollaterral.activePrice?.next?.amount;
         }
 
     });
 
     return dfiInVaults * dfiNextPrice + btcInVaults * btcNextPrice + ethInVaults * ethNextPrice
-        + usdcInVaults * usdcNextPrice + usdtInVaults * usdtNextPrice + dusdInVaults * dusdActualPrice;
+        + usdcInVaults * usdcNextPrice + usdtInVaults * usdtNextPrice + dusdInVaults * dusdActualPrice
+        + eurocInVaults * eurocNextPrice;
 }
 
 function getNextLoanFromVaultUsd(vault) {
