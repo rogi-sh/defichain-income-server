@@ -3936,7 +3936,7 @@ function getNextCollateralFromVaultUsd(vault){
     let usdtInVaults = 0;
     let usdtNextPrice = 0;
     let dusdInVaults = 0;
-    const dusdActualPrice = 1.115;
+    const dusdActualPrice = 1.105;
     let eurocInVaults = 0;
     let eurocNextPrice = 0;
 
