@@ -3936,7 +3936,6 @@ function getNextCollateralFromVaultUsd(vault){
     let usdtInVaults = 0;
     let usdtNextPrice = 0;
     let dusdInVaults = 0;
-    const dusdActualPrice = 1.105;
     let eurocInVaults = 0;
     let eurocNextPrice = 0;
 
@@ -3970,7 +3969,7 @@ function getNextCollateralFromVaultUsd(vault){
     });
 
     return dfiInVaults * dfiNextPrice + btcInVaults * btcNextPrice + ethInVaults * ethNextPrice
-        + usdcInVaults * usdcNextPrice + usdtInVaults * usdtNextPrice + dusdInVaults * dusdActualPrice
+        + usdcInVaults * usdcNextPrice + usdtInVaults * usdtNextPrice + dusdInVaults
         + eurocInVaults * eurocNextPrice;
 }
 
