@@ -3562,7 +3562,15 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
             // compute share
             const share = +t.amount / +pool.totalLiquidity.token;
             // compute usd share
-            const usdShare = +pool.totalLiquidity.usd * share;
+            let usdShare = 0;
+            // if pool with dusd take the correct dusd price for calculation
+            if (pool.tokenA.id === "15" || pool.tokenB.id === "15") {
+                const totalLmPairAmount = +pool.totalLiquidity.usd * share;
+                const half = totalLmPairAmount / 2;
+                usdShare = half + half * dUsd;
+            } else {
+                usdShare = +pool.totalLiquidity.usd * share;
+            }
             lmUsdValue += usdShare;
             // compute year usd income
             const apr = pool.apr.total !== null ? pool.apr.total : pool.apr.reward;
