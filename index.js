@@ -3562,19 +3562,20 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
             // compute share
             const share = +t.amount / +pool.totalLiquidity.token;
             // compute usd share
-            let usdShare = 0;
+            let usdShareWithDusdPriceCorrect = 0;
             // if pool with dusd take the correct dusd price for calculation
             if (pool.tokenA.id === "15" || pool.tokenB.id === "15") {
                 const totalLmPairAmount = +pool.totalLiquidity.usd * share;
                 const half = totalLmPairAmount / 2;
-                usdShare = half + half * dUsd;
+                usdShareWithDusdPriceCorrect = half + half * dUsd;
             } else {
-                usdShare = +pool.totalLiquidity.usd * share;
+                usdShareWithDusdPriceCorrect = +pool.totalLiquidity.usd * share;
             }
-            lmUsdValue += usdShare;
+            const lmUsdValueForIncome = +pool.totalLiquidity.usd * share;
+            lmUsdValue += usdShareWithDusdPriceCorrect;
             // compute year usd income
             const apr = pool.apr.total !== null ? pool.apr.total : pool.apr.reward;
-            const usdIncome = usdShare * apr;
+            const usdIncome = lmUsdValueForIncome * apr;
             // compute year dfi income
             const dfiIncome = usdIncome / price.price.aggregated.amount;
             // add to income
@@ -3608,7 +3609,7 @@ async function computeIncomeForAddresses(addressesToCheck, id, stats, price, poo
                     "token_B_Id": +pool.tokenB.id,
                     "token_B_Symbol": pool.tokenB.symbol,
                     "tokensAmount": +t.amount,
-                    "amountInUsd": +usdShare,
+                    "amountInUsd": +usdShareWithDusdPriceCorrect,
                     "apr": apr,
                     "aprReward": pool.apr.reward,
                     "aprCommission": pool.apr.commission,
